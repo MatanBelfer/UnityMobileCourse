@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 5249159035732349434}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.097746, y: 1.1992944, z: 0.97011137}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41,16 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5249159035732349434}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b98876c6d424464abedfd7a44d3cc35, type: 3}
+  m_Script: {fileID: 11500000, guid: e19805a027874254eb70ff3fec7b13e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolSettings:
-  - poolName: Whites
-    poolSize: 5
-    prefab: {fileID: 212819325303617662, guid: 363cf4aa4f97e65409b6707e9089963b, type: 3}
-  - poolName: Reds
-    poolSize: 10
-    prefab: {fileID: 7191330146415017767, guid: efe786b890e084f45a980186b4ff8a50, type: 3}
-  - poolName: Blues
-    poolSize: 15
-    prefab: {fileID: 3765910674527038960, guid: 0c916db69e39f0a4f8bd761bee4beade, type: 3}
+  poolSettings: []

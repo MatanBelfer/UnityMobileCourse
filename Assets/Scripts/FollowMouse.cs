@@ -6,6 +6,14 @@ public class FollowMouse : MonoBehaviour
     public bool isFollowing { get; private set; }
     [SerializeField] public GridManager grid;
 
+    private void Start()
+    {
+        if (!Camera.main.orthographic)
+        {
+            Debug.LogWarning("This script only works with an orthographic camera");
+        }
+    }
+    
     private void Update()
     {
         if (isFollowing)
@@ -13,11 +21,6 @@ public class FollowMouse : MonoBehaviour
             Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousepos.z = 0f;
             transform.position = mousepos;
-
-            if (Input.GetMouseButtonUp(0))
-            {
-                StopFollowing();
-            }
         }
     }
 
@@ -26,6 +29,14 @@ public class FollowMouse : MonoBehaviour
         if (!isFollowing)
         {
             StartFollowing();
+        }
+    }
+
+    private void OnMouseUp()
+    {
+        if (isFollowing)
+        {
+            StopFollowing();
         }
     }
 
