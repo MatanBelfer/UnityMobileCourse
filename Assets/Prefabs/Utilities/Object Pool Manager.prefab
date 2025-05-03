@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5249159035732349434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6657318319680015137}
+  - component: {fileID: 8070150573327529780}
+  m_Layer: 0
+  m_Name: Object Pool Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6657318319680015137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5249159035732349434}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.097746, y: 1.1992944, z: 0.97011137}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8070150573327529780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5249159035732349434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b98876c6d424464abedfd7a44d3cc35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poolSettings:
+  - poolName: Whites
+    poolSize: 5
+    prefab: {fileID: 212819325303617662, guid: 363cf4aa4f97e65409b6707e9089963b, type: 3}
+  - poolName: Reds
+    poolSize: 10
+    prefab: {fileID: 7191330146415017767, guid: efe786b890e084f45a980186b4ff8a50, type: 3}
+  - poolName: Blues
+    poolSize: 15
+    prefab: {fileID: 3765910674527038960, guid: 0c916db69e39f0a4f8bd761bee4beade, type: 3}
