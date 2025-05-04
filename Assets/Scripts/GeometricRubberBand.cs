@@ -2,49 +2,74 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Serialization;
 
-public class GeometricRubberBand : MonoBehaviour
+public class GeometricRubberBand : ObjectPoolInterface
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
     //the calculated area will exclude the obstacles and will be as small as possible, composed of only straight lines 
     //between the anchors and obstacles
     
-    [SerializeField] private Transform[] anchors;
-    private List<(Transform,Transform)> connections = new();
+    [SerializeField] private Transform[] pins; //the four pins the player moves
+    private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
+    private List<Transform> activePins = new(); //the pins the band is touching
+    private List<List<Transform>> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
+    
+    private Vector2 centerOfActivePins; //the center of the active pins
 
     private void Start()
     {
         //initialize connections
-        // print(NChooseK(anchors.Length, 2));
-        // connections = new List<(Transform,Transform)>(NChooseK(anchors.Length, 2));
-        
-        for (int i = 0; i < anchors.Length - 1; i++)
+        for (int i = 0; i < pins.Length - 1; i++)
         {
-            for (int j = i + 1; j < anchors.Length; j++)
+            for (int j = i + 1; j < pins.Length; j++)
             {
-                connections.Add((anchors[i], anchors[j]));
+                connections.Add((pins[i], pins[j]));
             }
+        }
+        
+        //find pins that define the shape of the band
+        activePins = pins.Where(p => PointWithinBounds(p) != -1).ToList();
+        
+        //find center of active pins
+        centerOfActivePins = activePins.Select(p => p.position).Aggregate((a, b) => a + b) / pins.Length;
+        
+        //sort active pins counterclockwise
+        activePins = activePins.OrderBy(p => Mathf.Atan2(p.position.x - centerOfActivePins.x, p.position.y - centerOfActivePins.y)).ToList();
+        
+        //spawn anchors
+        foreach (Transform pin in activePins)
+        {
+            List<Transform> newAnchors = new();
+            for (int i = 0; i < 2; i++)
+            {
+                Transform anchor = objectPoolManager.GetFromPool(poolName).transform;
+                anchor.parent = pin;
+                newAnchors.Add(anchor);
+            }
+        }
+        
+        //move anchors to edges of pins
+        for (int i = 0; i < activePins.Count; i++)
+        {
+            //find outside direction
+            
         }
     }
 
-    private int NChooseK(int n, int k)
-    {
-        return Factorial(n) / (Factorial(k) * Factorial(n - k));
-    }
+    // private int NChooseK(int n, int k)
+    // {
+    //     return Factorial(n) / (Factorial(k) * Factorial(n - k));
+    // }
 
-    private int Factorial(int n)
-    {
-        return n == 0 ? 1 : n * Factorial(n - 1);
-    }
+    // private int Factorial(int n)
+    // {
+    //     return n == 0 ? 1 : n * Factorial(n - 1);
+    // }
 
     private void Update()
     {
-        string msg = "";
-        for (int i = 0; i < anchors.Length; i++)
-        {
-            msg += $"{i}: {PointWithinBounds(anchors[i])}, ";
-        }
-        print(msg);
+        
     }
 
     private int PointWithinBounds(Transform pointTransform)
@@ -86,7 +111,7 @@ public class GeometricRubberBand : MonoBehaviour
 
     private Vector2 OuterPoint()
     {
-        return Vector2.right * anchors.Max(t => t.position.x) + Vector2.up * anchors.Max(t => t.position.y);
+        return Vector2.right * pins.Max(t => t.position.x) + Vector2.up * pins.Max(t => t.position.y);
     }
 
     private bool DoLinesIntersect(Vector2 lineStart1, Vector2 lineEnd1, Vector2 lineStart2, Vector2 lineEnd2)
@@ -96,7 +121,7 @@ public class GeometricRubberBand : MonoBehaviour
 
     private bool PointsOnSameSide(Vector2 point1, Vector2 point2, Vector2 lineStart, Vector2 lineEnd)
     {
-        return SignedDistPointLine(point1, lineStart, lineEnd) * SignedDistPointLine(point2, lineStart, lineEnd) > 0;
+        return SignedDistPointLine(point1, lineStart, lineEnd) * SignedDistPointLine(point2, lineStart, lineEnd) >= 0;
     }
     
     private float SignedDistPointLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
