@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Serialization;
 
 public class GridManager : ObjectPoolInterface
 {
@@ -19,15 +20,18 @@ public class GridManager : ObjectPoolInterface
     private int rowNum = 0;
 
     //grid settings
-    [SerializeField] private int widthPts;
+    [SerializeField] private GridParameters gridParameters;
+    private int numPointsInRow;
+    private float pointSpacing;
     private float rowDist; //the vertical distance between two rows
-
-    [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
-    private float gridLength;
 
     private void Start()
     {
-        rowDist = gridLength * (float)Math.Sqrt(3f) / 2; //for triangular grid
+        //initialize grid parameters
+        numPointsInRow = gridParameters.numPtsInRow;
+        pointSpacing = gridParameters.pointSpacing;
+        rowDist = pointSpacing * (float)Math.Sqrt(3f) / 2; //for triangular grid
+        
         SpawnRow();
         SpawnRow();
         SpawnRow();
@@ -47,11 +51,11 @@ public class GridManager : ObjectPoolInterface
     {
         if (rowNum % 2 == 0)
         {
-            SpawnRow(widthPts);
+            SpawnRow(numPointsInRow);
         }
         else
         {
-            SpawnRow(widthPts - 1);
+            SpawnRow(numPointsInRow - 1);
         }
     }
 
@@ -60,7 +64,7 @@ public class GridManager : ObjectPoolInterface
         Vector3[] positions = new Vector3[numPoints];
         for (int i = 0; i < numPoints; i++)
         {
-            positions[i].x = (-(numPoints - 1) * gridLength / 2) + i * gridLength;
+            positions[i].x = (-(numPoints - 1) * pointSpacing / 2) + i * pointSpacing;
             SpawnPoint(positions[i]);
         }
 
