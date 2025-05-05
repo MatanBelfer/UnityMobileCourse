@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47e1ccef123aef24e9b24abfe05af206, type: 3}
   m_Name: GridParameters
   m_EditorClassIdentifier: 
-  numPtsInRow: 0
-  pointSpacing: 0
+  numPtsInRow: 2
+  pointSpacing: 0.3

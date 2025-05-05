@@ -271,8 +271,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poolName: Holes
   objectPoolManager: {fileID: 803341432}
-  widthPts: 5
-  gridLength: 0.5
+  scrollSpeed: 2
+  visablePoints: 10
+  gridParameters: {fileID: 11400000, guid: eaffd2263b2da1044a72965d3e685a0d, type: 2}
 --- !u!4 &505532449
 Transform:
   m_ObjectHideFlags: 0
