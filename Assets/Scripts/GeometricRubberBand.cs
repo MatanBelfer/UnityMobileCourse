@@ -16,6 +16,7 @@ public class GeometricRubberBand : ObjectPoolInterface
     private List<List<Transform>> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
     
     private Vector2 centerOfActivePins; //the center of the active pins
+    [SerializeField] private float pinRadius; //the radius of the pins
 
     private void Start()
     {
@@ -32,7 +33,8 @@ public class GeometricRubberBand : ObjectPoolInterface
         activePins = pins.Where(p => PointWithinBounds(p) != -1).ToList();
         
         //find center of active pins
-        centerOfActivePins = activePins.Select(p => p.position).Aggregate((a, b) => a + b) / pins.Length;
+        centerOfActivePins = activePins.Select(p => p.position).
+            Aggregate((a, b) => a + b) / pins.Length;
         
         //sort active pins counterclockwise
         activePins = activePins.OrderBy(p => Mathf.Atan2(p.position.x - centerOfActivePins.x, p.position.y - centerOfActivePins.y)).ToList();
@@ -47,13 +49,22 @@ public class GeometricRubberBand : ObjectPoolInterface
                 anchor.parent = pin;
                 newAnchors.Add(anchor);
             }
+            anchors.Add(newAnchors);
         }
         
         //move anchors to edges of pins
         for (int i = 0; i < activePins.Count; i++)
         {
             //find outside direction
+            Vector2 pinPos = activePins[i].position;
+            Vector2 nextPinPos = activePins[(i + 1) % activePins.Count].position;
+            Vector2 outSideDir =
+                (ClosestPointOnLine(centerOfActivePins, pinPos, nextPinPos, out _) - centerOfActivePins).normalized;
             
+            //move the anchors
+            Vector2 moveAmount = outSideDir * 0.5f * pinRadius;
+            anchors[i][0].Translate(moveAmount);
+            anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
         }
     }
 
@@ -127,10 +138,17 @@ public class GeometricRubberBand : ObjectPoolInterface
     private float SignedDistPointLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
     {
         //returns a signed distance between a point and a line
-        Vector2 lineVec = lineEnd - lineStart;
-        Vector2 lineDir = lineVec.normalized;
-        Vector2 closestPoint = lineStart + Vector2.Dot(point - lineStart, lineDir) * lineDir;
+        Vector2 closestPoint = ClosestPointOnLine(point, lineStart, lineEnd, out Vector2 lineDir);
         return Vector3.Cross(lineDir, point - closestPoint).z;
+    }
+
+    private Vector2 ClosestPointOnLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd, out Vector2 lineDir)
+    {
+        //point on the line defined by lineStart and lineEnd which is closest to point. also outputs the direction of the line in lineDir.
+        Vector2 lineVec = lineEnd - lineStart;
+        lineDir = lineVec.normalized;
+        Vector2 closestPoint = lineStart + Vector2.Dot(point - lineStart, lineDir) * lineDir;
+        return closestPoint;
     }
 
     // private struct Line
