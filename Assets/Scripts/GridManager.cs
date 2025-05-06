@@ -5,14 +5,25 @@ using System.Linq;
 
 public class GridManager : ObjectPoolInterface
 {
+    // publics
+    public float scrollSpeed = 2f;
+    public int visablePoints = 10;
+
+
+    //privates
+    private int currentRow = 0;
+    
+
     //grid points
     private Queue<Transform> points = new();
     private int rowNum = 0;
-    
+
     //grid settings
     [SerializeField] private int widthPts;
     private float rowDist; //the vertical distance between two rows
-    [SerializeField] [Tooltip("The distance in meters between adjacent grid points")] private float gridLength;
+
+    [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
+    private float gridLength;
 
     private void Start()
     {
@@ -25,6 +36,11 @@ public class GridManager : ObjectPoolInterface
         SpawnRow();
         SpawnRow();
         SpawnRow();
+    }
+
+    public void Update()
+    {
+        transform.Translate(Vector3.down * scrollSpeed * Time.deltaTime);
     }
 
     private void SpawnRow()
@@ -47,7 +63,7 @@ public class GridManager : ObjectPoolInterface
             positions[i].x = (-(numPoints - 1) * gridLength / 2) + i * gridLength;
             SpawnPoint(positions[i]);
         }
-        
+
         rowNum++;
     }
 
