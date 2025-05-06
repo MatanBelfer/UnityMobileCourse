@@ -30,7 +30,7 @@ public class GeometricRubberBand : ObjectPoolInterface
         }
         
         //find pins that define the shape of the band
-        activePins = pins.Where(p => PointWithinBounds(p) != -1).ToList();
+        activePins = pins.Where(p => PointWithinBounds(p) == -1).ToList();
         
         //find center of active pins
         centerOfActivePins = activePins.Select(p => p.position).
@@ -47,6 +47,7 @@ public class GeometricRubberBand : ObjectPoolInterface
             {
                 Transform anchor = objectPoolManager.GetFromPool(poolName).transform;
                 anchor.parent = pin;
+                anchor.localPosition = Vector3.zero;
                 newAnchors.Add(anchor);
             }
             anchors.Add(newAnchors);
@@ -62,9 +63,16 @@ public class GeometricRubberBand : ObjectPoolInterface
                 (ClosestPointOnLine(centerOfActivePins, pinPos, nextPinPos, out _) - centerOfActivePins).normalized;
             
             //move the anchors
-            Vector2 moveAmount = outSideDir * 0.5f * pinRadius;
+            Vector2 moveAmount = outSideDir * pinRadius;
             anchors[i][0].Translate(moveAmount);
             anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
+        }
+        
+        //draw lines
+        for (int i = 0; i < activePins.Count; i++)
+        {
+            Debug.DrawLine(anchors[i][0].position, anchors[(i + 1) % activePins.Count][1].position, Color.red,
+                30f);
         }
     }
 
