@@ -671,7 +671,7 @@ MonoBehaviour:
   objectPoolManager: {fileID: 803341432}
   scrollSpeed: 2
   visablePoints: 10
-  widthPts: 8
+  widthPts: 5
   gridLength: 0.5
 --- !u!4 &505532449
 Transform:
