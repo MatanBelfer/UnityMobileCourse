@@ -2,7 +2,9 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine.Serialization;
+using UnityEngine.Splines;
 
 public class GeometricRubberBand : ObjectPoolInterface
 {
@@ -14,9 +16,13 @@ public class GeometricRubberBand : ObjectPoolInterface
     private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
     private List<Transform> activePins = new(); //the pins the band is touching
     private List<List<Transform>> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
+    private List<Transform> midPoints = new(); //the midpoints of the band segments - used for animation
     
     private Vector2 centerOfActivePins; //the center of the active pins
     [SerializeField] private float pinRadius; //the radius of the pins
+    
+    [SerializeField] private SplineContainer splineContainer;
+    [SerializeField] private float splineTangentLengthRatio;
 
     private void Start()
     {
@@ -68,12 +74,25 @@ public class GeometricRubberBand : ObjectPoolInterface
             anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
         }
         
-        //draw lines
-        for (int i = 0; i < activePins.Count; i++)
+        //setup midpoints for animation
+        for (int i = 0; i < anchors.Count; i++)
         {
-            Debug.DrawLine(anchors[i][0].position, anchors[(i + 1) % activePins.Count][1].position, Color.red,
-                30f);
+            midPoints.Add(objectPoolManager.GetFromPool(poolName).transform);
         }
+        // for (int i = 0; i < activePins.Count; i++)
+        // {
+        //     // Vector3 startPos = anchors[i][1].position; 
+        //     // Vector3 endPos = anchors[(i + 1) % activePins.Count][0].position;
+        //     // Vector3 midPoint = (startPos + endPos) / 2;
+        //     // Vector3 tangent = (endPos - startPos) / 2 * splineTangentLengthRatio;
+        //     //
+        //     // BezierKnot[] knots = new BezierKnot[3];
+        //     // knots[0] = new BezierKnot(startPos, float3.zero, (float3)tangent);
+        //     // knots[1] = new BezierKnot(midPoint, -tangent, tangent);
+        //     // knots[2] = new BezierKnot(endPos, -tangent, float3.zero);
+        //     //
+        //     // splineContainer[i].Knots = knots;
+        // }
     }
 
     // private int NChooseK(int n, int k)
