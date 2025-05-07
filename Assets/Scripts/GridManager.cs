@@ -21,9 +21,9 @@ public class GridManager : ObjectPoolInterface
 
     //grid settings
     [SerializeField] private GridParameters gridParameters;
-    private int numPointsInRow;
-    private float pointSpacing;
-    private float rowDist; //the vertical distance between two rows
+    private int numPointsInRow = 5; // Add a default value or initialize it in Start
+    private float pointSpacing = 1f; // Add a default value or initialize it in Start
+    private float rowDist;
 
     [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
     private float gridLength;
@@ -49,7 +49,9 @@ public class GridManager : ObjectPoolInterface
             yield break;
         }
 
-        // Move initialization logic here
+        // Initialize grid parameters
+        numPointsInRow = gridParameters != null ? gridParameters.pointsPerRow : 5;
+        pointSpacing = gridParameters != null ? gridParameters.pointSpacing : 0.5f;
         rowDist = gridLength * (float)System.Math.Sqrt(3f) / 2;
         InitializeGrid();
     }
