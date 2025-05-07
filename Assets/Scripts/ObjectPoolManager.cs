@@ -7,20 +7,33 @@ public class ObjectPoolManager : MonoBehaviour
 {
     //to define the number, names, sizes, and prefabs of the pools
     [SerializeField] private PoolSettings[] poolSettings;
+
     //the actual pools
-    private Dictionary<string,Queue<GameObject>> pools = new();
-    
-    [Serializable] public class PoolSettings
+    private Dictionary<string, Queue<GameObject>> pools = new();
+
+    [Serializable]
+    public class PoolSettings
     {
         public string poolName;
         public int poolSize;
         public GameObject prefab;
     }
 
+    public static ObjectPoolManager Instance { get; private set; }
+
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        Instance = this;
         InitializePools();
     }
+
+
 
     public void InitializePools()
     {
@@ -37,8 +50,8 @@ public class ObjectPoolManager : MonoBehaviour
     public void CreateNewPool(string name, int poolSize, GameObject prefab)
     {
         Queue<GameObject> newPool = new Queue<GameObject>();
-        pools.Add(name,newPool);
-        
+        pools.Add(name, newPool);
+
         AddItemsToPool(poolSize, prefab, name);
     }
 
@@ -49,13 +62,17 @@ public class ObjectPoolManager : MonoBehaviour
         {
             GameObject newobj = Instantiate(prefab, parent: transform);
             newobj.SetActive(false);
+        
+            ObjectPoolInterface @interface = newobj.GetComponent<ObjectPoolInterface>();
+            if (@interface != null)
+            {
+                @interface.poolName = poolName;
+                @interface.objectPoolManager = Instance;
+            }
+        
             pools[poolName].Enqueue(newobj);
-            
-            ObjectPoolInterface? @interface = newobj.GetComponent<ObjectPoolInterface>();
-            if (@interface == null) continue;
-            @interface.poolName = poolName;
-            @interface.objectPoolManager = this;
         }
+
     }
 
     public string[] GetPoolNames()
@@ -66,20 +83,20 @@ public class ObjectPoolManager : MonoBehaviour
     public void InsertToPool(string poolName, GameObject obj)
     {
         //deactivates obj and inserts it to the pool named poolName
-        
+
         CheckPoolExists(poolName);
-        
+
         obj.SetActive(false);
         pools[poolName].Enqueue(obj);
     }
-    
+
     public GameObject GetFromPool(string poolName)
     {
         //gets an object from the pool and activates it
-        
+
         CheckPoolExists(poolName);
         Queue<GameObject> pool = pools[poolName];
-        
+
         if (pool.Count <= 0)
         {
             Debug.LogWarning($"Pool \"{poolName}\" has ran out of items. Creating more...");
@@ -89,7 +106,7 @@ public class ObjectPoolManager : MonoBehaviour
             AddItemsToPool(currentPoolSize, smallPoolSettings.prefab, poolName);
             smallPoolSettings.poolSize *= 2;
         }
-        
+
         GameObject newobj = pool.Dequeue();
         newobj.transform.parent = null;
         newobj.SetActive(true);

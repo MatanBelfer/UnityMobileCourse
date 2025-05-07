@@ -13,7 +13,7 @@ public class GridManager : ObjectPoolInterface
 
     //privates
     private int currentRow = 0;
-    
+
 
     //grid points
     private Queue<Transform> points = new();
@@ -25,13 +25,39 @@ public class GridManager : ObjectPoolInterface
     private float pointSpacing;
     private float rowDist; //the vertical distance between two rows
 
+    [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
+    private float gridLength;
+
+
     private void Start()
     {
-        //initialize grid parameters
-        numPointsInRow = gridParameters.numPtsInRow;
-        pointSpacing = gridParameters.pointSpacing;
-        rowDist = pointSpacing * (float)Math.Sqrt(3f) / 2; //for triangular grid
-        
+        StartCoroutine(InitializeWhenReady());
+    }
+
+    private System.Collections.IEnumerator InitializeWhenReady()
+    {
+        // Wait until ManagersLoader is initialized
+        while (!ManagersLoader.IsInitialized)
+        {
+            yield return null;
+        }
+
+        objectPoolManager = ObjectPoolManager.Instance;
+        if (objectPoolManager == null)
+        {
+            Debug.LogError("ObjectPoolManager not found! Make sure it's set up in the scene.");
+            yield break;
+        }
+
+        // Move initialization logic here
+        rowDist = gridLength * (float)System.Math.Sqrt(3f) / 2;
+        InitializeGrid();
+    }
+
+
+    private void InitializeGrid()
+    {
+        // Move your multiple SpawnRow calls here
         SpawnRow();
         SpawnRow();
         SpawnRow();
