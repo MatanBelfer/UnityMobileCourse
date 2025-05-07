@@ -78,6 +78,7 @@ public class GeometricRubberBand : ObjectPoolInterface
         for (int i = 0; i < anchors.Count; i++)
         {
             midPoints.Add(objectPoolManager.GetFromPool(poolName).transform);
+            midPoints[i].position = (anchors[i][0].position + anchors[(i + 1) % anchors.Count][1].position) / 2;
         }
         // for (int i = 0; i < activePins.Count; i++)
         // {

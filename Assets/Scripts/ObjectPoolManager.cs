@@ -72,7 +72,6 @@ public class ObjectPoolManager : MonoBehaviour
         
             pools[poolName].Enqueue(newobj);
         }
-
     }
 
     public string[] GetPoolNames()
