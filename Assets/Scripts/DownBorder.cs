@@ -14,11 +14,4 @@ public class DownBorder : MonoBehaviour
         
     }
     
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("GridPoint"))
-        {
-            
-        }
-    }
 }
