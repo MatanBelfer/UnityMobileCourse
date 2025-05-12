@@ -20,8 +20,8 @@ public class GridManager : ObjectPoolInterface
     private float rowDist;
     private float scrollSpeed = 0.2f;
 
-    [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
-    private float gridLength;
+    [Tooltip("The distance in meters between adjacent grid points")]
+    public float gridLength;
 
 
     private void Start()
@@ -56,14 +56,11 @@ public class GridManager : ObjectPoolInterface
 
     private void InitializeGrid()
     {
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
-        SpawnRow();
+        rowNum = 0; // Reset row number before initialization
+        for (int i = 0; i < gridParameters.initialRowCount; i++)
+        {
+            SpawnRow();
+        }
     }
 
     public void Update()
@@ -78,7 +75,9 @@ public class GridManager : ObjectPoolInterface
 
     public int GetCurrentRowPointCount()
     {
-        return (rowNum % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
+        // Next row will be the opposite of current rowNum
+        int nextRow = rowNum;
+        return (nextRow % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
     }
 
     private void SpawnRow()
@@ -105,6 +104,14 @@ public class GridManager : ObjectPoolInterface
         rowNum++;
     }
 
+    public void RemovePoint(Transform point)
+    {
+        if (points.Contains(point))
+        {
+            points = new Queue<Transform>(points.Where(p => p != point));
+        }
+    }
+
     private void SpawnPoint(Vector3 position)
     {
         GameObject newPoint = objectPoolManager.GetFromPool(poolName);
@@ -112,6 +119,9 @@ public class GridManager : ObjectPoolInterface
         points.Enqueue(newTransform);
         newTransform.parent = transform;
         newTransform.localPosition = position + rowNum * rowDist * Vector3.up;
+        
+        // Ensure the point is active
+        newPoint.SetActive(true);
     }
 
     public Transform GetClosestPoint(Vector2 position)

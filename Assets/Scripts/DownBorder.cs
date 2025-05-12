@@ -22,14 +22,14 @@ public class DownBorder : MonoBehaviour
         var poolInterface = other.GetComponent<ObjectPoolInterface>();
         if (poolInterface != null)
         {
-            // Return the point to the pool
+            gridManager.RemovePoint(other.transform);
+
             objectPoolManager.InsertToPool(poolInterface.poolName, other.gameObject);
-            
-            // Increment points counter and check if row is complete
+
             pointsInCurrentRow++;
-            
-            // Get points needed for current row (alternating between n and n-1)
+
             pointsNeededForRow = gridManager.GetCurrentRowPointCount();
+
             if (pointsInCurrentRow >= pointsNeededForRow)
             {
                 gridManager.SpawnNewRow();
