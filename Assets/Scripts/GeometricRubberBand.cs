@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +16,16 @@ public class GeometricRubberBand : ObjectPoolInterface
     [SerializeField] private Transform[] pins; //the four pins the player moves
     private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
     private List<Transform> activePins = new(); //the pins the band is touching
-    private List<List<Transform>> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
-    private List<Transform> midPoints = new(); //the midpoints of the band segments - used for animation
+    private List<Transform> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
+    // private List<Transform> midPoints = new(); //the midpoints of the band segments - used for animation
+    private List<Transform> bandSegments = new(); //the segments of the band - used for animation
+    [SerializeField] private string bandSegmentsPool;
     
     private Vector2 centerOfActivePins; //the center of the active pins
-    [SerializeField] private float pinRadius; //the radius of the pins
+    // [SerializeField] private float pinRadius; //the radius of the pins
     
-    [SerializeField] private SplineContainer splineContainer;
-    [SerializeField] private float splineTangentLengthRatio;
+    // [SerializeField] private SplineContainer splineContainer;
+    // [SerializeField] private float splineTangentLengthRatio;
 
     private void Start()
     {
@@ -43,43 +46,50 @@ public class GeometricRubberBand : ObjectPoolInterface
             Aggregate((a, b) => a + b) / pins.Length;
         
         //sort active pins counterclockwise
-        activePins = activePins.OrderBy(p => Mathf.Atan2(p.position.x - centerOfActivePins.x, p.position.y - centerOfActivePins.y)).ToList();
+        activePins = activePins.OrderBy(_ => _, new PinComparer(centerOfActivePins)).ToList();
         
         //spawn anchors
         foreach (Transform pin in activePins)
         {
-            List<Transform> newAnchors = new();
-            for (int i = 0; i < 2; i++)
-            {
-                Transform anchor = objectPoolManager.GetFromPool(poolName).transform;
-                anchor.parent = pin;
-                anchor.localPosition = Vector3.zero;
-                newAnchors.Add(anchor);
-            }
-            anchors.Add(newAnchors);
+            Transform anchor = objectPoolManager.GetFromPool(poolName).transform;
+            anchor.parent = pin;
+            anchor.localPosition = Vector3.zero;
+            anchors.Add(anchor);
         }
         
         //move anchors to edges of pins
-        for (int i = 0; i < activePins.Count; i++)
-        {
-            //find outside direction
-            Vector2 pinPos = activePins[i].position;
-            Vector2 nextPinPos = activePins[(i + 1) % activePins.Count].position;
-            Vector2 outSideDir =
-                (ClosestPointOnLine(centerOfActivePins, pinPos, nextPinPos, out _) - centerOfActivePins).normalized;
-            
-            //move the anchors
-            Vector2 moveAmount = outSideDir * pinRadius;
-            anchors[i][0].Translate(moveAmount);
-            anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
-        }
+        // for (int i = 0; i < activePins.Count; i++)
+        // {
+        //     //find outside direction
+        //     Vector2 pinPos = activePins[i].position;
+        //     Vector2 nextPinPos = activePins[(i + 1) % activePins.Count].position;
+        //     Vector2 outSideDir =
+        //         (ClosestPointOnLine(centerOfActivePins, pinPos, nextPinPos, out _) - centerOfActivePins).normalized;
+        //     
+        //     //move the anchors
+        //     Vector2 moveAmount = outSideDir * pinRadius;
+        //     anchors[i][0].Translate(moveAmount);
+        //     anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
+        // }
         
-        //setup midpoints for animation
+        // //setup midpoints for animation
+        // for (int i = 0; i < anchors.Count; i++)
+        // {
+        //     midPoints.Add(objectPoolManager.GetFromPool(poolName).transform);
+        //     midPoints[i].position = (anchors[i].position + anchors[(i + 1) % anchors.Count].position) / 2;
+        // }
+        ;
+        //spawn band segments
         for (int i = 0; i < anchors.Count; i++)
         {
-            midPoints.Add(objectPoolManager.GetFromPool(poolName).transform);
-            midPoints[i].position = (anchors[i][0].position + anchors[(i + 1) % anchors.Count][1].position) / 2;
+	        Transform segment = objectPoolManager.GetFromPool(bandSegmentsPool).transform;
+	        bandSegments.Add(segment);
+	        FollowTwoTransforms followScript = segment.GetComponent<FollowTwoTransforms>();
+	        followScript.target1 = anchors[i];
+	        followScript.target2 = anchors[(i + 1) % anchors.Count];
+	        followScript.follow = true;
         }
+        
         // for (int i = 0; i < activePins.Count; i++)
         // {
         //     // Vector3 startPos = anchors[i][1].position; 
@@ -94,8 +104,37 @@ public class GeometricRubberBand : ObjectPoolInterface
         //     //
         //     // splineContainer[i].Knots = knots;
         // }
+        
+        
     }
+    
+    private class PinComparer : IComparer<Transform>
+    {
+        private Func<Transform, float> angle;
 
+        public PinComparer(Vector2 centerOfActivePins)
+        {
+            angle = p => Mathf.Atan2(p.position.x - centerOfActivePins.x, p.position.y - centerOfActivePins.y);
+        }
+
+        public int Compare(Transform x, Transform y)
+        {
+            float angleX = angle(x); 
+            float angleY = angle(y);
+            if (angleX != angleY)
+            {
+                return angleX.CompareTo(angleY); //if the angles are different, sort by angle
+            }
+            else if (x.position.x != y.position.x) //if the angles are the same, sort by x position
+            {
+                return x.position.x.CompareTo(y.position.x);
+            }
+            else //if the x positions are the same, sort by y position
+            {
+                return x.position.y.CompareTo(y.position.y);
+            }
+        }
+    }
     // private int NChooseK(int n, int k)
     // {
     //     return Factorial(n) / (Factorial(k) * Factorial(n - k));
@@ -105,12 +144,7 @@ public class GeometricRubberBand : ObjectPoolInterface
     // {
     //     return n == 0 ? 1 : n * Factorial(n - 1);
     // }
-
-    private void Update()
-    {
-        
-    }
-
+	
     private int PointWithinBounds(Transform pointTransform)
     {
         //if the point is inside the bounds defined by connections, return the index of the closest bound, otherwise return -1
