@@ -6,14 +6,8 @@ using UnityEngine.Serialization;
 
 public class GridManager : ObjectPoolInterface
 {
-    // publics
-    public float scrollSpeed = 2f;
-    public int visablePoints = 10;
-
-
     //privates
     private int currentRow = 0;
-
 
     //grid points
     private Queue<Transform> points = new();
@@ -21,9 +15,10 @@ public class GridManager : ObjectPoolInterface
 
     //grid settings
     [SerializeField] private GridParameters gridParameters;
-    private int numPointsInRow = 5; // Add a default value or initialize it in Start
-    private float pointSpacing = 1f; // Add a default value or initialize it in Start
+    private int numPointsInRow = 5;
+    private float pointSpacing = 1f;
     private float rowDist;
+    private float scrollSpeed = 0.2f;
 
     [SerializeField] [Tooltip("The distance in meters between adjacent grid points")]
     private float gridLength;
@@ -53,13 +48,14 @@ public class GridManager : ObjectPoolInterface
         numPointsInRow = gridParameters != null ? gridParameters.pointsPerRow : 5;
         pointSpacing = gridParameters != null ? gridParameters.pointSpacing : 0.5f;
         rowDist = gridLength * (float)System.Math.Sqrt(3f) / 2;
+        scrollSpeed = gridParameters != null ? gridParameters.gridSpeed : 0.2f;
+
         InitializeGrid();
     }
 
 
     private void InitializeGrid()
     {
-        // Move your multiple SpawnRow calls here
         SpawnRow();
         SpawnRow();
         SpawnRow();
@@ -72,18 +68,28 @@ public class GridManager : ObjectPoolInterface
 
     public void Update()
     {
-        transform.Translate(Vector3.down * scrollSpeed * Time.deltaTime);
+        transform.Translate(Vector3.down * gridParameters.gridSpeed * Time.deltaTime);
+    }
+
+    public void SpawnNewRow()
+    {
+        SpawnRow();
+    }
+
+    public int GetCurrentRowPointCount()
+    {
+        return (rowNum % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
     }
 
     private void SpawnRow()
     {
         if (rowNum % 2 == 0)
         {
-            SpawnRow(numPointsInRow);
+            SpawnRow(gridParameters.pointsPerRow);
         }
         else
         {
-            SpawnRow(numPointsInRow - 1);
+            SpawnRow(gridParameters.pointsPerRow - 1);
         }
     }
 
