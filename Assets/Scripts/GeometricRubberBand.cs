@@ -38,15 +38,7 @@ public class GeometricRubberBand : ObjectPoolInterface
             }
         }
         
-        //find pins that define the shape of the band
-        activePins = pins.Where(p => PointWithinBounds(p) == -1).ToList();
-        
-        //find center of active pins
-        centerOfActivePins = activePins.Select(p => p.position).
-            Aggregate((a, b) => a + b) / pins.Length;
-        
-        //sort active pins counterclockwise
-        activePins = activePins.OrderBy(_ => _, new PinComparer(centerOfActivePins)).ToList();
+        CalculateActivePins();
         
         //spawn anchors
         foreach (Transform pin in activePins)
@@ -56,7 +48,7 @@ public class GeometricRubberBand : ObjectPoolInterface
             anchor.localPosition = Vector3.zero;
             anchors.Add(anchor);
         }
-        
+
         //move anchors to edges of pins
         // for (int i = 0; i < activePins.Count; i++)
         // {
@@ -106,6 +98,90 @@ public class GeometricRubberBand : ObjectPoolInterface
         // }
         
         
+    }
+
+    private void CalculateActivePins()
+    {
+        //find pins that define the shape of the band
+        activePins = pins.Where(p => PointWithinBounds(p) == -1).ToList();
+        
+        //find center of active pins
+        centerOfActivePins = activePins.Select(p => p.position).
+            Aggregate((a, b) => a + b) / pins.Length;
+        
+        //sort active pins counterclockwise
+        activePins = activePins.OrderBy(_ => _, new PinComparer(centerOfActivePins)).ToList();
+    }
+
+    private List<Transform> PinsOnConvexHull(List<Transform> points)
+    {
+        if (points.Count <= 3)
+            return points;
+
+        List<Transform> hull = new List<Transform>();
+    
+        // Find the leftmost point (with lowest x-coordinate)
+        int leftmostIndex = 0;
+        for (int i = 1; i < points.Count; i++)
+        {
+            if (points[i].position.x < points[leftmostIndex].position.x)
+                leftmostIndex = i;
+        }
+
+        // Start from leftmost point and keep moving counterclockwise
+        int currentPoint = leftmostIndex;
+        int nextPoint;
+
+        do
+        {
+            // Add current point to hull
+            hull.Add(points[currentPoint]);
+        
+            // Find next point with largest counterclockwise angle
+            nextPoint = (currentPoint + 1) % points.Count;
+        
+            for (int i = 0; i < points.Count; i++)
+            {
+                if (i == currentPoint) continue;
+            
+                // Calculate cross product to determine if points[i] creates a more counterclockwise turn
+                Vector2 current = points[currentPoint].position;
+                Vector2 next = points[nextPoint].position;
+                Vector2 candidate = points[i].position;
+            
+                float cross = (next.x - current.x) * (candidate.y - current.y) - 
+                              (candidate.x - current.x) * (next.y - current.y);
+            
+                // If cross product is positive, points[i] creates a more counterclockwise turn
+                if (cross > 0 || (cross == 0 && 
+                                  Vector2.Distance(current, candidate) > Vector2.Distance(current, next)))
+                {
+                    nextPoint = i;
+                }
+            }
+        
+            currentPoint = nextPoint;
+        
+        } while (currentPoint != leftmostIndex);
+
+        return hull;
+    }
+
+    private void Update()
+    {
+        
+        //draw lines between active pins
+        for (int i = 0; i < activePins.Count; i++)
+        {
+            Transform anchor1 = activePins[i];
+            Transform anchor2 = activePins[(i + 1) % activePins.Count];
+            Vector2 anchor1Pos = anchor1.position;
+            Vector2 anchor2Pos = anchor2.position;
+            Debug.DrawLine(anchor1Pos, anchor2Pos, Color.red, 0.05f);
+        }
+        
+        //update active pins (not efficiently)
+        activePins = PinsOnConvexHull(pins.ToList());;
     }
     
     private class PinComparer : IComparer<Transform>
@@ -212,15 +288,4 @@ public class GeometricRubberBand : ObjectPoolInterface
         Vector2 closestPoint = lineStart + Vector2.Dot(point - lineStart, lineDir) * lineDir;
         return closestPoint;
     }
-
-    // private struct Line
-    // {
-    //     Transform start;
-    //     Transform end;
-    //     public Line(Transform start, Transform end)
-    //     {
-    //         this.start = start;
-    //         this.end = end;
-    //     }
-    // }
 }

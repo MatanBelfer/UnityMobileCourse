@@ -56,7 +56,7 @@ Material:
     - _Frequency: 75
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _StartTime: 7.85
+    - _StartTime: 5
     m_Colors:
     - _Position: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

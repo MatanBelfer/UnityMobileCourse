@@ -4,7 +4,12 @@ using UnityEngine;
 public class BandAnimation : MonoBehaviour
 {
     [SerializeField] MeshRenderer meshRenderer;
-    private MaterialPropertyBlock block = new MaterialPropertyBlock();
+    private MaterialPropertyBlock block;
+
+    private void Awake()
+    {
+        block = new MaterialPropertyBlock();
+    }
     
     public void Vibrate()
     {

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class FollowTwoTransforms : MonoBehaviour
 {
+    //Stretch, move and rotate a transform to fit two target transforms
+    
     [SerializeField] public Transform target1;
     [SerializeField] public Transform target2;
     [SerializeField] public bool follow;
