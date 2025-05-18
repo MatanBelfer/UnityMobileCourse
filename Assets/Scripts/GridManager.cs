@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class GridManager : ObjectPoolInterface
 {
@@ -99,9 +99,23 @@ public class GridManager : ObjectPoolInterface
         {
             positions[i].x = (-(numPoints - 1) * pointSpacing / 2) + i * pointSpacing;
             SpawnPoint(positions[i]);
+
+            // Chance to spawn a     spike at this position
+            if (Random.value < gridParameters.spikeSpawnChance)
+            {
+                SpawnSpike(positions[i]);
+            }
         }
 
         rowNum++;
+    }
+
+    private void SpawnSpike(Vector3 position)
+    {
+        GameObject spike = objectPoolManager.GetFromPool(gridParameters.spikePoolName);
+        spike.transform.parent = transform;
+        spike.transform.localPosition = position + rowNum * rowDist * Vector3.up;
+        spike.SetActive(true);
     }
 
     public void RemovePoint(Transform point)
@@ -119,7 +133,7 @@ public class GridManager : ObjectPoolInterface
         points.Enqueue(newTransform);
         newTransform.parent = transform;
         newTransform.localPosition = position + rowNum * rowDist * Vector3.up;
-        
+
         // Ensure the point is active
         newPoint.SetActive(true);
     }
