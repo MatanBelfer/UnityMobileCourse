@@ -813,12 +813,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[0].prefab
       value: 
       objectReference: {fileID: 3795337455847509368, guid: a77b46e7ce8363146a8607757fa48501, type: 3}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[1].prefab
+      value: 
+      objectReference: {fileID: 2326982944997383979, guid: 3ad67093d56fcaf4fb19e4957ebf0f0e, type: 3}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[0].poolName
       value: Holes
@@ -826,6 +830,14 @@ PrefabInstance:
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[0].poolSize
       value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[1].poolName
+      value: SpikePool
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[1].poolSize
+      value: 20
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47e1ccef123aef24e9b24abfe05af206, type: 3}
   m_Name: GridParameters
   m_EditorClassIdentifier: 
-  pointsPerRow: 6
-  pointSpacing: 0.421
-  gridSpeed: 0.3
+  pointsPerRow: 8
+  pointSpacing: 0.5
+  gridSpeed: 7.6
+  initialRowCount: 8
+  spikePrefab: {fileID: 2326982944997383979, guid: 3ad67093d56fcaf4fb19e4957ebf0f0e, type: 3}
+  spikeSpawnChance: 0.05
+  spikePoolName: SpikePool
+  initialSpikePoolSize: 10
