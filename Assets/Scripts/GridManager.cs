@@ -1,16 +1,19 @@
 using System;
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class GridManager : ObjectPoolInterface
 {
+    
+    private bool showDebugInfo = true;  // Set to false to disable debug visualization
+    private Color gizmoTextColor = Color.yellow;  // You can change the color to make it more visible
+
     //privates
     private int currentRow = 0;
 
-    //grid points
-    private Queue<Transform> points = new();
+    //grid structure
+    private Queue<Transform[]> gridRows = new();
     private int rowNum = 0;
 
     //grid settings
@@ -23,7 +26,6 @@ public class GridManager : ObjectPoolInterface
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
 
-
     private void Start()
     {
         StartCoroutine(InitializeWhenReady());
@@ -31,7 +33,6 @@ public class GridManager : ObjectPoolInterface
 
     private System.Collections.IEnumerator InitializeWhenReady()
     {
-        // Wait until ManagersLoader is initialized
         while (!ManagersLoader.IsInitialized)
         {
             yield return null;
@@ -53,10 +54,9 @@ public class GridManager : ObjectPoolInterface
         InitializeGrid();
     }
 
-
     private void InitializeGrid()
     {
-        rowNum = 0; // Reset row number before initialization
+        rowNum = 0;
         for (int i = 0; i < gridParameters.initialRowCount; i++)
         {
             SpawnRow();
@@ -75,7 +75,6 @@ public class GridManager : ObjectPoolInterface
 
     public int GetCurrentRowPointCount()
     {
-        // Next row will be the opposite of current rowNum
         int nextRow = rowNum;
         return (nextRow % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
     }
@@ -94,21 +93,25 @@ public class GridManager : ObjectPoolInterface
 
     private void SpawnRow(int numPoints)
     {
+        Transform[] rowPoints = new Transform[numPoints];
         Vector3[] positions = new Vector3[numPoints];
+
         for (int i = 0; i < numPoints; i++)
         {
             positions[i].x = (-(numPoints - 1) * pointSpacing / 2) + i * pointSpacing;
-            SpawnPoint(positions[i]);
+            rowPoints[i] = SpawnPoint(positions[i]);
 
-            // Chance to spawn a     spike at this position
-            if (Random.value < gridParameters.spikeSpawnChance)
+            // Only spawn spikes if we're at or past the trapStartRow
+            if (rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
             {
                 SpawnSpike(positions[i]);
             }
         }
 
+        gridRows.Enqueue(rowPoints);
         rowNum++;
     }
+
 
     private void SpawnSpike(Vector3 position)
     {
@@ -120,44 +123,111 @@ public class GridManager : ObjectPoolInterface
 
     public void RemovePoint(Transform point)
     {
-        if (points.Contains(point))
+        var currentRows = gridRows.ToArray();
+        for (int i = 0; i < currentRows.Length; i++)
         {
-            points = new Queue<Transform>(points.Where(p => p != point));
+            var row = currentRows[i];
+            for (int j = 0; j < row.Length; j++)
+            {
+                if (row[j] == point)
+                {
+                    row[j] = null;
+                    return;
+                }
+            }
         }
     }
 
-    private void SpawnPoint(Vector3 position)
+    private Transform SpawnPoint(Vector3 position)
     {
         GameObject newPoint = objectPoolManager.GetFromPool(poolName);
         Transform newTransform = newPoint.transform;
-        points.Enqueue(newTransform);
         newTransform.parent = transform;
         newTransform.localPosition = position + rowNum * rowDist * Vector3.up;
-
-        // Ensure the point is active
         newPoint.SetActive(true);
+        return newTransform;
     }
 
     public Transform GetClosestPoint(Vector2 position)
     {
-        Transform[] pointsArr = points.ToArray();
-        float minValue = float.MaxValue;
-        int minIndex = -1;
-        for (int i = 0; i < points.Count; i++)
+        Transform closestPoint = null;
+        float minDistance = float.MaxValue;
+
+        foreach (var row in gridRows)
         {
-            float dist = Vector3.Distance(pointsArr[i].position, position);
-            if (dist < minValue)
+            foreach (var point in row)
             {
-                minValue = dist;
-                minIndex = i;
+                if (point == null) continue;
+
+                float dist = Vector3.Distance(point.position, position);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closestPoint = point;
+                }
             }
         }
 
-        if (minIndex == -1)
+        if (closestPoint == null)
         {
             throw new Exception("Couldn't find closest point");
         }
 
-        return pointsArr[minIndex];
+        return closestPoint;
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        if (!showDebugInfo || !Application.isPlaying) return;
+
+        var rows = gridRows.ToArray();
+        for (int i = 0; i < rows.Length; i++)
+        {
+            if (rows[i].Length > 0 && rows[i][0] != null)
+            {
+                // Calculate position for the label (slightly to the left of the first point in the row)
+                Vector3 labelPosition = rows[i][0].position + Vector3.left * 0.5f;
+                
+                // Draw the row number
+                UnityEditor.Handles.color = gizmoTextColor;
+                UnityEditor.Handles.Label(labelPosition, $"Row: {i}");
+
+                // Optionally, draw a line connecting all points in the row
+                Gizmos.color = Color.cyan;
+                for (int j = 0; j < rows[i].Length - 1; j++)
+                {
+                    if (rows[i][j] != null && rows[i][j + 1] != null)
+                    {
+                        Gizmos.DrawLine(rows[i][j].position, rows[i][j + 1].position);
+                    }
+                }
+            }
+        }
+    }
+
+    
+    
+    
+    /*
+     * public methods to interact with the grid
+     */
+
+    public Transform GetPointAt(int rowIndex, int columnIndex)
+    {
+        if (!IsValidPosition(rowIndex, columnIndex))
+            return null;
+
+        var rows = gridRows.ToArray();
+        return rows[rowIndex][columnIndex];
+    }
+
+    public bool IsValidPosition(int rowIndex, int columnIndex)
+    {
+        if (rowIndex < 0 || rowIndex >= gridRows.Count)
+            return false;
+
+        var rows = gridRows.ToArray();
+        return columnIndex >= 0 && columnIndex < rows[rowIndex].Length;
     }
 }
