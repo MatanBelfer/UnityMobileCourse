@@ -6,6 +6,7 @@ TagManager:
   tags:
   - DownBorder
   - GridPoint
+  - Spike
   layers:
   - Default
   - TransparentFX
