@@ -49,12 +49,13 @@ public class FollowMouse : MonoBehaviour
 
     public void StopFollowing()
     {
-        isFollowing = false;
-        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.NotMoving);
-        
-        //find the closest point on the frid and go to it
+        //find the closest point on the grid and go to it
         Transform landingPoint = grid.GetClosestPoint(transform.position);
         transform.parent = landingPoint;
         transform.localPosition = Vector3.zero;
+        
+        isFollowing = false;
+        //update the band that it's not longer moving
+        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.NotMoving);
     }
 }

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 892449315734885377}
   - component: {fileID: 7468481033524766721}
   - component: {fileID: 4031057940092076844}
-  - component: {fileID: 2983626574326481322}
   m_Layer: 0
   m_Name: Pin
   m_TagString: Untagged
@@ -69,18 +68,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 0}
---- !u!114 &2983626574326481322
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 588626034120444327}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38659d0e58546564cb805e1d2b2440b0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &5572015857119148058
 GameObject:
   m_ObjectHideFlags: 0
