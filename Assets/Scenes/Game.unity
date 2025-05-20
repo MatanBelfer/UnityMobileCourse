@@ -743,7 +743,8 @@ PrefabInstance:
       propertyPath: grid
       value: 
       objectReference: {fileID: 505532448}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1069,7 +1070,8 @@ PrefabInstance:
       propertyPath: grid
       value: 
       objectReference: {fileID: 505532448}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1088,11 +1090,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.5
+      value: 0.28
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.49999988
+      value: 0.39
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1130,7 +1132,8 @@ PrefabInstance:
       propertyPath: grid
       value: 
       objectReference: {fileID: 505532448}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1183,8 +1186,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eeeb1d7d189e9f4fa86e72cf3e4df51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolName: 
-  objectPoolManager: {fileID: 803341432}
   pins:
   - {fileID: 1452840420}
   - {fileID: 845793746}

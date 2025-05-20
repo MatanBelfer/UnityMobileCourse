@@ -45,9 +45,4 @@ public static class CollectionUtilities
         }
         return list;
     }
-
-    public static bool IsLast<T>(this LinkedListNode<T> node)
-    {
-        return node.Next == null;
-    }
 }

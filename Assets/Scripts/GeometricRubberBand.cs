@@ -3,9 +3,6 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
-using UnityEngine.Serialization;
-using UnityEngine.Splines;
 
 public class GeometricRubberBand : MonoBehaviour
 {
@@ -16,11 +13,11 @@ public class GeometricRubberBand : MonoBehaviour
     [SerializeField] private Transform[] pins; //the four pins the player moves
     //private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
     private LinkedList<Transform> activePins; //the pins the band is touching
-    private Transform movingPin; //the currently moving pin
-    private bool movingPinIsActive;
+    private Pin movingPin; //the currently moving pin
     private HashSet<Pin> connectedActivePins = new(); //like a linkedlist: each Pin has references to the next and previous Pin, and the next and previous Segments
     //whenever you update this list, you must also spawn or despawn segments accordingly
     //it always remains circular: the last pin connects to the first
+    private Dictionary<Transform, Pin> pinTransformDict = new(); //a dictionary that maps transforms to Pins
     
     private List<Transform> bandSegments = new(); //the segments of the band - used for animation
     [SerializeField] private string bandSegmentsPool;
@@ -51,27 +48,53 @@ public class GeometricRubberBand : MonoBehaviour
 
     private void Start()
     {
+        //initialize Pin dictionary
+        foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new Pin(pinTrans));
+        
         //initialize active pins and segments
         UpdateActivePins();
-        Pin firstPin = new Pin(activePins.First.Value);
+        Pin firstPin = pinTransformDict[activePins.First.Value];
         AddFirstConnectedPin(firstPin);
         if (activePins.Count > 1)
         {
             Pin prevPin = firstPin;
-            LinkedListNode<Transform> node = activePins.First;
+            LinkedListNode<Transform> newPinNode = activePins.First;
             do
             {
-                node = node.Next;
-                Pin newPin = new Pin(node.Value);
+                newPinNode = newPinNode.Next;
+                Pin newPin = pinTransformDict[newPinNode.Value];
                 AddConnectedPinAfter(prevPin, newPin);
-            } while (!node.IsLast());
+                prevPin = newPin;
+            } while (newPinNode.Next != null);
         }
+        // LogActivePinNames();
         
     }
 
     private void UpdateActivePins()
     {
+        //updates the "activePins" linkedlist and the activity status of the pins
+        
         activePins = PinsOnConvexHull(pins);
+        
+        //debug
+        // List<string> msg = new();
+        // foreach (Transform pinTrans in activePins)
+        // {
+        //     msg.Add(pinTrans.name);
+        // }
+        // print(string.Join(", ", msg));
+        
+        //update the activity status of the pins
+        foreach (Transform pinTrans in pins)
+        {
+            if (pinTransformDict.ContainsKey(pinTrans)) pinTransformDict[pinTrans].active = false;
+        }
+        foreach (Transform pinTrans in activePins)
+        {
+            if (pinTransformDict.ContainsKey(pinTrans)) pinTransformDict[pinTrans].active = true;
+        }
+        
     }
 
     // private void CalculateActivePins()
@@ -168,6 +191,8 @@ public class GeometricRubberBand : MonoBehaviour
         //setup connections
         refPin.nextPin = newPin;
         newPin.prevPin = refPin;
+        newPin.nextPin = oldNext;
+        oldNext.prevPin = newPin;
         
         //add segments
         new Segment(bandSegmentsPool, refPin, newPin);
@@ -177,7 +202,7 @@ public class GeometricRubberBand : MonoBehaviour
 
     private void Update()
     {
-        // UpdateBandSegments();
+        UpdateBandSegments();
         
         // //debug: number the active pins
         // for (int i = 0; i < activePins.Count; i++)
@@ -200,72 +225,80 @@ public class GeometricRubberBand : MonoBehaviour
         // }
     }
 
-    // private void UpdateBandSegments()
-    // {
-    //     //check if there's a moving pin that will cause the band to update
-    //     if (movingPin == null) return;
-    //     
-    //     bool previousMovingPinIsActive = movingPinIsActive;
-    //     UpdateActivePins();
-    //     movingPinIsActive = activePins.Contains(movingPin);
-    //     if (previousMovingPinIsActive == movingPinIsActive) return;
-    //
-    //     if (movingPinIsActive)
-    //     {
-    //         //pin became active
-    //         //add it to the linked list in the same order of activePins
-    //         int selfIndex = Array.IndexOf(activePins, movingPin);
-    //         //find the node it should be inserted after
-    //         LinkedListNode<Transform> previousNode = connectedActivePins.Last;
-    //         if (selfIndex > 0)
-    //         {
-    //             for (int i = 0; i < selfIndex; i++)
-    //             {
-    //                 previousNode = previousNode.CyclicNext();
-    //             }
-    //         }
-    //
-    //         connectedActivePins.CyclicAddAfter(previousNode, movingPin);
-    //         
-    //         //remove the old segment
-    //         Transform oldSegment = bandSegments[CollectionUtilities.IncrementWrap(
-    //             selfIndex,-1,bandSegments.Count)];
-    //         bandSegments.Remove(oldSegment);
-    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.gameObject);
-    //         
-    //         //add two new segments
-    //         CreateBandSegment(previousNode);
-    //         CreateBandSegment(previousNode.CyclicNext());
-    //     }
-    //     else
-    //     {
-    //         //pin became inactive
-    //         //remove it from the linked list
-    //         connectedActivePins.Remove(movingPin);
-    //         //remove the two segments that were connected to it
-    //         Transform segment1 = bandSegments[CollectionUtilities.IncrementWrap(
-    //             Array.IndexOf(activePins, movingPin),-1,bandSegments.Count)];
-    //         Transform segment2 = bandSegments[CollectionUtilities.IncrementWrap(
-    //             Array.IndexOf(activePins, movingPin),1,bandSegments.Count)];
-    //         bandSegments.Remove(segment1);
-    //         bandSegments.Remove(segment2);
-    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment1.gameObject);
-    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment2.gameObject);
-    //     }
-    // }
+    private void UpdateBandSegments()
+    {
+        //updates the segments of the band if needed (a pin changed its activity status)
+        
+        //check if there's a moving pin that will cause the band to update
+        if (movingPin == null) return;
+        
+        //check if the pin has changed its activity status from the last frame 
+        bool prevMovingPinIsActive = movingPin.active;
+        UpdateActivePins();
+        bool movingPinIsActive = movingPin.active;
+        if (prevMovingPinIsActive == movingPinIsActive) return;
+        
+        if (movingPinIsActive)
+        {
+            //pin became active
+            //add it to the linked list 
+            Transform prevPinTrans; LinkedListNode<Transform> node = activePins.First;
+            while (node.Value != movingPin.transform) node = node.Next;
+            prevPinTrans = node.CyclicPrevious().Value;
+            Pin prevPin = pinTransformDict[prevPinTrans];
+            //print pin order
+            // LogActivePinNames();
+            // print($"Will insert the new pin between {prevPin.transform.name} and {prevPin.nextPin.transform.name}");
+            AddConnectedPinAfter(prevPin, movingPin);
+            //debug
+            // print($"Tried inserting {movingPin.transform.name} between {prevPin.transform.name} and {movingPin.nextPin.transform.name}");
+        }
+        else
+        {
+            // //pin became inactive
+            // //remove it from the linked list
+            // connectedActivePins.Remove(movingPin);
+            // //remove the two segments that were connected to it
+            // Transform segment1 = bandSegments[CollectionUtilities.IncrementWrap(
+            //     Array.IndexOf(activePins, movingPin),-1,bandSegments.Count)];
+            // Transform segment2 = bandSegments[CollectionUtilities.IncrementWrap(
+            //     Array.IndexOf(activePins, movingPin),1,bandSegments.Count)];
+            // bandSegments.Remove(segment1);
+            // bandSegments.Remove(segment2);
+            // ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment1.gameObject);
+            // ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment2.gameObject);
+        }
+    }
+
+    private void LogActivePinNames()
+    {
+        List<string> activePinsNames = new();
+        List<string> conActivePinsNames = new();
+        foreach (Transform pin in activePins)
+        {
+            activePinsNames.Add(pin.name);
+        }
+        Pin currentPin = pinTransformDict[activePins.First.Value];
+        for (int i = 0; i < connectedActivePins.Count; i++)
+        {
+            conActivePinsNames.Add(currentPin.transform.name);
+            currentPin = currentPin.nextPin;
+        }
+        print("activePins: " + string.Join(", ", activePinsNames) + "\n" +
+              "connectedActivePins: " + string.Join(", ", conActivePinsNames));;
+    }
 
     public void UpdateMovingPin(Transform pin, MovingPinStatus status)
     {
         //update the moving pin
         if (status == MovingPinStatus.Moving)
         {
-            movingPin = pin;
+            movingPin = pinTransformDict[pin];
         }
         else
         {
             movingPin = null;
         }
-        
     }
     
     public enum MovingPinStatus
