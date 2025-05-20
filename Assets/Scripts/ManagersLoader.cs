@@ -22,11 +22,12 @@ public class ManagersLoader : MonoBehaviour
 
     private System.Collections.IEnumerator InitializeAfterPoolManager()
     {
-        yield return null; // Wait one frame
+        yield return new WaitForEndOfFrame(); // Wait one frame
         
         if (ObjectPoolManager.Instance != null)
         {
-            DontDestroyOnLoad(gameObject);
+            // DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(poolManager);
             IsInitialized = true;
         }
         else
