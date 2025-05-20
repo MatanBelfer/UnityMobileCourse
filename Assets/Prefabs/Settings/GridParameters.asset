@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointsPerRow: 8
   pointSpacing: 0.5
-  gridSpeed: 7.6
-  initialRowCount: 8
+  gridSpeed: 0.2
+  initialRowCount: 35
   spikePrefab: {fileID: 2326982944997383979, guid: 3ad67093d56fcaf4fb19e4957ebf0f0e, type: 3}
   spikeSpawnChance: 0.05
+  trapStartRow: 10
   spikePoolName: SpikePool
   initialSpikePoolSize: 10
