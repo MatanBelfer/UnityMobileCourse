@@ -7,17 +7,21 @@ using Unity.Mathematics;
 using UnityEngine.Serialization;
 using UnityEngine.Splines;
 
-public class GeometricRubberBand : ObjectPoolInterface
+public class GeometricRubberBand : MonoBehaviour
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
     //the calculated area will exclude the obstacles and will be as small as possible, composed of only straight lines 
     //between the anchors and obstacles
     
     [SerializeField] private Transform[] pins; //the four pins the player moves
-    private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
-    private List<Transform> activePins = new(); //the pins the band is touching
-    private List<Transform> anchors = new(); //where the band connects - two per pin and more for the obstacles. these are stored in an object pool
-    // private List<Transform> midPoints = new(); //the midpoints of the band segments - used for animation
+    //private List<(Transform,Transform)> connections = new(); //the connections between all transforms that affect the band
+    private LinkedList<Transform> activePins; //the pins the band is touching
+    private Transform movingPin; //the currently moving pin
+    private bool movingPinIsActive;
+    private HashSet<Pin> connectedActivePins = new(); //like a linkedlist: each Pin has references to the next and previous Pin, and the next and previous Segments
+    //whenever you update this list, you must also spawn or despawn segments accordingly
+    //it always remains circular: the last pin connects to the first
+    
     private List<Transform> bandSegments = new(); //the segments of the band - used for animation
     [SerializeField] private string bandSegmentsPool;
     
@@ -26,103 +30,73 @@ public class GeometricRubberBand : ObjectPoolInterface
     
     // [SerializeField] private SplineContainer splineContainer;
     // [SerializeField] private float splineTangentLengthRatio;
+    
+    public static GeometricRubberBand Instance { get; private set; }
+
+    private void Awake()
+    {
+        InitializeSingleton();
+    }
+
+    private void InitializeSingleton()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     private void Start()
     {
-        //initialize connections
-        for (int i = 0; i < pins.Length - 1; i++)
+        //initialize active pins and segments
+        UpdateActivePins();
+        Pin firstPin = new Pin(activePins.First.Value);
+        AddFirstConnectedPin(firstPin);
+        if (activePins.Count > 1)
         {
-            for (int j = i + 1; j < pins.Length; j++)
+            Pin prevPin = firstPin;
+            LinkedListNode<Transform> node = activePins.First;
+            do
             {
-                connections.Add((pins[i], pins[j]));
-            }
+                node = node.Next;
+                Pin newPin = new Pin(node.Value);
+                AddConnectedPinAfter(prevPin, newPin);
+            } while (!node.IsLast());
         }
-        
-        CalculateActivePins();
-        
-        //spawn anchors
-        foreach (Transform pin in activePins)
-        {
-            Transform anchor = objectPoolManager.GetFromPool(poolName).transform;
-            anchor.parent = pin;
-            anchor.localPosition = Vector3.zero;
-            anchors.Add(anchor);
-        }
-
-        //move anchors to edges of pins
-        // for (int i = 0; i < activePins.Count; i++)
-        // {
-        //     //find outside direction
-        //     Vector2 pinPos = activePins[i].position;
-        //     Vector2 nextPinPos = activePins[(i + 1) % activePins.Count].position;
-        //     Vector2 outSideDir =
-        //         (ClosestPointOnLine(centerOfActivePins, pinPos, nextPinPos, out _) - centerOfActivePins).normalized;
-        //     
-        //     //move the anchors
-        //     Vector2 moveAmount = outSideDir * pinRadius;
-        //     anchors[i][0].Translate(moveAmount);
-        //     anchors[(i + 1) % activePins.Count][1].Translate(moveAmount);
-        // }
-        
-        // //setup midpoints for animation
-        // for (int i = 0; i < anchors.Count; i++)
-        // {
-        //     midPoints.Add(objectPoolManager.GetFromPool(poolName).transform);
-        //     midPoints[i].position = (anchors[i].position + anchors[(i + 1) % anchors.Count].position) / 2;
-        // }
-        ;
-        //spawn band segments
-        for (int i = 0; i < anchors.Count; i++)
-        {
-	        Transform segment = objectPoolManager.GetFromPool(bandSegmentsPool).transform;
-	        bandSegments.Add(segment);
-	        FollowTwoTransforms followScript = segment.GetComponent<FollowTwoTransforms>();
-	        followScript.target1 = anchors[i];
-	        followScript.target2 = anchors[(i + 1) % anchors.Count];
-	        followScript.follow = true;
-        }
-        
-        // for (int i = 0; i < activePins.Count; i++)
-        // {
-        //     // Vector3 startPos = anchors[i][1].position; 
-        //     // Vector3 endPos = anchors[(i + 1) % activePins.Count][0].position;
-        //     // Vector3 midPoint = (startPos + endPos) / 2;
-        //     // Vector3 tangent = (endPos - startPos) / 2 * splineTangentLengthRatio;
-        //     //
-        //     // BezierKnot[] knots = new BezierKnot[3];
-        //     // knots[0] = new BezierKnot(startPos, float3.zero, (float3)tangent);
-        //     // knots[1] = new BezierKnot(midPoint, -tangent, tangent);
-        //     // knots[2] = new BezierKnot(endPos, -tangent, float3.zero);
-        //     //
-        //     // splineContainer[i].Knots = knots;
-        // }
-        
         
     }
 
-    private void CalculateActivePins()
+    private void UpdateActivePins()
     {
-        //find pins that define the shape of the band
-        activePins = pins.Where(p => PointWithinBounds(p) == -1).ToList();
-        
-        //find center of active pins
-        centerOfActivePins = activePins.Select(p => p.position).
-            Aggregate((a, b) => a + b) / pins.Length;
-        
-        //sort active pins counterclockwise
-        activePins = activePins.OrderBy(_ => _, new PinComparer(centerOfActivePins)).ToList();
+        activePins = PinsOnConvexHull(pins);
     }
 
-    private List<Transform> PinsOnConvexHull(List<Transform> points)
-    {
-        if (points.Count <= 3)
-            return points;
+    // private void CalculateActivePins()
+    // {
+    //     //find pins that define the shape of the band
+    //     activePins = pins.Where(p => PointWithinBounds(p) == -1).ToArray();
+    //     
+    //     //find center of active pins
+    //     centerOfActivePins = activePins.Select(p => p.position).
+    //         Aggregate((a, b) => a + b) / pins.Length;
+    //     
+    //     //sort active pins counterclockwise
+    //     activePins = activePins.OrderBy(_ => _, new PinComparer(centerOfActivePins)).ToArray();
+    // }
 
-        List<Transform> hull = new List<Transform>();
+    private LinkedList<Transform> PinsOnConvexHull(Transform[] points)
+    {
+        if (points.Length <= 3)
+            return points.ToLinkedList();
+
+        LinkedList<Transform> hull = new LinkedList<Transform>();
     
         // Find the leftmost point (with lowest x-coordinate)
         int leftmostIndex = 0;
-        for (int i = 1; i < points.Count; i++)
+        for (int i = 1; i < points.Length; i++)
         {
             if (points[i].position.x < points[leftmostIndex].position.x)
                 leftmostIndex = i;
@@ -135,12 +109,12 @@ public class GeometricRubberBand : ObjectPoolInterface
         do
         {
             // Add current point to hull
-            hull.Add(points[currentPoint]);
+            hull.AddLast(points[currentPoint]);
         
             // Find next point with largest counterclockwise angle
-            nextPoint = (currentPoint + 1) % points.Count;
+            nextPoint = (currentPoint + 1) % points.Length;
         
-            for (int i = 0; i < points.Count; i++)
+            for (int i = 0; i < points.Length; i++)
             {
                 if (i == currentPoint) continue;
             
@@ -167,23 +141,151 @@ public class GeometricRubberBand : ObjectPoolInterface
         return hull;
     }
 
-    private void Update()
+    private void AddFirstConnectedPin(Pin newPin)
     {
-        
-        //draw lines between active pins
-        for (int i = 0; i < activePins.Count; i++)
+        if (connectedActivePins.Count != 0)
         {
-            Transform anchor1 = activePins[i];
-            Transform anchor2 = activePins[(i + 1) % activePins.Count];
-            Vector2 anchor1Pos = anchor1.position;
-            Vector2 anchor2Pos = anchor2.position;
-            Debug.DrawLine(anchor1Pos, anchor2Pos, Color.red, 0.05f);
+            throw new Exception("Cannot add first connected pin when there are already connected pins");
         }
-        
-        //update active pins (not efficiently)
-        activePins = PinsOnConvexHull(pins.ToList());;
+
+        connectedActivePins.Add(newPin);
+        newPin.prevPin = newPin;
+        newPin.nextPin = newPin;
+        new Segment(bandSegmentsPool, newPin, newPin);
     }
     
+    private void AddConnectedPinAfter(Pin refPin, Pin newPin)
+    {
+        Pin oldNext = refPin.nextPin; //the pin that was after the reference pin
+        
+        //remove the old connection
+        Segment oldSegment = refPin.nextSegment;
+        ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.transform.gameObject);
+        
+        //add the new pin
+        connectedActivePins.Add(newPin);
+        
+        //setup connections
+        refPin.nextPin = newPin;
+        newPin.prevPin = refPin;
+        
+        //add segments
+        new Segment(bandSegmentsPool, refPin, newPin);
+        new Segment(bandSegmentsPool, newPin, oldNext);
+
+    }
+
+    private void Update()
+    {
+        // UpdateBandSegments();
+        
+        // //debug: number the active pins
+        // for (int i = 0; i < activePins.Count; i++)
+        // {
+        //     Debug.DrawLine(activePins[i].position, activePins[i].position + (i+1) / 2f * Vector3.right, Color.blue, 0.1f);
+        // }
+        
+        // LinkedListNode<Transform> node = connectedActivePins.First;
+        // for (int i = 0; i < connectedActivePins.Count; i++)
+        // {
+        //     Transform pin = node.Value;
+        //     Debug.DrawLine(pin.position, pin.position + (i+1) / 2f * Vector3.up, Color.red, 0.1f);
+        //     node = node.Next;
+        // }
+        //
+        // for (int i = 0; i < bandSegments.Count; i++)
+        // {
+        //     Transform segment = bandSegments[i];
+        //     Debug.DrawLine(segment.position, segment.position + (i+1) / 2f * Vector3.left, Color.green, 0.1f);
+        // }
+    }
+
+    // private void UpdateBandSegments()
+    // {
+    //     //check if there's a moving pin that will cause the band to update
+    //     if (movingPin == null) return;
+    //     
+    //     bool previousMovingPinIsActive = movingPinIsActive;
+    //     UpdateActivePins();
+    //     movingPinIsActive = activePins.Contains(movingPin);
+    //     if (previousMovingPinIsActive == movingPinIsActive) return;
+    //
+    //     if (movingPinIsActive)
+    //     {
+    //         //pin became active
+    //         //add it to the linked list in the same order of activePins
+    //         int selfIndex = Array.IndexOf(activePins, movingPin);
+    //         //find the node it should be inserted after
+    //         LinkedListNode<Transform> previousNode = connectedActivePins.Last;
+    //         if (selfIndex > 0)
+    //         {
+    //             for (int i = 0; i < selfIndex; i++)
+    //             {
+    //                 previousNode = previousNode.CyclicNext();
+    //             }
+    //         }
+    //
+    //         connectedActivePins.CyclicAddAfter(previousNode, movingPin);
+    //         
+    //         //remove the old segment
+    //         Transform oldSegment = bandSegments[CollectionUtilities.IncrementWrap(
+    //             selfIndex,-1,bandSegments.Count)];
+    //         bandSegments.Remove(oldSegment);
+    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.gameObject);
+    //         
+    //         //add two new segments
+    //         CreateBandSegment(previousNode);
+    //         CreateBandSegment(previousNode.CyclicNext());
+    //     }
+    //     else
+    //     {
+    //         //pin became inactive
+    //         //remove it from the linked list
+    //         connectedActivePins.Remove(movingPin);
+    //         //remove the two segments that were connected to it
+    //         Transform segment1 = bandSegments[CollectionUtilities.IncrementWrap(
+    //             Array.IndexOf(activePins, movingPin),-1,bandSegments.Count)];
+    //         Transform segment2 = bandSegments[CollectionUtilities.IncrementWrap(
+    //             Array.IndexOf(activePins, movingPin),1,bandSegments.Count)];
+    //         bandSegments.Remove(segment1);
+    //         bandSegments.Remove(segment2);
+    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment1.gameObject);
+    //         ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment2.gameObject);
+    //     }
+    // }
+
+    public void UpdateMovingPin(Transform pin, MovingPinStatus status)
+    {
+        //update the moving pin
+        if (status == MovingPinStatus.Moving)
+        {
+            movingPin = pin;
+        }
+        else
+        {
+            movingPin = null;
+        }
+        
+    }
+    
+    public enum MovingPinStatus
+    {
+        NotMoving,
+        Moving
+    }
+
+    private void CreateBandSegment(LinkedListNode<Transform> node)
+    {
+        //adds a segment between this node and the cyclically-next node in the linked list
+        Transform anchor1 = node.Value;
+        Transform anchor2 = node.CyclicNext().Value;
+        Transform segment = ObjectPoolManager.Instance.GetFromPool(bandSegmentsPool).transform;
+        bandSegments.Add(segment);
+        FollowTwoTransforms followScript = segment.GetComponent<FollowTwoTransforms>();
+        followScript.target1 = anchor1;
+        followScript.target2 = anchor2;
+    }
+
     private class PinComparer : IComparer<Transform>
     {
         private Func<Transform, float> angle;
@@ -221,71 +323,108 @@ public class GeometricRubberBand : ObjectPoolInterface
     //     return n == 0 ? 1 : n * Factorial(n - 1);
     // }
 	
-    private int PointWithinBounds(Transform pointTransform)
-    {
-        //if the point is inside the bounds defined by connections, return the index of the closest bound, otherwise return -1
-        Vector2 point = pointTransform.position;
-        Vector2 pointOutsideBounds = OuterPoint();
-        
-        //count intersections of point<->pointOutsideBounds and the connections 
-        int totalIntersections = 0;
-        int indexClosestLine = -1;
-        float minDist = float.MaxValue;
-        for (int i = 0; i < connections.Count; i++)
-        {
-            //ignore the lines drawn from this point
-            if (connections[i].Item1 == pointTransform || connections[i].Item2 == pointTransform)
-            {
-                continue;
-            }
-            
-            //update minimum
-            float dist = Mathf.Abs(SignedDistPointLine(point, connections[i].Item1.position, connections[i].Item2.position));
-            if (dist < minDist)
-            {
-                minDist = dist;
-                indexClosestLine = i;
-            }
-
-            //count intersections
-            if (DoLinesIntersect(point, pointOutsideBounds, connections[i].Item1.position,
-                    connections[i].Item2.position))
-            {
-                totalIntersections++;
-            }
-        }
-
-        return totalIntersections % 2 == 1 ? indexClosestLine : -1;
-    }
+    // private int PointWithinBounds(Transform pointTransform)
+    // {
+    //     //if the point is inside the bounds defined by connections, return the index of the closest bound, otherwise return -1
+    //     Vector2 point = pointTransform.position;
+    //     Vector2 pointOutsideBounds = OuterPoint();
+    //     
+    //     //count intersections of point<->pointOutsideBounds and the connections 
+    //     int totalIntersections = 0;
+    //     int indexClosestLine = -1;
+    //     float minDist = float.MaxValue;
+    //     for (int i = 0; i < connections.Count; i++)
+    //     {
+    //         //ignore the lines drawn from this point
+    //         if (connections[i].Item1 == pointTransform || connections[i].Item2 == pointTransform)
+    //         {
+    //             continue;
+    //         }
+    //         
+    //         //update minimum
+    //         float dist = Mathf.Abs(SignedDistPointLine(point, connections[i].Item1.position, connections[i].Item2.position));
+    //         if (dist < minDist)
+    //         {
+    //             minDist = dist;
+    //             indexClosestLine = i;
+    //         }
+    //
+    //         //count intersections
+    //         if (DoLinesIntersect(point, pointOutsideBounds, connections[i].Item1.position,
+    //                 connections[i].Item2.position))
+    //         {
+    //             totalIntersections++;
+    //         }
+    //     }
+    //
+    //     return totalIntersections % 2 == 1 ? indexClosestLine : -1;
+    // }
 
     private Vector2 OuterPoint()
     {
         return Vector2.right * pins.Max(t => t.position.x) + Vector2.up * pins.Max(t => t.position.y);
     }
 
-    private bool DoLinesIntersect(Vector2 lineStart1, Vector2 lineEnd1, Vector2 lineStart2, Vector2 lineEnd2)
-    {
-        return !PointsOnSameSide(lineStart1, lineEnd1, lineStart2, lineEnd2) && !PointsOnSameSide(lineStart2, lineEnd2, lineStart1, lineEnd1);
-    }
+    // private bool DoLinesIntersect(Vector2 lineStart1, Vector2 lineEnd1, Vector2 lineStart2, Vector2 lineEnd2)
+    // {
+    //     return !PointsOnSameSide(lineStart1, lineEnd1, lineStart2, lineEnd2) && !PointsOnSameSide(lineStart2, lineEnd2, lineStart1, lineEnd1);
+    // }
+    //
+    // private bool PointsOnSameSide(Vector2 point1, Vector2 point2, Vector2 lineStart, Vector2 lineEnd)
+    // {
+    //     return SignedDistPointLine(point1, lineStart, lineEnd) * SignedDistPointLine(point2, lineStart, lineEnd) >= 0;
+    // }
+    //
+    // private float SignedDistPointLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
+    // {
+    //     //returns a signed distance between a point and a line
+    //     Vector2 closestPoint = ClosestPointOnLine(point, lineStart, lineEnd, out Vector2 lineDir);
+    //     return Vector3.Cross(lineDir, point - closestPoint).z;
+    // }
+    //
+    // private Vector2 ClosestPointOnLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd, out Vector2 lineDir)
+    // {
+    //     //point on the line defined by lineStart and lineEnd which is closest to point. also outputs the direction of the line in lineDir.
+    //     Vector2 lineVec = lineEnd - lineStart;
+    //     lineDir = lineVec.normalized;
+    //     Vector2 closestPoint = lineStart + Vector2.Dot(point - lineStart, lineDir) * lineDir;
+    //     return closestPoint;
+    // }
+}
 
-    private bool PointsOnSameSide(Vector2 point1, Vector2 point2, Vector2 lineStart, Vector2 lineEnd)
-    {
-        return SignedDistPointLine(point1, lineStart, lineEnd) * SignedDistPointLine(point2, lineStart, lineEnd) >= 0;
-    }
-    
-    private float SignedDistPointLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
-    {
-        //returns a signed distance between a point and a line
-        Vector2 closestPoint = ClosestPointOnLine(point, lineStart, lineEnd, out Vector2 lineDir);
-        return Vector3.Cross(lineDir, point - closestPoint).z;
-    }
+public class Pin
+{
+    public Transform transform;
+    public bool active; //part of the band
+    public Segment nextSegment; //the segment that follows this pin
+    public Segment prevSegment; //the segment that precedes this pin
+    public Pin nextPin; //the pin that follows this pin
+    public Pin prevPin; //the pin that precedes this pin
 
-    private Vector2 ClosestPointOnLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd, out Vector2 lineDir)
+    public Pin(Transform transform)
     {
-        //point on the line defined by lineStart and lineEnd which is closest to point. also outputs the direction of the line in lineDir.
-        Vector2 lineVec = lineEnd - lineStart;
-        lineDir = lineVec.normalized;
-        Vector2 closestPoint = lineStart + Vector2.Dot(point - lineStart, lineDir) * lineDir;
-        return closestPoint;
+        this.transform = transform;
     }
 }
+    
+public class Segment
+{
+    public Transform transform;
+    public Pin nextPin; //the pin that follows this segment
+    public Pin prevPin; //the pin that precedes this segment
+
+    public Segment(string objectPoolName, Pin prevPin, Pin nextPin)
+    {
+        transform = ObjectPoolManager.Instance.GetFromPool(objectPoolName).transform;
+        this.nextPin = nextPin;
+        this.prevPin = prevPin;
+        this.prevPin.nextSegment = this;
+        this.nextPin.prevSegment = this;
+        
+        FollowTwoTransforms followScript = transform.GetComponent<FollowTwoTransforms>();
+        followScript.target1 = prevPin.transform;
+        followScript.target2 = nextPin.transform;
+    }
+}
+
+

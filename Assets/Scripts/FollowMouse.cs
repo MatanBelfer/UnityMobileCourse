@@ -44,6 +44,7 @@ public class FollowMouse : MonoBehaviour
     {
         isFollowing = true;
         transform.parent = null;
+        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.Moving);
     }
 
     public void StopFollowing()
@@ -53,5 +54,6 @@ public class FollowMouse : MonoBehaviour
         Transform landingPoint = grid.GetClosestPoint(transform.position);
         transform.parent = landingPoint;
         transform.localPosition = Vector3.zero;
+        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.NotMoving);
     }
 }

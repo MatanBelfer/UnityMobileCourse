@@ -118,7 +118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target1: {fileID: 0}
   target2: {fileID: 0}
-  follow: 0
+  follow: 1
 --- !u!114 &-6497915964653111272
 MonoBehaviour:
   m_ObjectHideFlags: 0
