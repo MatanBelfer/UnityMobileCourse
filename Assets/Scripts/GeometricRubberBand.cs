@@ -258,7 +258,7 @@ public class GeometricRubberBand : MonoBehaviour
             if (currentPin.nextPin != nextPin)
             {
                 AddConnectedPinAfter(currentPin, nextPin);
-                print("added pin");
+                // print("added pin");
             }
             
             node = node.Next;
@@ -267,7 +267,7 @@ public class GeometricRubberBand : MonoBehaviour
         foreach (Pin pin in pinsToRemove)
         {
             RemoveConnectedPin(pin);
-            print("removed pin");
+            // print("removed pin");
         }
         
         // //check if the pin has changed its activity status from the last frame 
