@@ -173,6 +173,7 @@ public class GridManager : ObjectPoolInterface
     }
 
 
+    #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (!_showDebugInfo || !Application.isPlaying) return;
@@ -185,11 +186,9 @@ public class GridManager : ObjectPoolInterface
                 // Calculate the position for the label (slightly to the left of the first point in the row)
                 Vector3 labelPosition = rows[i][0].position + Vector3.left * 0.5f;
 
-#if UNITY_EDITOR
                 // Draw the row number
                 Handles.color = _gizmoTextColor;
                 Handles.Label(labelPosition, $"Row: {i}");
-#endif
 
                 // Optionally, draw a line connecting all points in the row
                 Gizmos.color = Color.cyan;
@@ -203,6 +202,7 @@ public class GridManager : ObjectPoolInterface
             }
         }
     }
+    #endif
 
 
     /*
