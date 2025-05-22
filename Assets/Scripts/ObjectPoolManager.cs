@@ -5,11 +5,9 @@ using System.Linq;
 
 public class ObjectPoolManager : MonoBehaviour
 {
-    //to define the number, names, sizes, and prefabs of the pools
     [SerializeField] private PoolSettings[] poolSettings;
-
-    //the actual pools
     private Dictionary<string, Queue<GameObject>> pools = new();
+    private Dictionary<string, HashSet<GameObject>> activeObjects = new();
 
     [Serializable]
     public class PoolSettings
@@ -28,49 +26,51 @@ public class ObjectPoolManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
         Instance = this;
         InitializePools();
     }
 
-
-
     public void InitializePools()
     {
+        pools.Clear();
+        activeObjects.Clear();
+
         foreach (PoolSettings settings in poolSettings)
         {
             string name = settings.poolName;
             int poolSize = settings.poolSize;
             GameObject prefab = settings.prefab;
 
-            CreateNewPool(name, poolSize, prefab);
+            pools[name] = new Queue<GameObject>();
+            activeObjects[name] = new HashSet<GameObject>();
+            AddItemsToPool(poolSize, prefab, name);
         }
     }
-
-    public void CreateNewPool(string name, int poolSize, GameObject prefab)
-    {
-        Queue<GameObject> newPool = new Queue<GameObject>();
-        pools.Add(name, newPool);
-
-        AddItemsToPool(poolSize, prefab, name);
-    }
-
 
     private void AddItemsToPool(int numItems, GameObject prefab, string poolName)
     {
         for (int i = 0; i < numItems; i++)
         {
-            GameObject newobj = Instantiate(prefab, parent: transform);
+            GameObject newobj = Instantiate(prefab, transform);
             newobj.SetActive(false);
-        
+
             ObjectPoolInterface @interface = newobj.GetComponent<ObjectPoolInterface>();
             if (@interface != null)
             {
                 @interface.poolName = poolName;
                 @interface.objectPoolManager = Instance;
             }
-        
+
             pools[poolName].Enqueue(newobj);
+        }
+    }
+
+    private void CheckPoolExists(string poolName)
+    {
+        if (!pools.ContainsKey(poolName))
+        {
+            throw new Exception($"There is no pool named \"{poolName}\"");
         }
     }
 
@@ -79,44 +79,83 @@ public class ObjectPoolManager : MonoBehaviour
         return pools.Keys.ToArray();
     }
 
-    public void InsertToPool(string poolName, GameObject obj)
-    {
-        //deactivates obj and inserts it to the pool named poolName
-
-        CheckPoolExists(poolName);
-
-        obj.SetActive(false);
-        pools[poolName].Enqueue(obj);
-    }
-
     public GameObject GetFromPool(string poolName)
     {
-        //gets an object from the pool and activates it
-
         CheckPoolExists(poolName);
         Queue<GameObject> pool = pools[poolName];
 
+        GameObject obj;
         if (pool.Count <= 0)
         {
             Debug.LogWarning($"Pool \"{poolName}\" has ran out of items. Creating more...");
-            PoolSettings smallPoolSettings = poolSettings.First(setting => setting.poolName == poolName);
-            if (smallPoolSettings.poolSize <= 0) smallPoolSettings.poolSize = 1;
-            int currentPoolSize = smallPoolSettings.poolSize;
-            AddItemsToPool(currentPoolSize, smallPoolSettings.prefab, poolName);
-            smallPoolSettings.poolSize *= 2;
+            PoolSettings settings = poolSettings.First(s => s.poolName == poolName);
+            int currentSize = settings.poolSize > 0 ? settings.poolSize : 1;
+            AddItemsToPool(currentSize, settings.prefab, poolName);
+            settings.poolSize *= 2;
         }
 
-        GameObject newobj = pool.Dequeue();
-        newobj.transform.parent = null;
-        newobj.SetActive(true);
-        return newobj;
+        obj = pool.Dequeue();
+
+        // Validate object before returning
+        if (obj == null)
+        {
+            Debug.LogWarning($"Found null object in pool {poolName}, creating new one");
+            obj = Instantiate(poolSettings.First(s => s.poolName == poolName).prefab, transform);
+            var interface_ = obj.GetComponent<ObjectPoolInterface>();
+            if (interface_ != null)
+            {
+                interface_.poolName = poolName;
+                interface_.objectPoolManager = Instance;
+            }
+        }
+
+        obj.transform.SetParent(null);
+        obj.SetActive(true);
+        activeObjects[poolName].Add(obj);
+        return obj;
     }
 
-    private void CheckPoolExists(string poolName)
+    public void InsertToPool(string poolName, GameObject obj)
     {
-        if (!pools.ContainsKey(poolName))
+        if (obj == null) return;
+        CheckPoolExists(poolName);
+
+        // Remove from current parent first
+        Transform originalParent = obj.transform.parent;
+        if (originalParent != null)
         {
-            throw new Exception($"There is no pool named \"{poolName}\"");
+            obj.transform.SetParent(null);
+        }
+        
+        obj.SetActive(false);
+        obj.transform.SetParent(transform);
+        pools[poolName].Enqueue(obj);
+        activeObjects[poolName].Remove(obj);
+    }
+
+    public void OnSceneUnloaded()
+    {
+        // Return all active objects to their pools
+        foreach (var poolName in pools.Keys)
+        {
+            var activeSet = activeObjects[poolName];
+            foreach (var obj in activeSet.ToList())
+            {
+                if (obj != null)
+                {
+                    InsertToPool(poolName, obj);
+                }
+            }
+
+            activeSet.Clear();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 }

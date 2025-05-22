@@ -1,12 +1,18 @@
-﻿
-public class Spike : ObjectPoolInterface
+﻿public class Spike : ObjectPoolInterface
 {
     private void OnBecameInvisible()
     {
-        // Return to pool 
-        if (objectPoolManager != null && gameObject.activeSelf)
+        if (!gameObject.scene.isLoaded)
+            return;
+            
+        // If grid is being deactivated (during scene transitions), just destroy the spike
+        if (transform.parent != null && !transform.parent.gameObject.activeInHierarchy)
         {
-            objectPoolManager.InsertToPool(poolName, gameObject);
+            Destroy(gameObject);
+            return;
         }
+        
+        // Normal pooling during gameplay
+        objectPoolManager.InsertToPool(poolName, gameObject);
     }
 }

@@ -22,10 +22,7 @@ public class DownBorder : MonoBehaviour
         var poolInterface = other.GetComponent<ObjectPoolInterface>();
         if (poolInterface != null)
         {
-            gridManager.RemovePoint(other.transform);
-
-            objectPoolManager.InsertToPool(poolInterface.poolName, other.gameObject);
-
+            gridManager.ClearPoint(other.gameObject);
             pointsInCurrentRow++;
 
             pointsNeededForRow = gridManager.GetCurrentRowPointCount();

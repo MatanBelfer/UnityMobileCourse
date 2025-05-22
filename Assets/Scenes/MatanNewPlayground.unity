@@ -842,6 +842,7 @@ PrefabInstance:
       objectReference: {fileID: 648362040}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+    - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1136,6 +1137,7 @@ PrefabInstance:
       objectReference: {fileID: 648362040}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+    - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1210,6 +1212,7 @@ PrefabInstance:
       objectReference: {fileID: 648362040}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+    - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1378,12 +1381,17 @@ PrefabInstance:
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 648362040}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: GeometricRubberBand
+      value: 
+      objectReference: {fileID: 1612765566}
     - target: {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: grid
       value: 
       objectReference: {fileID: 648362040}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+    - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
