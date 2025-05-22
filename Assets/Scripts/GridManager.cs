@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 #if UNITY_EDITOR
@@ -14,6 +15,10 @@ public class GridManager : ObjectPoolInterface
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
 
+    public static GridManager Instance { get; private set; }
+
+    private HashSet<Transform> activePoints = new HashSet<Transform>();
+
     //privates
     private bool _showDebugInfo = true; // Set to false to disable debug visualization
     private Color _gizmoTextColor = Color.yellow; // You can change the color to make it more visible
@@ -23,6 +28,26 @@ public class GridManager : ObjectPoolInterface
     private int _rowNum;
     private float _rowDist;
 
+    protected override void Awake()
+    {
+        base.Awake();  // Call the base class Awake first
+        
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
 
     private void Start()
     {
@@ -43,7 +68,6 @@ public class GridManager : ObjectPoolInterface
             yield break;
         }
 
-        // Initialize grid parameters
 
         _rowDist = gridLength * (float)Math.Sqrt(3f) / 2;
 
@@ -128,6 +152,7 @@ public class GridManager : ObjectPoolInterface
                 if (row[j] == point)
                 {
                     row[j] = null;
+                    activePoints.Remove(point);
                     return;
                 }
             }
@@ -141,6 +166,7 @@ public class GridManager : ObjectPoolInterface
         newTransform.parent = transform;
         newTransform.localPosition = position + _rowNum * _rowDist * Vector3.up;
         newPoint.SetActive(true);
+        activePoints.Add(newTransform);
         return newTransform;
     }
 
@@ -225,5 +251,42 @@ public class GridManager : ObjectPoolInterface
 
         var rows = _gridRows.ToArray();
         return columnIndex >= 0 && columnIndex < rows[rowIndex].Length;
+    }
+
+
+    public void ClearPoint(GameObject point)
+    {
+        if (point != null)
+        {
+            RemovePoint(point.transform);
+
+            objectPoolManager.InsertToPool(poolName, point);
+        }
+    }
+
+    public void ClearAllPoints()
+    {
+        foreach (var point in activePoints)
+        {
+            if (point != null)
+            {
+                objectPoolManager.InsertToPool(poolName, point.gameObject);
+            }
+        }
+
+        activePoints.Clear();
+        _gridRows.Clear();
+        _rowNum = 0;
+    }
+
+    public void ClearSpike(GameObject spike)
+    {
+        if (spike != null && objectPoolManager != null)
+        {
+            // Remove from grid first
+            spike.transform.SetParent(null);
+            spike.SetActive(false);
+            objectPoolManager.InsertToPool(gridParameters.spikePoolName, spike);
+        }
     }
 }

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 892449315734885377}
   - component: {fileID: 7468481033524766721}
-  - component: {fileID: 4031057940092076844}
   - component: {fileID: 1093626876090619070}
   m_Layer: 0
   m_Name: Pin
@@ -56,19 +55,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.3
   m_Center: {x: 0, y: 0, z: -1}
---- !u!114 &4031057940092076844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 588626034120444327}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e37b4ada47defb640ac5cbb680ca3458, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  grid: {fileID: 0}
 --- !u!114 &1093626876090619070
 MonoBehaviour:
   m_ObjectHideFlags: 0
