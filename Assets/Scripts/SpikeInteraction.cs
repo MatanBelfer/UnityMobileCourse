@@ -25,7 +25,7 @@ public class SpikeInteraction : MonoBehaviour
                 Destroy(GeometricRubberBand.Instance.gameObject);
             }
 
-            SceneManager.LoadScene("Game");
+            GameManager.Instance.RestartLevel();
         }
     }
 }
