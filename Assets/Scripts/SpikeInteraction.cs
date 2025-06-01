@@ -1,8 +1,16 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public class SpikeInteraction : MonoBehaviour
 {
+    public event Action OnTouchSpike;
+
+    public void Start()
+    {
+        OnTouchSpike += GameManager.Instance.RestartLevel;
+    }
+    
     public void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Spike"))
@@ -25,7 +33,7 @@ public class SpikeInteraction : MonoBehaviour
                 Destroy(GeometricRubberBand.Instance.gameObject);
             }
 
-            GameManager.Instance.RestartLevel();
+            OnTouchSpike();
         }
     }
 }
