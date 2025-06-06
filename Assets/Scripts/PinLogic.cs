@@ -6,6 +6,7 @@ public class PinLogic : MonoBehaviour
     [SerializeField] private int Row;
     [SerializeField] private int Column;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private PinOffscreenBehaviour offscreenBehaviour;
     
     public bool isFollowing { get; private set; }
     private IEnumerator Start()
@@ -18,6 +19,9 @@ public class PinLogic : MonoBehaviour
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
+            
+            //turn on the behaviour that loses the game when the pin goes off-screen
+            offscreenBehaviour.enabled = true;
         }
     }
     

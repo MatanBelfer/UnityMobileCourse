@@ -56,6 +56,7 @@ public class GridManager : ObjectPoolInterface
 
     private System.Collections.IEnumerator InitializeWhenReady()
     {
+        //TODO: yield return new WaitUntil(() => ManagersLoader.IsInitialized); instead of while
         while (!ManagersLoader.IsInitialized)
         {
             yield return null;

@@ -33,7 +33,7 @@ public class SpikeInteraction : MonoBehaviour
                 Destroy(GeometricRubberBand.Instance.gameObject);
             }
 
-            OnTouchSpike();
+            OnTouchSpike?.Invoke();
         }
     }
 }

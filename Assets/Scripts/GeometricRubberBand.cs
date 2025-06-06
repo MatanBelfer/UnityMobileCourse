@@ -128,7 +128,7 @@ public class GeometricRubberBand : MonoBehaviour
 
     private LinkedList<Transform> PinsOnConvexHull(Transform[] points)
     {
-        Debug.Log($"Starting convex hull calculation with leftmost point: {points[0].name}");
+        // Debug.Log($"Starting convex hull calculation with leftmost point: {points[0].name}");
 
 
         if (points.Length <= 3)
