@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GameManager : MonoBehaviour
 {
     //Singleton
 	public static GameManager Instance;
+	public event Action OnRestartLevel;
 
 	//Initialize the singleton
 	public void Awake()
@@ -31,6 +33,7 @@ public class GameManager : MonoBehaviour
 
 	public void RestartLevel()
 	{
-		SceneManager.LoadScene("Game");
+		OnRestartLevel += () => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		OnRestartLevel?.Invoke();
 	}
 }

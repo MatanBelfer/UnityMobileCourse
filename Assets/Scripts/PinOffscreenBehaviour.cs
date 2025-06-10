@@ -9,6 +9,8 @@ public class PinOffscreenBehaviour : MonoBehaviour
     {
         print("offscreen script");
         OnWentOffscreen += GameManager.Instance.RestartLevel;
+        //make sure this script turns off before the game restarts, otherwise it triggers unwantedly
+        GameManager.Instance.OnRestartLevel += () => this.enabled = false;
     }
     
     public void OnBecameInvisible()

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1093626876090619070}
   m_Layer: 0
   m_Name: Pin
-  m_TagString: Untagged
+  m_TagString: Pin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -70,7 +70,7 @@ MonoBehaviour:
   Row: 3
   Column: 1
   gridManager: {fileID: 0}
-  offscreenBehaviour: {fileID: 3991257956930269822}
+  offscreenBehaviour: {fileID: 0}
 --- !u!1 &5572015857119148058
 GameObject:
   m_ObjectHideFlags: 0
@@ -83,7 +83,6 @@ GameObject:
   - component: {fileID: 8773886507957764736}
   - component: {fileID: 5337723221326776199}
   - component: {fileID: 2697969636554782075}
-  - component: {fileID: 3991257956930269822}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -182,15 +181,3 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &3991257956930269822
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5572015857119148058}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b4a5f9e6b2d11940a037cc159628bf9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
