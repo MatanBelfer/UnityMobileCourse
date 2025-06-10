@@ -12,7 +12,10 @@ public class LoseOnTouchPin : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.transform.parent.CompareTag("Pin"))
+        Transform parent = other.transform?.parent;
+        if (!parent) return;
+        
+        if (parent.CompareTag("Pin"))
         {
             gameManager.RestartLevel();
         }
