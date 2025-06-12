@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using TMPro;
 using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
@@ -42,12 +43,13 @@ public class GameManager : MonoBehaviour
 		OnRestartLevel?.Invoke();
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
-
+	
 	private void SaveScoreToFile()
 	{
 		string json = JsonUtility.ToJson(new ScoreData(GetScore()));
-		System.IO.File.WriteAllText(Application.persistentDataPath + "/score.json", json);
-		print($"saved score to {Application.persistentDataPath}/score");
+		string path = Application.persistentDataPath + "/score.json";
+		System.IO.File.WriteAllText(path, json);
+		print($"saved score to {path}");
 	}
 
 	[Serializable]
