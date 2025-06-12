@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 892449315734885377}
   - component: {fileID: 7468481033524766721}
   - component: {fileID: 1093626876090619070}
+  - component: {fileID: 536156661381559109}
+  - component: {fileID: 5932078011798510390}
   m_Layer: 0
   m_Name: Pin
   m_TagString: Pin
@@ -70,7 +72,68 @@ MonoBehaviour:
   Row: 3
   Column: 1
   gridManager: {fileID: 0}
-  offscreenBehaviour: {fileID: 0}
+--- !u!114 &536156661381559109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 588626034120444327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78989bbc231dd7b4bb9248142cd1a92d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5932078011798510390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 588626034120444327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 536156661381559109}
+        m_TargetAssemblyTypeName: PinInputSystem, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 10722325-39f5-459f-b80e-5e8935950e20
+    m_ActionName: 'PinMovement/Move[/Mouse/leftButton,/Device Simulator Touchscreen/press]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 83983611-5e0f-4094-9d7c-0f2b650d8e29
+    m_ActionName: 'PinMovement/Position[/Mouse/position]'
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: PinMovement
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &5572015857119148058
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,10 +5,9 @@ public class PinLogic : MonoBehaviour
 {
     [SerializeField] private int Row;
     [SerializeField] private int Column;
-    [SerializeField] private GridManager gridManager;
-    // [SerializeField] private PinOffscreenBehaviour offscreenBehaviour;
+    [SerializeField] public GridManager gridManager; // Made public so PinInputSystem can access it
+    public bool isFollowing { get; set; } // Made setter public so PinInputSystem can control it
     
-    public bool isFollowing { get; private set; }
     private IEnumerator Start()
     {
         // Wait a frame to ensure grid initialization
@@ -19,55 +18,6 @@ public class PinLogic : MonoBehaviour
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
-            
-            // //turn on the behaviour that loses the game when the pin goes off-screen
-            // offscreenBehaviour.enabled = true;
         }
-    }
-    
-
-    private void Update()
-    {
-        if (isFollowing)
-        {
-            Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mousepos.z = 0f;
-            transform.position = mousepos;
-        }
-    }
-
-    private void OnMouseDown()
-    {
-        if (!isFollowing)
-        {
-            StartFollowing();
-        }
-    }
-
-    private void OnMouseUp()
-    {
-        if (isFollowing)
-        {
-            StopFollowing();
-        }
-    }
-
-    public void StartFollowing()
-    {
-        isFollowing = true;
-        transform.parent = null;
-        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.Moving);
-    }
-
-    public void StopFollowing()
-    {
-        //find the closest point on the grid and go to it
-        Transform landingPoint = gridManager.GetClosestPoint(transform.position);
-        transform.parent = landingPoint;
-        transform.localPosition = Vector3.zero;
-
-        isFollowing = false;
-        //update the band that it's not longer moving
-        GeometricRubberBand.Instance.UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.NotMoving);
     }
 }
