@@ -25,7 +25,7 @@ public class GridManager : ObjectPoolInterface
 
     //grid structure
     private Queue<Transform[]> _gridRows = new();
-    private int _rowNum;
+    private int _rowNum;//1 based (not zero-based)
     private float _rowDist;
 
     protected override void Awake()
@@ -136,6 +136,9 @@ public class GridManager : ObjectPoolInterface
 
     private void SpawnSpike(Vector3 position)
     {
+        //turned off for testing
+        print("SpawnSpike has been turned off");
+        return;
         GameObject spike = objectPoolManager.GetFromPool(gridParameters.spikePoolName);
         spike.transform.parent = transform;
         spike.transform.localPosition = position + _rowNum * _rowDist * Vector3.up;
@@ -171,11 +174,13 @@ public class GridManager : ObjectPoolInterface
         return newTransform;
     }
 
-    public Transform GetClosestPoint(Vector2 position)
+    public Transform GetClosestPoint(Vector2 position, out int chosenRow)
     {
         Transform closestPoint = null;
         float minDistance = float.MaxValue;
+        chosenRow = -1;
 
+        int currentRowInQueue = 0;
         foreach (var row in _gridRows)
         {
             foreach (var point in row)
@@ -187,16 +192,24 @@ public class GridManager : ObjectPoolInterface
                 {
                     minDistance = dist;
                     closestPoint = point;
+                    chosenRow = _rowNum - _gridRows.Count + currentRowInQueue + 1;
                 }
             }
+
+            currentRowInQueue++;
         }
 
         if (closestPoint == null)
         {
             throw new Exception("Couldn't find closest point");
         }
-
+        
         return closestPoint;
+    }
+
+    public Transform GetClosestPoint(Vector2 position)
+    {
+        return GetClosestPoint(position, out var _);
     }
 
 
