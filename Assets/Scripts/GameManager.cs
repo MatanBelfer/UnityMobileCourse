@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
-using System.Linq;
 using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
@@ -24,6 +23,9 @@ public class GameManager : MonoBehaviour
 		{
 			Instance = this;
 		}
+		
+		//OnRestartLevel initialization
+		OnRestartLevel += SaveScoreToFile;
 	}
 	
 	//Destroy the singleton
@@ -43,7 +45,16 @@ public class GameManager : MonoBehaviour
 
 	private void SaveScoreToFile()
 	{
-		
+		string json = JsonUtility.ToJson(new ScoreData(GetScore()));
+		System.IO.File.WriteAllText(Application.persistentDataPath + "/score.json", json);
+		print($"saved score to {Application.persistentDataPath}/score");
+	}
+
+	[Serializable]
+	private class ScoreData
+	{
+		public int score;
+		public ScoreData(int score) => this.score = score;
 	}
 
 	public void SetInitialScore(int initialHeight)
