@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using System.Linq;
 using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
@@ -10,6 +11,7 @@ public class GameManager : MonoBehaviour
 	private int rawScore = 0; // the score (height) reported by the pins
 	private int scoreOffset; // the starting initial score given by the highest pin on start. 
 	public event Action OnRestartLevel;
+	private Action restartLevelInternal;
 
 	//Initialize the singleton
 	public void Awake()
@@ -23,6 +25,9 @@ public class GameManager : MonoBehaviour
 		{
 			Instance = this;
 		}
+		
+		//OnRestartLevel initialization
+		restartLevelInternal = RestartLevelInternal;
 	}
 	
 	//Destroy the singleton
@@ -36,8 +41,21 @@ public class GameManager : MonoBehaviour
 
 	public void RestartLevel()
 	{
-		OnRestartLevel += () => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		if (!OnRestartLevel?.GetInvocationList().Contains(restartLevelInternal) ?? true)
+		{
+			OnRestartLevel += restartLevelInternal;
+		}
 		OnRestartLevel?.Invoke();
+	}
+
+	private void RestartLevelInternal()
+	{
+		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+	}
+
+	private void SaveScoreToFile()
+	{
+		
 	}
 
 	public void SetInitialScore(int initialHeight)
