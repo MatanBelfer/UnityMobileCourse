@@ -75,6 +75,7 @@ public class PinLogic : MonoBehaviour
         transform.parent = landingPoint;
         transform.localPosition = Vector3.zero;
         //update the score on the game manager
+        // print($"{gameObject.name} landed on row {currentRow}");
         OnStopFollowing?.Invoke(currentRow);
 
         isFollowing = false;
