@@ -3,14 +3,20 @@ using UnityEngine.SceneManagement;
 using System;
 using TMPro;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 
 public class GameManager : MonoBehaviour
 {
 	//Score = rawScore - scoreOffset
+	[InspectorLabel("Score")]
 	private int rawScore = 0; // the score (height) reported by the pins
 	private int scoreOffset; // the starting initial score given by the highest pin on start.
 	public int highScore { get; private set; }
 	private string scorePath = "/score.json";
+	
+	[InspectorLabel("Pause")]
+	public bool isPaused { get; private set; }
+	private UIManager uiManager;
 	
     //Singleton
 	public static GameManager Instance;
@@ -40,6 +46,21 @@ public class GameManager : MonoBehaviour
 			string json = System.IO.File.ReadAllText(path);
 			ScoreData data = JsonUtility.FromJson<ScoreData>(json);
 			highScore = data.score;
+		}
+	}
+
+	public void Start()
+	{
+		uiManager = UIManager.Instance;
+	}
+	
+	//test pause 
+	public void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			SetPause(!isPaused);
+			print($"{isPaused : True/False}");
 		}
 	}
 	
@@ -78,20 +99,24 @@ public class GameManager : MonoBehaviour
 	public void SetInitialScore(int initialHeight)
 	{
 		if (initialHeight > scoreOffset) scoreOffset = initialHeight;
-		//test
-		print($"initial score offset: {scoreOffset}");
 	}
 
 	public void UpdateScore(int landingRow)
 	{
 		//calculates the new score given the row the pin landed on
 		if (landingRow > rawScore) rawScore = landingRow;
-		//testing
-		print($"new score: {GetScore()} with rawscore {rawScore} and offset {scoreOffset}");
 	}
 
 	public int GetScore()
 	{
 		return math.clamp(rawScore - scoreOffset,0,int.MaxValue);
+	}
+	
+	public void SetPause(bool pauseState)
+	{
+		if (isPaused == pauseState) return;
+		isPaused = pauseState;
+		Time.timeScale = isPaused ? 0 : 1;
+		uiManager.PauseMenu(isPaused);
 	}
 }
