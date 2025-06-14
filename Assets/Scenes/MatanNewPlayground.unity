@@ -833,6 +833,10 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 648362040}
@@ -1087,6 +1091,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Pin (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 588626034120444327, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.5
@@ -1128,6 +1136,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 648362040}
@@ -1135,6 +1147,14 @@ PrefabInstance:
       propertyPath: grid
       value: 
       objectReference: {fileID: 648362040}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_Actions
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
@@ -1203,6 +1223,10 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 648362040}
@@ -1217,6 +1241,72 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+--- !u!1 &1511988107 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 588626034120444327, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+  m_PrefabInstance: {fileID: 1795983225}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1511988108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1511988107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1511988109}
+        m_TargetAssemblyTypeName: PinInputSystem, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 10722325-39f5-459f-b80e-5e8935950e20
+    m_ActionName: 'PinMovment/Move[/Mouse/leftButton,/Device Simulator Touchscreen/press]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 83983611-5e0f-4094-9d7c-0f2b650d8e29
+    m_ActionName: 'PinMovement/Position[/Mouse/position]'
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: PinMovement
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
+--- !u!114 &1511988109 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 536156661381559109, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+  m_PrefabInstance: {fileID: 1795983225}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1511988107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78989bbc231dd7b4bb9248142cd1a92d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1540221393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1378,6 +1468,10 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 648362040}
@@ -1394,7 +1488,10 @@ PrefabInstance:
     - {fileID: 4031057940092076844, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 588626034120444327, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1511988108}
   m_SourcePrefab: {fileID: 100100000, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
 --- !u!1001 &1871859954
 PrefabInstance:
