@@ -46,7 +46,6 @@ public class SettingsMenu : MonoBehaviour
     public void SetMusicVolume(float volume)
     {
         musicVol = volume;
-        print($"music volume: {musicVol}");
     }
     public void SetSFXVolume(float volume)
     {
