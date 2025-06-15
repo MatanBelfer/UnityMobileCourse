@@ -711,6 +711,7 @@ Transform:
   - {fileID: 271279987}
   - {fileID: 1664724282}
   - {fileID: 1065368404}
+  - {fileID: 1826991556}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &271279985
@@ -3730,12 +3731,87 @@ PrefabInstance:
       propertyPath: grid
       value: 
       objectReference: {fileID: 648362040}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[2].m_ActionId
+      value: 19c645aa-d6aa-4966-a387-8abc3fb4810b
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_ActionId
+      value: cd290680-7d21-483c-8ea6-88e51d439d84
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[4].m_ActionId
+      value: 3ed1c220-a6ca-4d8a-a090-add34a597c91
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[2].m_ActionName
+      value: 'PinMovement/Cancel[/Mouse/rightButton,/Touchscreen/touch1/press,/Device
+        Simulator Touchscreen/touch1/press,/Keyboard/escape]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[3].m_ActionName
+      value: 'PinMovement/ToggleMode[/Keyboard/tab]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: m_ActionEvents.Array.data[4].m_ActionName
+      value: UI/New action
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2983626574326481322, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+    - {fileID: 5932078011798510390, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+--- !u!1 &1826991555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1826991556}
+  - component: {fileID: 1826991557}
+  m_Layer: 0
+  m_Name: InputManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1826991556
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826991555}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 178750935}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1826991557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826991555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fe6c7ace874931b63bc11668ba9491, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxClickDistance: 0.5
 --- !u!1001 &1904579900
 PrefabInstance:
   m_ObjectHideFlags: 0

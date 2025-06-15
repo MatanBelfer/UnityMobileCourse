@@ -20,4 +20,58 @@ public class PinLogic : MonoBehaviour
             transform.localPosition = Vector3.zero;
         }
     }
+    
+    public void MovePinToPosition(PinLogic pin, Vector3 worldPosition)
+    {
+        if (pin == null || pin.gridManager == null) return;
+
+        Debug.Log($"Moving pin {pin.name} to position: {worldPosition}");
+
+        Transform landingPoint = pin.gridManager.GetClosestPoint(worldPosition);
+        if (landingPoint != null)
+        {
+            pin.transform.parent = landingPoint;
+            pin.transform.localPosition = Vector3.zero;
+            pin.isFollowing = false;
+
+            if (GeometricRubberBand.Instance != null)
+            {
+                GeometricRubberBand.Instance.UpdateMovingPin(pin.transform,
+                    GeometricRubberBand.MovingPinStatus.NotMoving);
+            }
+        }
+    }
+    public void StartFollowingPin(PinLogic pin)
+    {
+        if (pin == null) return;
+
+        pin.isFollowing = true;
+        pin.transform.parent = null;
+
+        if (GeometricRubberBand.Instance != null)
+        {
+            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+        }
+    }
+    public void StopFollowingPin(PinLogic pin)
+    {
+        Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
+
+        if (pin == null || pin.gridManager == null) return;
+
+        Transform landingPoint = pin.gridManager.GetClosestPoint(pin.transform.position);
+        if (landingPoint != null)
+        {
+            pin.transform.parent = landingPoint;
+            pin.transform.localPosition = Vector3.zero;
+        }
+
+        pin.isFollowing = false;
+
+        if (GeometricRubberBand.Instance != null)
+        {
+            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+        }
+    }
+    
 }
