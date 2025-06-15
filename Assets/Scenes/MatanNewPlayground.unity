@@ -1272,41 +1272,30 @@ MonoBehaviour:
       m_Calls: []
   m_ActionEvents:
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1511988109}
-        m_TargetAssemblyTypeName: PinInputSystem, Assembly-CSharp
-        m_MethodName: OnClick
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 10722325-39f5-459f-b80e-5e8935950e20
     m_ActionName: 'PinMovment/Move[/Mouse/leftButton,/Device Simulator Touchscreen/press]'
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 83983611-5e0f-4094-9d7c-0f2b650d8e29
     m_ActionName: 'PinMovement/Position[/Mouse/position]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3ed1c220-a6ca-4d8a-a090-add34a597c91
+    m_ActionName: UI/New action
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 19c645aa-d6aa-4966-a387-8abc3fb4810b
+    m_ActionName: 'PinMovement/Cancel[/Mouse/rightButton]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: cd290680-7d21-483c-8ea6-88e51d439d84
+    m_ActionName: PinMovement/ToggleMode
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultControlScheme: 
   m_DefaultActionMap: PinMovement
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!114 &1511988109 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 536156661381559109, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
-  m_PrefabInstance: {fileID: 1795983225}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1511988107}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 78989bbc231dd7b4bb9248142cd1a92d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1540221393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1415,6 +1404,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1612765565}
     m_Modifications:
+    - target: {fileID: 536156661381559109, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: maxClickDistance
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 588626034120444327, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_Name
       value: Pin

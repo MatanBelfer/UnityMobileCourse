@@ -6,10 +6,16 @@ public class PinInputSystem : MonoBehaviour
 {
     public PlayerInputActions inputActions;
     
+    [Header("Input Mode Settings")]
+    [SerializeField] private bool isDragMode = true; // Toggle between drag and select mode
+    
+    [Header("Drag Mode Settings")]
+    [SerializeField] private float maxClickDistance = 1f; // Max distance to detect pin clicks
+    
     private bool isInputActive = false;
     private Vector2 currentInputPosition;
     private PinLogic currentlyDraggedPin = null;
-    private PinLogic selectedPin = null; 
+    private PinLogic selectedPin = null;
     
     private void Awake()
     {
@@ -20,22 +26,20 @@ public class PinInputSystem : MonoBehaviour
     {
         inputActions.Enable();
         
-        // Subscribe to click events
         inputActions.PinMovement.Click.started += OnClickStarted;
         inputActions.PinMovement.Click.canceled += OnClickCanceled;
-        
-        // Subscribe to position updates
+        inputActions.PinMovement.Cancel.started += OnCancelStarted;
         inputActions.PinMovement.Position.performed += OnPositionChanged;
+        inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
     }
 
     private void OnDisable()
     {
-        // Unsubscribe from click events
         inputActions.PinMovement.Click.started -= OnClickStarted;
         inputActions.PinMovement.Click.canceled -= OnClickCanceled;
-        
-        // Unsubscribe from position updates
+        inputActions.PinMovement.Cancel.started -= OnCancelStarted;
         inputActions.PinMovement.Position.performed -= OnPositionChanged;
+        inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
         
         inputActions.Disable();
     }
@@ -45,70 +49,120 @@ public class PinInputSystem : MonoBehaviour
         inputActions?.Dispose();
     }
 
+    private void OnToggleModePressed(InputAction.CallbackContext context)
+    {
+        ToggleInputMode();
+    }
+
+    private void ToggleInputMode()
+    {
+        isDragMode = !isDragMode;
+        ClearAllStates();
+        
+        string modeText = isDragMode ? "DRAG MODE" : "SELECT MODE";
+        Debug.Log($"Switched to {modeText}");
+    }
+
+    private void OnCancelStarted(InputAction.CallbackContext context)
+    {
+        Debug.Log("Cancel pressed");
+        ClearAllStates();
+    }
+
     private void OnClickStarted(InputAction.CallbackContext context)
     {
         isInputActive = true;
-        Debug.Log("Click started");
-        
-        // Convert screen position to world position
         Vector3 worldPosition = ScreenToWorldPosition(currentInputPosition);
-        HandleInputStart(worldPosition);
+        
+        if (isDragMode)
+        {
+            HandleDragModeStart(worldPosition);
+        }
+        else
+        {
+            HandleSelectModeStart(worldPosition);
+        }
     }
 
     private void OnClickCanceled(InputAction.CallbackContext context)
     {
         isInputActive = false;
-        Debug.Log("Click ended");
         
-        Vector3 worldPosition = ScreenToWorldPosition(currentInputPosition);
-        HandleInputEnd(worldPosition);
+        if (isDragMode)
+        {
+            HandleDragModeEnd();
+        }
+        else
+        {
+            HandleSelectModeEnd();
+        }
     }
 
     private void OnPositionChanged(InputAction.CallbackContext context)
     {
         currentInputPosition = context.ReadValue<Vector2>();
         
-        // Only handle position changes when input is active (clicked/touched)
-        if (isInputActive && currentlyDraggedPin != null)
+        if (isDragMode && isInputActive && currentlyDraggedPin != null && currentlyDraggedPin.isFollowing)
         {
             Vector3 worldPosition = ScreenToWorldPosition(currentInputPosition);
-            HandleInputMove(worldPosition);
+            currentlyDraggedPin.transform.position = worldPosition;
         }
     }
 
-    private Vector3 ScreenToWorldPosition(Vector2 screenPosition)
+    private void HandleDragModeStart(Vector3 worldPosition)
     {
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Camera.main.nearClipPlane));
-        worldPosition.z = 0f;
-        return worldPosition;
-    }
-
-    private void HandleInputStart(Vector3 worldPosition)
-    {
-        Debug.Log($"Input started at world position: {worldPosition}");
+        Debug.Log($"Drag mode: Click started at {worldPosition}");
         
-        // Find the closest pin at click position
         PinLogic clickedPin = FindClosestPin(worldPosition);
         
         if (clickedPin != null && !clickedPin.isFollowing)
         {
-            // If there's already a selected pin and we clicked on a different pin
-            if (selectedPin != null && selectedPin != clickedPin)
-            {
-                // Deselect the previous pin
-                DeselectPin(selectedPin);
-            }
-            
-            // If we clicked on the same pin that's already selected, start dragging
+            // Start dragging immediately - ONLY if we clicked on a pin
+            currentlyDraggedPin = clickedPin;
+            selectedPin = clickedPin;
+            StartFollowingPin(clickedPin);
+            Debug.Log($"Started dragging pin: {clickedPin.name}");
+        }
+        else
+        {
+            // In drag mode, clicking on empty space does NOTHING
+            Debug.Log("Drag mode: Clicked on empty space - no action");
+        }
+    }
+    
+    private void HandleDragModeEnd()
+    {
+        Debug.Log("Drag mode: Click ended");
+        
+        if (currentlyDraggedPin != null && currentlyDraggedPin.isFollowing)
+        {
+            StopFollowingPin(currentlyDraggedPin);
+            DeselectPin(currentlyDraggedPin);
+            currentlyDraggedPin = null;
+        }
+    }
+    
+    private void HandleSelectModeStart(Vector3 worldPosition)
+    {
+        Debug.Log($"Select mode: Click started at {worldPosition}");
+        
+        PinLogic clickedPin = FindClosestPin(worldPosition);
+        
+        if (clickedPin != null && !clickedPin.isFollowing)
+        {
+            // Handle pin selection
             if (selectedPin == clickedPin)
             {
-                currentlyDraggedPin = clickedPin;
-                StartFollowingPin(clickedPin);
-                DeselectPin(clickedPin); // Clear selection when dragging starts
+                // Clicking on already selected pin - deselect it
+                DeselectPin(clickedPin);
             }
             else
             {
-                // Select the new pin
+                // Select new pin
+                if (selectedPin != null)
+                {
+                    DeselectPin(selectedPin);
+                }
                 SelectPin(clickedPin);
             }
         }
@@ -118,38 +172,52 @@ public class PinInputSystem : MonoBehaviour
             MovePinToPosition(selectedPin, worldPosition);
             DeselectPin(selectedPin);
         }
-        else if (clickedPin == null && selectedPin == null)
+        else
         {
             // Clicked on empty space with no pin selected - do nothing
-            Debug.Log("Clicked on empty space with no pin selected");
+            Debug.Log("Select mode: Clicked on empty space with no pin selected");
         }
     }
-
-    private void HandleInputMove(Vector3 worldPosition)
+    
+    private void HandleSelectModeEnd()
     {
-        // Update the position of the currently dragged pin (drag mode only)
-        if (currentlyDraggedPin != null && currentlyDraggedPin.isFollowing)
+        Debug.Log("Select mode: Click ended");
+        // In select mode, we don't need to do anything on click end
+    }
+    
+    private void ClearAllStates()
+    {
+        if (selectedPin != null)
         {
-            currentlyDraggedPin.transform.position = worldPosition;
+            DeselectPin(selectedPin);
         }
-    }
-
-    private void HandleInputEnd(Vector3 worldPosition)
-    {
-        Debug.Log($"Input ended at world position: {worldPosition}");
         
-        // Stop dragging the current pin if we were dragging
         if (currentlyDraggedPin != null && currentlyDraggedPin.isFollowing)
         {
             StopFollowingPin(currentlyDraggedPin);
             currentlyDraggedPin = null;
         }
+        
+        isInputActive = false;
+    }
+
+    private Vector3 ScreenToWorldPosition(Vector2 screenPosition)
+    {
+        if (Camera.main == null)
+        {
+            Debug.LogWarning("No main camera found!");
+            return Vector3.zero;
+        }
+        
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Camera.main.nearClipPlane));
+        worldPosition.z = 0f;
+        return worldPosition;
     }
 
     private void SelectPin(PinLogic pin)
     {
         selectedPin = pin;
-        Debug.Log($"Selected pin at position: {pin.transform.position}");
+        Debug.Log($"Selected pin: {pin.name} at position: {pin.transform.position}");
     }
 
     private void DeselectPin(PinLogic pin)
@@ -157,52 +225,70 @@ public class PinInputSystem : MonoBehaviour
         if (pin == null) return;
         
         selectedPin = null;
-        Debug.Log($"Deselected pin");
+        Debug.Log($"Deselected pin: {pin.name}");
     }
 
     private void MovePinToPosition(PinLogic pin, Vector3 worldPosition)
     {
-        Debug.Log($"Moving selected pin to position: {worldPosition}");
+        if (pin == null || pin.gridManager == null) return;
         
-        // Find the closest grid point to the target position
+        Debug.Log($"Moving pin {pin.name} to position: {worldPosition}");
+        
         Transform landingPoint = pin.gridManager.GetClosestPoint(worldPosition);
-        
-        // Move the pin to the grid point
-        pin.transform.parent = landingPoint;
-        pin.transform.localPosition = Vector3.zero;
-        
-        // Update the rubber band
-        GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+        if (landingPoint != null)
+        {
+            pin.transform.parent = landingPoint;
+            pin.transform.localPosition = Vector3.zero;
+            
+            if (GeometricRubberBand.Instance != null)
+            {
+                GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+            }
+        }
     }
 
     private void StartFollowingPin(PinLogic pin)
     {
+        if (pin == null) return;
+        
         pin.isFollowing = true;
         pin.transform.parent = null;
-        GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+        
+        if (GeometricRubberBand.Instance != null)
+        {
+            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+        }
     }
 
     private void StopFollowingPin(PinLogic pin)
     {
-        // Find the closest point on the grid and go to it
+        if (pin == null || pin.gridManager == null) return;
+        
         Transform landingPoint = pin.gridManager.GetClosestPoint(pin.transform.position);
-        pin.transform.parent = landingPoint;
-        pin.transform.localPosition = Vector3.zero;
+        if (landingPoint != null)
+        {
+            pin.transform.parent = landingPoint;
+            pin.transform.localPosition = Vector3.zero;
+        }
 
         pin.isFollowing = false;
-        // Update the band that it's no longer moving
-        GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+        
+        if (GeometricRubberBand.Instance != null)
+        {
+            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+        }
     }
 
     private PinLogic FindClosestPin(Vector3 worldPosition)
     {
-        PinLogic[] allPins = FindObjectsOfType<PinLogic>();
+        PinLogic[] allPins = FindObjectsByType<PinLogic>(FindObjectsSortMode.None);
         PinLogic closestPin = null;
         float closestDistance = float.MaxValue;
-        float maxClickDistance = 1f; // Adjust this value as needed
 
         foreach (PinLogic pin in allPins)
         {
+            if (pin == null) continue;
+            
             float distance = Vector3.Distance(pin.transform.position, worldPosition);
             if (distance < closestDistance && distance <= maxClickDistance)
             {
@@ -213,6 +299,38 @@ public class PinInputSystem : MonoBehaviour
 
         return closestPin;
     }
-    
-    
+
+    public void ClearSelection()
+    {
+        ClearAllStates();
+    }
+
+    public void SetDragMode(bool dragMode)
+    {
+        isDragMode = dragMode;
+        ClearAllStates();
+        
+        string modeText = isDragMode ? "DRAG MODE" : "SELECT MODE";
+        Debug.Log($"Mode set to {modeText}");
+    }
+
+    public bool GetCurrentMode()
+    {
+        return isDragMode;
+    }
+
+    [ContextMenu("Toggle Input Mode")]
+    public void ToggleInputModeFromMenu()
+    {
+        ToggleInputMode();
+    }
+
+    [ContextMenu("Debug Current State")]
+    public void DebugCurrentState()
+    {
+        Debug.Log($"Input Mode: {(isDragMode ? "DRAG" : "SELECT")}");
+        Debug.Log($"Selected Pin: {(selectedPin?.name ?? "None")}");
+        Debug.Log($"Dragged Pin: {(currentlyDraggedPin?.name ?? "None")}");
+        Debug.Log($"Is Input Active: {isInputActive}");
+    }
 }

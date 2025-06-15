@@ -93,11 +93,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             ""actions"": [
                 {
                     ""name"": ""Click"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""10722325-39f5-459f-b80e-5e8935950e20"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
+                    ""interactions"": """",
                     ""initialStateCheck"": true
                 },
                 {
@@ -108,6 +108,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Cancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""19c645aa-d6aa-4966-a387-8abc3fb4810b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""cd290680-7d21-483c-8ea6-88e51d439d84"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -152,6 +170,50 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Position"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""07b0dee2-f2ca-4cff-95f3-904f3de4ddf6"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fba98431-2e4d-4628-bcfc-7ad06ea5e97a"",
+                    ""path"": ""<Touchscreen>/Press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6a4721b9-5b42-4c63-9810-6c0a9a9aa0c5"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0d80cd4d-d6a3-4c1a-abed-be82d075a5da"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""ToggleMode"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -253,6 +315,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PinMovement = asset.FindActionMap("PinMovement", throwIfNotFound: true);
         m_PinMovement_Click = m_PinMovement.FindAction("Click", throwIfNotFound: true);
         m_PinMovement_Position = m_PinMovement.FindAction("Position", throwIfNotFound: true);
+        m_PinMovement_Cancel = m_PinMovement.FindAction("Cancel", throwIfNotFound: true);
+        m_PinMovement_ToggleMode = m_PinMovement.FindAction("ToggleMode", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Newaction = m_UI.FindAction("New action", throwIfNotFound: true);
@@ -339,6 +403,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private List<IPinMovementActions> m_PinMovementActionsCallbackInterfaces = new List<IPinMovementActions>();
     private readonly InputAction m_PinMovement_Click;
     private readonly InputAction m_PinMovement_Position;
+    private readonly InputAction m_PinMovement_Cancel;
+    private readonly InputAction m_PinMovement_ToggleMode;
     /// <summary>
     /// Provides access to input actions defined in input action map "PinMovement".
     /// </summary>
@@ -358,6 +424,14 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PinMovement/Position".
         /// </summary>
         public InputAction @Position => m_Wrapper.m_PinMovement_Position;
+        /// <summary>
+        /// Provides access to the underlying input action "PinMovement/Cancel".
+        /// </summary>
+        public InputAction @Cancel => m_Wrapper.m_PinMovement_Cancel;
+        /// <summary>
+        /// Provides access to the underlying input action "PinMovement/ToggleMode".
+        /// </summary>
+        public InputAction @ToggleMode => m_Wrapper.m_PinMovement_ToggleMode;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -390,6 +464,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Position.started += instance.OnPosition;
             @Position.performed += instance.OnPosition;
             @Position.canceled += instance.OnPosition;
+            @Cancel.started += instance.OnCancel;
+            @Cancel.performed += instance.OnCancel;
+            @Cancel.canceled += instance.OnCancel;
+            @ToggleMode.started += instance.OnToggleMode;
+            @ToggleMode.performed += instance.OnToggleMode;
+            @ToggleMode.canceled += instance.OnToggleMode;
         }
 
         /// <summary>
@@ -407,6 +487,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Position.started -= instance.OnPosition;
             @Position.performed -= instance.OnPosition;
             @Position.canceled -= instance.OnPosition;
+            @Cancel.started -= instance.OnCancel;
+            @Cancel.performed -= instance.OnCancel;
+            @Cancel.canceled -= instance.OnCancel;
+            @ToggleMode.started -= instance.OnToggleMode;
+            @ToggleMode.performed -= instance.OnToggleMode;
+            @ToggleMode.canceled -= instance.OnToggleMode;
         }
 
         /// <summary>
@@ -622,6 +708,20 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPosition(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Cancel" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCancel(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleMode" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleMode(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
