@@ -8,13 +8,13 @@ using Unity.VisualScripting;
 public class GameManager : MonoBehaviour
 {
 	//Score = rawScore - scoreOffset
-	[InspectorLabel("Score")]
+	[Header("Score")]
 	private int rawScore = 0; // the score (height) reported by the pins
 	private int scoreOffset; // the starting initial score given by the highest pin on start.
 	public int highScore { get; private set; }
 	private string scorePath = "/score.json";
 	
-	[InspectorLabel("Pause")]
+	[Header("Pause")]
 	public bool isPaused { get; private set; }
 	private UIManager uiManager;
 	
@@ -78,6 +78,8 @@ public class GameManager : MonoBehaviour
 		OnRestartLevel?.Invoke();
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
+	
+	public void OnApplicationQuit() => SaveHighScoreToFile();
 	
 	private void SaveHighScoreToFile()
 	{
