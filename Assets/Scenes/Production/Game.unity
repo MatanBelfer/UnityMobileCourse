@@ -1367,6 +1367,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: Row
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: Column
       value: 5
       objectReference: {fileID: 0}
@@ -2845,6 +2849,14 @@ PrefabInstance:
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: Row
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
+      propertyPath: Column
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: gridManager
