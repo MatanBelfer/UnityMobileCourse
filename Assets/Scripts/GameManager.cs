@@ -79,6 +79,8 @@ public class GameManager : MonoBehaviour
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 	
+	public void OnApplicationQuit() => SaveHighScoreToFile();
+	
 	private void SaveHighScoreToFile()
 	{
 		if (!(GetScore() > highScore)) return;
