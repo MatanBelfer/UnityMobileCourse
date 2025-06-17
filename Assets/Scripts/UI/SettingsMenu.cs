@@ -36,6 +36,7 @@ namespace RubberClimber
             inputSystemManager = InputSystemManager.Instance;
             
             LoadSettings();
+            SetAllSettings();
         }
 
         private void LoadSettings()
@@ -48,6 +49,13 @@ namespace RubberClimber
             sfxVolSlider.value = sfxVol;
             controlSchemeSlider.value = (float)controlScheme;
             controlSchemeText.text = GetControlSchemeName(controlScheme);
+        }
+
+        private void SetAllSettings()
+        {
+            SetMusicVolume(musicVol);
+            SetSFXVolume(sfxVol);
+            SetControlScheme(controlScheme);
         }
 
         public void SetMusicVolume(float volume)
@@ -63,8 +71,14 @@ namespace RubberClimber
         {
             if (value % 1 != 0) Debug.LogError("Control scheme value must be an integer");
             controlScheme = (ControlScheme)value;
+            SetControlScheme(controlScheme);
+        }
+
+        private void SetControlScheme(ControlScheme scheme)
+        {
+            
             controlSchemeText.text = GetControlSchemeName(controlScheme);
-            inputSystemManager.SetInputMode((ControlScheme)math.round(value));
+            inputSystemManager.SetInputMode(scheme);
         }
 
         public string GetControlSchemeName(ControlScheme scheme)
