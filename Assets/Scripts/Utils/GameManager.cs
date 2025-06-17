@@ -20,7 +20,10 @@ public class GameManager : MonoBehaviour
 	
     //Singleton
 	public static GameManager Instance;
+	
+	//Scene Change events (to be called before scene change)
 	public event Action OnRestartLevel;
+	public event Action OnExitToMainMenu;
 
 	//Initialize the singleton
 	public void Awake()
@@ -38,6 +41,9 @@ public class GameManager : MonoBehaviour
 		//OnRestartLevel initialization
 		OnRestartLevel += SaveHighScoreToFile;
 		OnRestartLevel += () => rawScore = 0;
+		
+		//OnExitToMainMenu initialization
+		OnExitToMainMenu += () => SetPause(false);
 		
 		//Load the high score from file
 		string path = Application.persistentDataPath + scorePath;
@@ -120,5 +126,11 @@ public class GameManager : MonoBehaviour
 		isPaused = pauseState;
 		Time.timeScale = isPaused ? 0 : 1;
 		uiManager.PauseMenu(isPaused);
+	}
+
+	public void ExitToMainMenu()
+	{
+		OnExitToMainMenu?.Invoke();
+		SceneManager.LoadScene("Main Menu");
 	}
 }
