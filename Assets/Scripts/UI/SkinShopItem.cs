@@ -13,6 +13,8 @@ public class SkinShopItem : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text buyEquipText;
     
+    public string skinName => nameText.text;
+    
     public void SetItemData(SkinAsset asset, bool isPurchased, bool isEquipped)
     {
         // this.asset = asset;

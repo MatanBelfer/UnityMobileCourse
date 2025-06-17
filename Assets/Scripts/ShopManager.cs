@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
+using TMPro;
+using System.Linq;
 
 public class ShopManager : MonoBehaviour
 {
@@ -16,20 +18,37 @@ public class ShopManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private GameObject shopItemPrefab;
+    
+    [Header("Testing")]
+    [SerializeField] private bool testMode;
+    [SerializeField] private TMP_Text title;
 
     public void Awake()
     {
-	    skins = skinCollection.skinDictionary;
 	    LoadShopItems();
     }
 
     public void Start()
     {
 	    InstantiateShopItems();
+	    if (testMode)
+	    {
+		    try
+		    {
+			    title.text = string.Join(", ", shopItems.Select(item => item.skinName).ToArray());
+		    }
+		    catch
+		    {
+			    title.text = "Skins Not Found";
+		    }
+	    }
     }
 
     private void LoadShopItems()
     {
+	    Resources.LoadAll("Skins");
+	    skins = skinCollection.skinDictionary;
+	    
 	    string path = Application.persistentDataPath + saveDataPath;
 	    if (File.Exists(path))
 	    {
