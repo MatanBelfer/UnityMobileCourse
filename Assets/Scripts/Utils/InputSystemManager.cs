@@ -150,28 +150,7 @@ public class InputSystemManager : MonoBehaviour
             _currentPin = null;
         }
     }
-
-    private void ClearCurrentPin()
-    {
-        if (_currentPin?.isFollowing == true)
-        {
-            _currentPin.StopFollowingPin(_currentPin);
-        }
-    }
-
-    private void HandleSelectEnd(Vector3 endPosition)
-    {
-        PinLogic clickedPin = FindClosestPin(endPosition);
-        
-        if (clickedPin == null && _currentPin != null)
-        {
-            // Move selected pin to empty space
-            _currentPin.MovePinToPosition(_currentPin, endPosition);
-            _currentPin.StopFollowingPin(_currentPin);
-            _currentPin = null;
-        }
-    }
-
+    
     private void ClearCurrentPin()
     {
         if (_currentPin?.isFollowing == true)
