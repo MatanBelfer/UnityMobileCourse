@@ -1,5 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+
+//TODO class wide refactor 
+//move pin and other game logic to another class
+//leave only input handlers and event calls
 public class InputSystemManager : MonoBehaviour
 {
     private PlayerInputActions _inputActions;
@@ -29,11 +33,23 @@ public class InputSystemManager : MonoBehaviour
     private void OnEnable()
     {
         _inputActions.PinMovement.Enable();
+        
+        //UI related 
+        _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
+        
+        
+        
         // _inputActions.PinMovement.Click.started += OnClickStarted;
         _inputActions.PinMovement.Click.canceled += OnClickEnded;
         _inputActions.PinMovement.Position.started += OnPositionChanged;
         _inputActions.PinMovement.Position.performed += OnPositionChanged;
         _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
+        
+    }
+
+    private void OnTakeScreenshot(InputAction.CallbackContext obj)
+    {
+        StartCoroutine(UIManager.Instance.TakeScreenshot());
     }
 
 
