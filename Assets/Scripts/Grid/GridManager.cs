@@ -125,6 +125,7 @@ public class GridManager : ObjectPoolInterface
             // Only spawn spikes if we're at or past the trapStartRow
             if (_rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
             {
+                
                 SpawnSpike(positions[i]);
             }
         }
@@ -136,9 +137,10 @@ public class GridManager : ObjectPoolInterface
 
     private void SpawnSpike(Vector3 position)
     {
+        
         //turned off for testing
-        print("SpawnSpike has been turned off");
-        return;
+        // print("SpawnSpike has been turned off");
+        // return;
         GameObject spike = objectPoolManager.GetFromPool(gridParameters.spikePoolName);
         spike.transform.parent = transform;
         spike.transform.localPosition = position + _rowNum * _rowDist * Vector3.up;

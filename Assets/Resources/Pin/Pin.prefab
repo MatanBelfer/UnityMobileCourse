@@ -70,6 +70,8 @@ MonoBehaviour:
   Row: 3
   Column: 1
   gridManager: {fileID: 0}
+  moveDuration: 0.5
+  moveEase: 6
 --- !u!1 &5572015857119148058
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,7 +137,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c2e40fa84d53ccd428f640eac126b1fb, type: 2}
+  - {fileID: 2100000, guid: f0270ea2bbab7fa4092cf92953be4377, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
