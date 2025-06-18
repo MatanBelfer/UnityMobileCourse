@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 public class InputSystemManager : MonoBehaviour
 {
     private PlayerInputActions _inputActions;
     public static InputSystemManager Instance { get; private set; }
 
-    [Header("Input Settings")]
-    [SerializeField] private bool _isDragMode = true; // More intuitive naming
+
+    [Header("Input Settings")] [SerializeField]
+    private bool _isDragMode = true;
+
     [SerializeField] private float _maxClickDistance = 0.5f;
 
     private PinLogic _currentPin;
@@ -28,18 +29,22 @@ public class InputSystemManager : MonoBehaviour
     private void OnEnable()
     {
         _inputActions.PinMovement.Enable();
-        _inputActions.PinMovement.Click.started += OnClickStarted;
+        // _inputActions.PinMovement.Click.started += OnClickStarted;
         _inputActions.PinMovement.Click.canceled += OnClickEnded;
+        _inputActions.PinMovement.Position.started += OnPositionChanged;
         _inputActions.PinMovement.Position.performed += OnPositionChanged;
         _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
     }
+
 
     private void OnDisable()
     {
         if (_inputActions != null)
         {
-            _inputActions.PinMovement.Click.started -= OnClickStarted;
+
+            // _inputActions.PinMovement.Click.started -= OnClickStarted;
             _inputActions.PinMovement.Click.canceled -= OnClickEnded;
+            _inputActions.PinMovement.Position.started -= OnPositionChanged;
             _inputActions.PinMovement.Position.performed -= OnPositionChanged;
             _inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
             _inputActions.PinMovement.Disable();
@@ -51,13 +56,31 @@ public class InputSystemManager : MonoBehaviour
         _inputActions?.Dispose();
     }
 
-    private void OnClickStarted(InputAction.CallbackContext context)
+
+    private void OnClickEnded(InputAction.CallbackContext context)
     {
-        Vector3 clickPosition = GetClickWorldPosition();
+        Vector3 endPosition = GetClickWorldPosition();
+    
+        if (_isDragMode)
+        {
+            HandleDragEnd(endPosition);
+        }
+        else
+        {
+            HandleSelectEnd(endPosition);
+        }
+        
+    }
+
+    private void OnPositionChanged(InputAction.CallbackContext context)
+    {
+
+        Vector3 clickPosition = ScreenToWorldPosition(context.ReadValue<Vector2>());
         PinLogic clickedPin = FindClosestPin(clickPosition);
 
         if (clickedPin != null)
         {
+            Debug.Log($"Pin found at click position {clickPosition}");
             if (_isDragMode)
             {
                 StartDragging(clickedPin);
@@ -67,24 +90,11 @@ public class InputSystemManager : MonoBehaviour
                 HandlePinSelection(clickedPin);
             }
         }
-    }
-
-    private void OnClickEnded(InputAction.CallbackContext context)
-    {
-        Vector3 endPosition = GetClickWorldPosition();
-
-        if (_isDragMode)
-        {
-            HandleDragEnd(endPosition);
-        }
         else
         {
-            HandleSelectEnd(endPosition);
+            Debug.Log($"No pin found at click position {clickPosition}");
         }
-    }
 
-    private void OnPositionChanged(InputAction.CallbackContext context)
-    {
         if (_isDragMode && _currentPin?.isFollowing == true)
         {
             Vector3 worldPosition = ScreenToWorldPosition(context.ReadValue<Vector2>());
@@ -99,25 +109,53 @@ public class InputSystemManager : MonoBehaviour
         Debug.Log($"Switched to {(_isDragMode ? "DRAG" : "SELECT")} MODE");
     }
 
-    // Simplified mode-specific methods
+
     private void StartDragging(PinLogic pin)
     {
         _currentPin = pin;
         _currentPin.StartFollowingPin(_currentPin);
+
+        Debug.Log($"Started dragging pin: {pin.name}");
+
     }
 
     private void HandlePinSelection(PinLogic clickedPin)
     {
         _currentPin = (_currentPin == clickedPin) ? null : clickedPin;
+
+        Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
     }
 
     private void HandleDragEnd(Vector3 endPosition)
     {
         if (_currentPin != null)
         {
-            _currentPin.MovePinToPosition(_currentPin, endPosition);
+
+            _currentPin.MovePinToPosition(_currentPin, endPosition, false); // No animation for drag
             _currentPin.StopFollowingPin(_currentPin);
+            Debug.Log($"Finished dragging pin: {_currentPin.name}");
             _currentPin = null;
+        }
+    }
+
+    private void HandleSelectEnd(Vector3 endPosition)
+    {
+        PinLogic clickedPin = FindClosestPin(endPosition);
+
+        if (clickedPin == null && _currentPin != null)
+        {
+            // Move selected pin to empty space with animation
+            _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
+            Debug.Log($"Moved selected pin to: {endPosition}");
+            _currentPin = null;
+        }
+    }
+
+    private void ClearCurrentPin()
+    {
+        if (_currentPin?.isFollowing == true)
+        {
+            _currentPin.StopFollowingPin(_currentPin);
         }
     }
 
@@ -140,6 +178,7 @@ public class InputSystemManager : MonoBehaviour
         {
             _currentPin.StopFollowingPin(_currentPin);
         }
+
         _currentPin = null;
     }
 
