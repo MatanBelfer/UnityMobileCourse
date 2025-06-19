@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8573417736375085141}
   - component: {fileID: 7863057312965699086}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Rubber Band Anchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}

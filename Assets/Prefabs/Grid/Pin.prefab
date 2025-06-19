@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 892449315734885377}
   - component: {fileID: 7468481033524766721}
   - component: {fileID: 1093626876090619070}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pin
   m_TagString: Pin
   m_Icon: {fileID: 0}
@@ -84,7 +84,7 @@ GameObject:
   - component: {fileID: 8773886507957764736}
   - component: {fileID: 5337723221326776199}
   - component: {fileID: 2697969636554782075}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

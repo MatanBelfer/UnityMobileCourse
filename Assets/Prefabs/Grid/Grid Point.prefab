@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6615361217767904859}
   - component: {fileID: 7571514648445476067}
   - component: {fileID: 439864599105265983}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube
   m_TagString: GridPoint
   m_Icon: {fileID: 0}
@@ -147,7 +147,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 492826436985951535}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Grid Point
   m_TagString: GridPoint
   m_Icon: {fileID: 0}
