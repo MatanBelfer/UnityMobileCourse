@@ -96,7 +96,7 @@ public class InputSystemManager : MonoBehaviour
 
         if (clickedPin != null)
         {
-            Debug.Log($"Pin found at click position {clickPosition}");
+           // Debug.Log($"Pin found at click position {clickPosition}");
             if (_isDragMode)
             {
                 StartDragging(clickedPin);
@@ -108,7 +108,7 @@ public class InputSystemManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"No pin found at click position {clickPosition}");
+         //   Debug.Log($"No pin found at click position {clickPosition}");
         }
 
         if (_isDragMode && _currentPin?.isFollowing == true)
@@ -122,7 +122,7 @@ public class InputSystemManager : MonoBehaviour
     {
         _isDragMode = !_isDragMode;
         ClearCurrentPin();
-        Debug.Log($"Switched to {(_isDragMode ? "DRAG" : "SELECT")} MODE");
+       // Debug.Log($"Switched to {(_isDragMode ? "DRAG" : "SELECT")} MODE");
     }
 
 
@@ -131,7 +131,7 @@ public class InputSystemManager : MonoBehaviour
         _currentPin = pin;
         _currentPin.StartFollowingPin(_currentPin);
 
-        Debug.Log($"Started dragging pin: {pin.name}");
+       // Debug.Log($"Started dragging pin: {pin.name}");
 
     }
 
@@ -139,7 +139,7 @@ public class InputSystemManager : MonoBehaviour
     {
         _currentPin = (_currentPin == clickedPin) ? null : clickedPin;
 
-        Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
+     //   Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
     }
 
     private void HandleDragEnd(Vector3 endPosition)
@@ -149,7 +149,7 @@ public class InputSystemManager : MonoBehaviour
 
             _currentPin.MovePinToPosition(_currentPin, endPosition, false); // No animation for drag
             _currentPin.StopFollowingPin(_currentPin);
-            Debug.Log($"Finished dragging pin: {_currentPin.name}");
+         //   Debug.Log($"Finished dragging pin: {_currentPin.name}");
             _currentPin = null;
         }
     }
@@ -162,7 +162,7 @@ public class InputSystemManager : MonoBehaviour
         {
             // Move selected pin to empty space with animation
             _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
-            Debug.Log($"Moved selected pin to: {endPosition}");
+          //  Debug.Log($"Moved selected pin to: {endPosition}");
             _currentPin = null;
         }
     }

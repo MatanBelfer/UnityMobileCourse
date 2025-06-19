@@ -305,4 +305,11 @@ public class GridManager : ObjectPoolInterface
             objectPoolManager.InsertToPool(gridParameters.spikePoolName, spike);
         }
     }
+    
+    public void ReturnObjectToPool(GameObject obj)
+    {
+        
+        
+        objectPoolManager.InsertToPool(obj.GetComponent<ObjectPoolInterface>()?.poolName, obj);
+    }
 }

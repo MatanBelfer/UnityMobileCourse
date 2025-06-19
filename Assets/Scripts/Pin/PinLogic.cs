@@ -90,7 +90,7 @@ public class PinLogic : MonoBehaviour
     
     public void StopFollowingPin(PinLogic pin)
     {
-        Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
+        // Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
 
         if (pin == null || pin.gridManager == null) return;
 
