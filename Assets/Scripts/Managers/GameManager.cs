@@ -63,11 +63,7 @@ public class GameManager : MonoBehaviour
 	//test pause 
 	public void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Escape))
-		{
-			SetPause(!isPaused);
-			print($"{isPaused : True/False}");
-		}
+
 	}
 	
 	//Destroy the singleton

@@ -117,8 +117,20 @@ public class ObjectPoolManager : MonoBehaviour
 
     public void InsertToPool(string poolName, GameObject obj)
     {
-        if (obj == null) return;
+        if (obj == null)
+        {
+            Debug.LogWarning($"Attempted to insert null object into pool {poolName}");
+            return;
+        }
+
+        Debug.Log("obj name is: " + obj.name + " parent is: " + obj.transform.parent.gameObject.name + "");
         CheckPoolExists(poolName);
+        if (!activeObjects[poolName].Contains(obj))
+        {
+            Debug.LogWarning(
+                $"Attempted to remove object {obj.name} from pool {poolName} that is not present in the pool.");
+            return;
+        }
 
         // Remove from current parent first
         Transform originalParent = obj.transform.parent;
@@ -126,7 +138,7 @@ public class ObjectPoolManager : MonoBehaviour
         {
             obj.transform.SetParent(null);
         }
-        
+
         obj.SetActive(false);
         obj.transform.SetParent(transform);
         pools[poolName].Enqueue(obj);

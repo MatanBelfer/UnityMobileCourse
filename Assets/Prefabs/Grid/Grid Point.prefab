@@ -11,10 +11,7 @@ GameObject:
   - component: {fileID: 6829056934409713958}
   - component: {fileID: 4948758379676548365}
   - component: {fileID: 2347920258148815285}
-  - component: {fileID: 6615361217767904859}
-  - component: {fileID: 7571514648445476067}
-  - component: {fileID: 439864599105265983}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube
   m_TagString: GridPoint
   m_Icon: {fileID: 0}
@@ -67,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 743ddba67bdfdb946aaabba977af38fb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -89,55 +86,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &6615361217767904859
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898577117489903967}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7571514648445476067
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898577117489903967}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8926750fd58db84e872e251a530ab4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  poolName: Holes
-  objectPoolManager: {fileID: 0}
---- !u!114 &439864599105265983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898577117489903967}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59003df76beaa4544a1e39e031578ce9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  poolName: 
-  objectPoolManager: {fileID: 0}
 --- !u!1 &3795337455847509368
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,7 +95,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 492826436985951535}
-  m_Layer: 0
+  - component: {fileID: 4913529983579993953}
+  - component: {fileID: 3679639705067938598}
+  - component: {fileID: 7366466226822975207}
+  m_Layer: 3
   m_Name: Grid Point
   m_TagString: GridPoint
   m_Icon: {fileID: 0}
@@ -165,8 +116,57 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6829056934409713958}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4913529983579993953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3795337455847509368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8926750fd58db84e872e251a530ab4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poolName: Holes
+  objectPoolManager: {fileID: 0}
+--- !u!114 &3679639705067938598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3795337455847509368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59003df76beaa4544a1e39e031578ce9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poolName: 
+  objectPoolManager: {fileID: 0}
+--- !u!65 &7366466226822975207
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3795337455847509368}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.2, y: 0.2, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}

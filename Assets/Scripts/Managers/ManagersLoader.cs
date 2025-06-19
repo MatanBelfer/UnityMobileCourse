@@ -24,7 +24,7 @@ public class ManagersLoader : MonoBehaviour
         }
 
         poolManager.gameObject.SetActive(true);
-        DontDestroyOnLoad(poolManager.gameObject);
+        // DontDestroyOnLoad(poolManager.gameObject); // no need to add to DontDestroyOnLoad because it's a child of the main manager
 
         // Wait a frame to ensure ObjectPoolManager's Awake has run
         StartCoroutine(InitializeAfterPoolManager());
