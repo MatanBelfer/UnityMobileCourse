@@ -17,20 +17,20 @@ namespace RubberClimber
     {
         //Functionality of the settings menu
         private float musicVol;
-        private float sfxVol;
+        private float masterVol;
         private ControlScheme controlScheme;
         private InputSystemManager inputSystemManager;
 
         [Header("Sliders")]
         [SerializeField] private Slider musicVolSlider;
-        [SerializeField] private Slider sfxVolSlider; 
+        [SerializeField] private Slider masterVolSlider; 
         [SerializeField] private Slider controlSchemeSlider;
         [SerializeField] private TMP_Text controlSchemeText;
 
         private void Start()
         {
             musicVolSlider.onValueChanged.AddListener(SetMusicVolume);
-            sfxVolSlider.onValueChanged.AddListener(SetSFXVolume);
+            masterVolSlider.onValueChanged.AddListener(SetSFXVolume);
             controlSchemeSlider.onValueChanged.AddListener(SetControlScheme);
             
             inputSystemManager = InputSystemManager.Instance;
@@ -42,11 +42,11 @@ namespace RubberClimber
         private void LoadSettings()
         {
             musicVol = PlayerPrefs.GetFloat("musicVol");
-            sfxVol = PlayerPrefs.GetFloat("sfxVol");
+            masterVol = PlayerPrefs.GetFloat("masterVol");
             controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
             //set sliders
             musicVolSlider.value = musicVol;
-            sfxVolSlider.value = sfxVol;
+            masterVolSlider.value = masterVol;
             controlSchemeSlider.value = (float)controlScheme;
             controlSchemeText.text = GetControlSchemeName(controlScheme);
         }
@@ -54,7 +54,7 @@ namespace RubberClimber
         private void SetAllSettings()
         {
             SetMusicVolume(musicVol);
-            SetSFXVolume(sfxVol);
+            SetSFXVolume(masterVol);
             SetControlScheme(controlScheme);
         }
 
@@ -64,7 +64,7 @@ namespace RubberClimber
         }
         public void SetSFXVolume(float volume)
         {
-            sfxVol = volume;
+            masterVol = volume;
         }
 
         public void SetControlScheme(float value)
@@ -76,9 +76,9 @@ namespace RubberClimber
 
         private void SetControlScheme(ControlScheme scheme)
         {
-            
             controlSchemeText.text = GetControlSchemeName(controlScheme);
-            inputSystemManager.SetInputMode(scheme);
+            //inputSystemManager.SetInputMode(scheme);
+            print("Implement change control scheme");
         }
 
         public string GetControlSchemeName(ControlScheme scheme)
@@ -109,7 +109,7 @@ namespace RubberClimber
         private void SaveSettings()
         {
             PlayerPrefs.SetFloat("musicVol", musicVol);
-            PlayerPrefs.SetFloat("sfxVol", sfxVol);
+            PlayerPrefs.SetFloat("masterVol", masterVol);
             PlayerPrefs.SetInt("controlScheme", (int)controlScheme);
         }
     }
