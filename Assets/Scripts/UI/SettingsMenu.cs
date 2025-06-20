@@ -7,12 +7,6 @@ using UnityEngine.UI;
 
 namespace RubberClimber
 {
-    public enum ControlScheme
-    {
-        DragAndDrop = 0,
-        TapTap = 1 //tap pin to select, tap place to make it move there
-    }
-    
     public class SettingsMenu : MonoBehaviour
     {
         //Functionality of the settings menu
@@ -26,6 +20,9 @@ namespace RubberClimber
         [SerializeField] private Slider masterVolSlider; 
         [SerializeField] private Slider controlSchemeSlider;
         [SerializeField] private TMP_Text controlSchemeText;
+        
+        [Header("MainMenu")]
+        [SerializeField] private MainMenuCallbacks mainMenu;
 
         private void Start()
         {
@@ -37,6 +34,8 @@ namespace RubberClimber
             
             LoadSettings();
             SetAllSettings();
+            
+            if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
         }
 
         private void LoadSettings()
@@ -48,7 +47,7 @@ namespace RubberClimber
             musicVolSlider.value = musicVol;
             masterVolSlider.value = masterVol;
             controlSchemeSlider.value = (float)controlScheme;
-            controlSchemeText.text = GetControlSchemeName(controlScheme);
+            controlSchemeText.text = controlScheme.ToString();
         }
 
         private void SetAllSettings()
@@ -62,6 +61,7 @@ namespace RubberClimber
         {
             musicVol = volume;
         }
+        
         public void SetSFXVolume(float volume)
         {
             masterVol = volume;
@@ -76,22 +76,8 @@ namespace RubberClimber
 
         private void SetControlScheme(ControlScheme scheme)
         {
-            controlSchemeText.text = GetControlSchemeName(controlScheme);
-            //inputSystemManager.SetInputMode(scheme);
-            print("Implement change control scheme");
-        }
-
-        public string GetControlSchemeName(ControlScheme scheme)
-        {
-            switch (scheme)
-            {
-                case ControlScheme.DragAndDrop:
-                    return "Drag and Drop";
-                case ControlScheme.TapTap:
-                    return "Tap Tap";
-                default:
-                    return "Unknown";
-            }
+            controlSchemeText.text = controlScheme.ToString();
+            inputSystemManager?.SetControlScheme(scheme);
         }
 
         public void CloseMenu()
@@ -111,6 +97,7 @@ namespace RubberClimber
             PlayerPrefs.SetFloat("musicVol", musicVol);
             PlayerPrefs.SetFloat("masterVol", masterVol);
             PlayerPrefs.SetInt("controlScheme", (int)controlScheme);
+            print("Settings Saved");
         }
     }
 }
