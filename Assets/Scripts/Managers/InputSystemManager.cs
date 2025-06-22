@@ -19,8 +19,8 @@ namespace RubberClimber
         public static InputSystemManager Instance { get; private set; }
 
 
-        [Header("Input Settings")]
-        [SerializeField] private ControlScheme controlScheme = ControlScheme.DragAndDrop;
+        [Header("Input Settings")] [SerializeField]
+        private ControlScheme controlScheme = ControlScheme.DragAndDrop;
 
         [SerializeField] private float _maxClickDistance = 0.5f;
 
@@ -49,13 +49,11 @@ namespace RubberClimber
             _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
 
 
-
             // _inputActions.PinMovement.Click.started += OnClickStarted;
             _inputActions.PinMovement.Click.canceled += OnClickEnded;
             _inputActions.PinMovement.Position.started += OnPositionChanged;
             _inputActions.PinMovement.Position.performed += OnPositionChanged;
             _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
-
         }
 
         private void OnTakeScreenshot(InputAction.CallbackContext obj)
@@ -68,7 +66,6 @@ namespace RubberClimber
         {
             if (_inputActions != null)
             {
-
                 // _inputActions.PinMovement.Click.started -= OnClickStarted;
                 _inputActions.PinMovement.Click.canceled -= OnClickEnded;
                 _inputActions.PinMovement.Position.started -= OnPositionChanged;
@@ -95,30 +92,45 @@ namespace RubberClimber
             {
                 HandleSelectEnd(endPosition);
             }
-
         }
+
+        private bool IsOverPin(Vector3 worldPosition)
+        {
+            PinLogic clickedPin = FindClosestPin(worldPosition);
+
+            if (_currentPin != null && clickedPin != null)
+            {
+                if (_currentPin != clickedPin)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
         private void OnPositionChanged(InputAction.CallbackContext context)
         {
-
             Vector3 clickPosition = ScreenToWorldPosition(context.ReadValue<Vector2>());
             PinLogic clickedPin = FindClosestPin(clickPosition);
 
-            if (clickedPin != null)
+
+            if (_currentPin != null)
             {
                 // Debug.Log($"Pin found at click position {clickPosition}");
                 if (controlScheme == ControlScheme.DragAndDrop)
                 {
-                    StartDragging(clickedPin);
+                    StartDragging(_currentPin);
                 }
                 else
                 {
-                    HandlePinSelection(clickedPin);
+                    HandlePinSelection(_currentPin);
                 }
             }
             else
             {
-                //   Debug.Log($"No pin found at click position {clickPosition}");
+                _currentPin = clickedPin;
             }
 
             if (controlScheme == ControlScheme.DragAndDrop && _currentPin?.isFollowing == true)
@@ -130,8 +142,9 @@ namespace RubberClimber
 
         private void OnToggleModePressed(InputAction.CallbackContext context)
         {
-            ControlScheme newScheme = controlScheme == ControlScheme.DragAndDrop ?
-                    ControlScheme.TapTap : ControlScheme.DragAndDrop;
+            ControlScheme newScheme = controlScheme == ControlScheme.DragAndDrop
+                ? ControlScheme.TapTap
+                : ControlScheme.DragAndDrop;
             SetControlScheme(newScheme);
             // Debug.Log($"Switched to {(_isDragMode ? "DRAG" : "SELECT")} MODE");
         }
@@ -149,7 +162,6 @@ namespace RubberClimber
             _currentPin.StartFollowingPin(_currentPin);
 
             // Debug.Log($"Started dragging pin: {pin.name}");
-
         }
 
         private void HandlePinSelection(PinLogic clickedPin)
@@ -163,7 +175,6 @@ namespace RubberClimber
         {
             if (_currentPin != null)
             {
-
                 _currentPin.MovePinToPosition(_currentPin, endPosition, false); // No animation for drag
                 _currentPin.StopFollowingPin(_currentPin);
                 //   Debug.Log($"Finished dragging pin: {_currentPin.name}");

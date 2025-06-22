@@ -238,7 +238,7 @@ public class GeometricRubberBand : MonoBehaviour
         connectedActivePins.Remove(pinToRemove);
         pinToRemove.prevPin.nextPin = pinToRemove.nextPin;
         pinToRemove.nextPin.prevPin = pinToRemove.prevPin;
-        
+
         // Return old segment to pool
         if (pinToRemove.nextSegment != null)
         {
@@ -316,17 +316,24 @@ public class GeometricRubberBand : MonoBehaviour
 
     public void Reset()
     {
-        if (ObjectPoolManager.Instance == null) return;
+        Debug.Log("Resetting band");
+        if (ObjectPoolManager.Instance == null) Debug.Log("ObjectPoolManager is null");
+
+
+        Debug.Log($" bandSegments is not null: {bandSegments != null}");
 
         // Clean up all segments
         foreach (var segment in bandSegments.ToList()) // Use ToList to avoid modification during enumeration
         {
-            if (segment != null && segment.gameObject != null)
+            if (segment != null && segment != null)
             {
+                Debug.Log(
+                    $" segment is not null: {segment != null} obj name: {segment.name} , parent is: {segment.parent.gameObject.name}");
                 segment.SetParent(null); // Unparent before returning to pool
                 ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment.gameObject);
             }
         }
+
         bandSegments.Clear();
 
         // Reset all pins
@@ -337,10 +344,12 @@ public class GeometricRubberBand : MonoBehaviour
             {
                 pin.nextSegment = null;
             }
+
             if (pin.prevSegment != null)
             {
                 pin.prevSegment = null;
             }
+
             pin.nextPin = null;
             pin.prevPin = null;
             pin.active = false;
@@ -517,7 +526,7 @@ public class Segment
         transform = ObjectPoolManager.Instance.GetFromPool(objectPoolName).transform;
         // Parent to GeometricRubberBand immediately after getting from pool
         transform.SetParent(GeometricRubberBand.Instance.transform);
-        
+
         followScript = transform.GetComponent<FollowTwoTransforms>();
         followScript.target1 = prevPin.transform;
         followScript.target2 = nextPin.transform;

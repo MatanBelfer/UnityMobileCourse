@@ -343,7 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ec9d70e5ef8e6d4892343579cd85b25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolName: 
+  poolName: SpikePool
   objectPoolManager: {fileID: 0}
 --- !u!135 &1049828145462138788
 SphereCollider:

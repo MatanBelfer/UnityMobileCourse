@@ -117,13 +117,15 @@ public class ObjectPoolManager : MonoBehaviour
 
     public void InsertToPool(string poolName, GameObject obj)
     {
+        
+        Debug.Log("obj name is: " + obj.name + " parent is: " + obj.transform.parent.gameObject.name + " pool is: " + poolName);
+
         if (obj == null)
         {
-            Debug.LogWarning($"Attempted to insert null object into pool {poolName}");
+            Debug.Log($"Attempted to insert null object into pool {poolName}");
             return;
         }
 
-        Debug.Log("obj name is: " + obj.name + " parent is: " + obj.transform.parent.gameObject.name + "");
         CheckPoolExists(poolName);
         if (!activeObjects[poolName].Contains(obj))
         {

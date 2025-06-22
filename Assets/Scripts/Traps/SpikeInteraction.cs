@@ -19,7 +19,6 @@ public class SpikeInteraction : MonoBehaviour
             
             if (GeometricRubberBand.Instance != null)
             {
-                print(1);
                 GeometricRubberBand.Instance.Reset();  
             }
             
