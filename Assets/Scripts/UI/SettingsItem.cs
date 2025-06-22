@@ -24,42 +24,36 @@ namespace RubberClimber
         //component for settings menu items 
         [Header("Attributes")]
         [SerializeField] private string _playerPrefsName;
+        public string playerPrefsName => _playerPrefsName;
         [SerializeField] [Tooltip("If you want the setting to refer to an enum, set this to the enum's name." +
                                   "In this case, it will be saved in playerPrefs as int. Choose NA otherwise")]
         public SettingType settingType;
+        public bool saveAsInt => settingType != SettingType.NA;
+        
+        
         [Header("Children")]
         [SerializeField] private TMP_Text valueText;
         [SerializeField] private GameObject uiInputObject; //slider or toggle
-        
-        public string playerPrefsName => _playerPrefsName;
+        private MonoBehaviour inputComponent; // the actual component reference        
         public UIInputMethod uiInputMethod {private set; get;}
-        public bool saveAsInt => settingType != SettingType.NA;
-        private Action<object> SetUIObjectValue; // sets the value of the slider or toggle 
+        
 
         public void Awake()
         {
-            // InitializeGetValueName();
-            
             //set uiInputMethod
-            Slider slider = uiInputObject.GetComponent<Slider>();
-            Toggle toggle = uiInputObject.GetComponent<Toggle>();
-            if (slider)
+            
+            inputComponent = (MonoBehaviour)uiInputObject.GetComponent(typeof(Slider));
+            if (inputComponent)
             {
                 uiInputMethod = UIInputMethod.Slider;
-                SetUIObjectValue = (value) =>
-                {
-                    if (value is float f) slider.value = f;
-                };
-                slider.onValueChanged.AddListener(SetValueFloat);
+                (inputComponent as Slider).onValueChanged.AddListener(SetValueFloat);
+                return;
             }
-            else if (toggle)
+            inputComponent = (MonoBehaviour)uiInputObject.GetComponent(typeof(Toggle));
+            if (inputComponent)
             {
                 uiInputMethod = UIInputMethod.Toggle;
-                SetUIObjectValue = (value) =>
-                {
-                    if (value is bool b) toggle.isOn = b;
-                };
-                toggle.onValueChanged.AddListener(SetValueBool);
+                (inputComponent as Toggle).onValueChanged.AddListener(SetValueBool);
             }
             else
             {
@@ -146,22 +140,19 @@ namespace RubberClimber
                 valueText.text = GetValueName(value);
             }
             //set the value in the slider or toggle
-            print($"SetValue got {typeof(T)}");
+            //print($"SetValue got {typeof(T)}");
             SetValueInUIObject<T>(value);
         }
 
         private void SetValueInUIObject<T>(T value) where T : struct
         {
-            print($"SetValueInUIObject got {typeof(T)}");
             if (uiInputMethod == UIInputMethod.Slider && typeof(T) == typeof(float))
             {
-                print($"entered slider with value {(float)(object)value}. {value}");
-                uiInputObject.GetComponent<Slider>().value = (float)(object)value;
+                (inputComponent as Slider).value = (float)(object)value;
             }
             else if (uiInputMethod == UIInputMethod.Toggle && typeof(T) == typeof(bool))
             {
-                print("entered toggle");
-                uiInputObject.GetComponent<Toggle>().isOn = (bool)(object)value;
+                (inputComponent as Toggle).isOn = (bool)(object)value;
             }
             else
             {
@@ -174,11 +165,11 @@ namespace RubberClimber
         {
             if (typeof(T) == typeof(float) && uiInputMethod == UIInputMethod.Slider)
             {
-                return (T)(object)uiInputObject.GetComponent<Slider>().value;
+                return (T)(object)(inputComponent as Slider).value;
             }
             if (typeof(T) == typeof(string) && uiInputMethod == UIInputMethod.Toggle)
             {
-                return (T)(object)(uiInputObject.GetComponent<Toggle>().isOn ? "True" : "False");
+                return (T)(object)((inputComponent as Toggle).isOn ? "True" : "False");
             }
             if (typeof(T) == typeof(int) && uiInputMethod == UIInputMethod.Slider)
             {
