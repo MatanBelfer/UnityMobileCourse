@@ -423,7 +423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerPrefsName: controlScheme
-  settingType: ContolScheme
+  settingType: 0
   valueText: {fileID: 3032963614507541062}
   uiInputObject: {fileID: 8581400321164064404}
 --- !u!1 &8581400321164064404
@@ -550,7 +550,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: 0, y: 0.0000038146973}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1378072824362123085
@@ -1036,7 +1036,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerPrefsName: masterVol
-  settingType: 
+  settingType: 0
   valueText: {fileID: 0}
   uiInputObject: {fileID: 7721743687873612784}
 --- !u!224 &7162711485848960120 stripped
@@ -1625,7 +1625,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerPrefsName: musicVol
-  settingType: 
+  settingType: 0
   valueText: {fileID: 0}
   uiInputObject: {fileID: 1864825826809856511}
 --- !u!1001 &8742179688489802617

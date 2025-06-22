@@ -5,6 +5,12 @@ using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 
+public enum Difficulty
+{
+	Easy,
+	Hard
+}
+
 public class GameManager : MonoBehaviour
 {
 	//Score = rawScore - scoreOffset
