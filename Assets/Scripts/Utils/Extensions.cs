@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace RubberClimber
 {
-	static public class Extensions
+	public static class Extensions
 	{
 		public static string ToString(this ControlScheme scheme)
 		{
