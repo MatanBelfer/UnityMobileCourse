@@ -4,7 +4,7 @@ namespace RubberClimber
 {
 	public static class Extensions
 	{
-		public static string ToString(this ControlScheme scheme)
+		public static string GetName(this ControlScheme scheme)
 		{
 			switch (scheme)
 			{

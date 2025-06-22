@@ -69,7 +69,11 @@ namespace RubberClimber
                 case SettingType.NA:
                     return value.ToString();
                 case SettingType.ControlScheme:
-                    if (value is float f) return ((ControlScheme)(int)math.round(f)).ToString();
+                    if (value is float f)
+                    {
+                        ControlScheme scheme = (ControlScheme)(int)math.round(f);
+                        return scheme.GetName();
+                    }
                     throw new Exception($"ControlScheme value is not a float: {value}");
                 case SettingType.Difficulty:
                     throw new NotImplementedException();
