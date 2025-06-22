@@ -4,100 +4,145 @@ using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
-namespace RubberClimber
+public class SettingsMenu : MonoBehaviour
 {
-    public class SettingsMenu : MonoBehaviour
+    //Functionality of the settings menu
+    // private float musicVol;
+    // private float masterVol;
+    // private ControlScheme controlScheme;
+    private InputSystemManager inputSystemManager;
+
+    private SettingsItem[] settingsItems;
+    
+    // [Header("Sliders")]
+    // [SerializeField] private Slider musicVolSlider;
+    // [SerializeField] private Slider masterVolSlider; 
+    // [SerializeField] private Slider controlSchemeSlider;
+    // [SerializeField] private TMP_Text controlSchemeText;
+    
+    [Header("MainMenu")]
+    [SerializeField] private MainMenuCallbacks mainMenu;
+
+    private void Start()
     {
-        //Functionality of the settings menu
-        private float musicVol;
-        private float masterVol;
-        private ControlScheme controlScheme;
-        private InputSystemManager inputSystemManager;
-
-        [Header("Sliders")]
-        [SerializeField] private Slider musicVolSlider;
-        [SerializeField] private Slider masterVolSlider; 
-        [SerializeField] private Slider controlSchemeSlider;
-        [SerializeField] private TMP_Text controlSchemeText;
+        // musicVolSlider.onValueChanged.AddListener(SetMusicVolume);
+        // masterVolSlider.onValueChanged.AddListener(SetSFXVolume);
+        // controlSchemeSlider.onValueChanged.AddListener(SetControlScheme);
+        settingsItems = GetComponentsInChildren<SettingsItem>();
         
-        [Header("MainMenu")]
-        [SerializeField] private MainMenuCallbacks mainMenu;
+        inputSystemManager = InputSystemManager.Instance;
+        
+        LoadSettings();
+        // SetAllSettings();
+        
+        if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
+    }
 
-        private void Start()
+    private void LoadSettings()
+    {
+        foreach (var item in settingsItems)
         {
-            musicVolSlider.onValueChanged.AddListener(SetMusicVolume);
-            masterVolSlider.onValueChanged.AddListener(SetSFXVolume);
-            controlSchemeSlider.onValueChanged.AddListener(SetControlScheme);
+            string prefsName = item.playerPrefsName;
+            //print(prefsName);
+            if (!PlayerPrefs.HasKey(prefsName)) continue;
+            //print($"{prefsName} exists");
             
-            inputSystemManager = InputSystemManager.Instance;
-            
-            LoadSettings();
-            SetAllSettings();
-            
-            if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
-        }
-
-        private void LoadSettings()
-        {
-            musicVol = PlayerPrefs.GetFloat("musicVol");
-            masterVol = PlayerPrefs.GetFloat("masterVol");
-            controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
-            //set sliders
-            musicVolSlider.value = musicVol;
-            masterVolSlider.value = masterVol;
-            controlSchemeSlider.value = (float)controlScheme;
-            controlSchemeText.text = controlScheme.ToString();
-        }
-
-        private void SetAllSettings()
-        {
-            SetMusicVolume(musicVol);
-            SetSFXVolume(masterVol);
-            SetControlScheme(controlScheme);
-        }
-
-        public void SetMusicVolume(float volume)
-        {
-            musicVol = volume;
+            if (item.uiInputMethod == UIInputMethod.Slider && item.saveAsInt)
+            {
+                item.SetValue((float)PlayerPrefs.GetInt(prefsName));
+            }
+            else if (item.uiInputMethod == UIInputMethod.Slider)
+            {
+                //print($"setting from {prefsName}");
+                item.SetValueFloat(PlayerPrefs.GetFloat(prefsName));
+            }
+            else if (item.uiInputMethod == UIInputMethod.Toggle)
+            {
+                item.SetValueBool(PlayerPrefs.GetString(prefsName) == "True");
+            }
         }
         
-        public void SetSFXVolume(float volume)
-        {
-            masterVol = volume;
-        }
+        // musicVol = PlayerPrefs.GetFloat("musicVol");
+        // masterVol = PlayerPrefs.GetFloat("masterVol");
+        // controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
+        //set sliders and toggles to the saved values
+        
+        // musicVolSlider.value = musicVol;
+        // masterVolSlider.value = masterVol;
+        // controlSchemeSlider.value = (float)controlScheme;
+        // controlSchemeText.text = controlScheme.ToString();
+    }
 
-        public void SetControlScheme(float value)
-        {
-            if (value % 1 != 0) Debug.LogError("Control scheme value must be an integer");
-            controlScheme = (ControlScheme)value;
-            SetControlScheme(controlScheme);
-        }
+    // private void SetAllSettings()
+    // {
+    //     // SetMusicVolume(musicVol);
+    //     // SetSFXVolume(masterVol);
+    //     // SetControlScheme(controlScheme);
+    // }
 
-        private void SetControlScheme(ControlScheme scheme)
-        {
-            controlSchemeText.text = controlScheme.ToString();
-            inputSystemManager?.SetControlScheme(scheme);
-        }
+    // public void SetMusicVolume(float volume)
+    // {
+    //     musicVol = volume;
+    // }
+    //
+    // public void SetSFXVolume(float volume)
+    // {
+    //     masterVol = volume;
+    // }
 
-        public void CloseMenu()
+    // public void SetControlScheme(float value)
+    // {
+    //     if (value % 1 != 0) Debug.LogError("Control scheme value must be an integer");
+    //     controlScheme = (ControlScheme)value;
+    //     SetControlScheme(controlScheme);
+    // }
+
+    // private void SetControlScheme(ControlScheme scheme)
+    // {
+    //     // controlSchemeText.text = controlScheme.ToString();
+    //     inputSystemManager?.SetControlScheme(scheme);
+    // }
+
+    // public void SetDifficulty(float value)
+    // {
+    //     
+    // }
+
+    public void CloseMenu()
+    {
+        SaveSettings();
+        gameObject.SetActive(false);
+    }
+
+    private void SaveSettings()
+    {
+        foreach (var item in settingsItems)
         {
-            ApplySettings();
-            SaveSettings();
-            gameObject.SetActive(false);
+            string prefsName = item.playerPrefsName;
+            if (item.uiInputMethod == UIInputMethod.Slider && item.saveAsInt)
+            {
+                print($"saved {item.playerPrefsName}");
+                int value = item.GetValue<int>();
+                PlayerPrefs.SetInt(prefsName,value);
+            }
+            else if (item.uiInputMethod == UIInputMethod.Slider)
+            {
+                print($"saved {item.playerPrefsName}");
+                float value = item.GetValue<float>();
+                PlayerPrefs.SetFloat(prefsName, value);
+            }
+            else if (item.uiInputMethod == UIInputMethod.Toggle)
+            {
+                bool value = item.GetValue<bool>();
+                PlayerPrefs.SetString(prefsName, value ? "True" : "False");
+            }
         }
         
-        private void ApplySettings()
-        {
-            //Apply settings
-        }
-
-        private void SaveSettings()
-        {
-            PlayerPrefs.SetFloat("musicVol", musicVol);
-            PlayerPrefs.SetFloat("masterVol", masterVol);
-            PlayerPrefs.SetInt("controlScheme", (int)controlScheme);
-            print("Settings Saved");
-        }
+        // PlayerPrefs.SetFloat("musicVol", musicVol);
+        // PlayerPrefs.SetFloat("masterVol", masterVol);
+        // PlayerPrefs.SetInt("controlScheme", (int)controlScheme);
+        //print("Settings Saved");
     }
 }

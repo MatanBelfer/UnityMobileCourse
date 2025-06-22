@@ -1,20 +1,30 @@
 using UnityEngine;
 
-namespace RubberClimber
+public static class Extensions
 {
-	static public class Extensions
+	public static string GetName(this ControlScheme scheme)
 	{
-		public static string ToString(this ControlScheme scheme)
+		switch (scheme)
 		{
-			switch (scheme)
-			{
-				case ControlScheme.DragAndDrop:
-					return "Drag and Drop";
-				case ControlScheme.TapTap:
-					return "Tap Tap";
-				default:
-					return "Unknown";
-			}
+			case ControlScheme.DragAndDrop:
+				return "Drag and Drop";
+			case ControlScheme.TapTap:
+				return "Tap Tap";
+			default:
+				return "Unknown";
+		}
+	}
+
+	public static string GetName(this Difficulty difficulty)
+	{
+		switch (difficulty)
+		{
+			case Difficulty.Easy:
+				return "Chill";
+			case Difficulty.Hard:
+				return "Challenging!";
+			default:
+				return "Unknown";
 		}
 	}
 }

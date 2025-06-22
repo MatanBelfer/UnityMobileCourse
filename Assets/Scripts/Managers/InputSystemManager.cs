@@ -5,22 +5,20 @@ using UnityEngine.InputSystem;
 //move pin and other game logic to another class
 //leave only input handlers and event calls
 
-namespace RubberClimber
+public enum ControlScheme
 {
-    public enum ControlScheme
-    {
-        DragAndDrop = 0,
-        TapTap = 1 //tap pin to select, tap a place to make it move there
-    }
+    DragAndDrop = 0,
+    TapTap = 1 //tap pin to select, tap a place to make it move there
+}
 
-    public class InputSystemManager : MonoBehaviour
-    {
-        private PlayerInputActions _inputActions;
-        public static InputSystemManager Instance { get; private set; }
+public class InputSystemManager : MonoBehaviour
+{
+    private PlayerInputActions _inputActions;
+    public static InputSystemManager Instance { get; private set; }
 
 
-        [Header("Input Settings")] [SerializeField]
-        private ControlScheme controlScheme = ControlScheme.DragAndDrop;
+    [Header("Input Settings")]
+    [SerializeField] private ControlScheme controlScheme = ControlScheme.DragAndDrop;
 
         [SerializeField] private float _maxClickDistance = 0.5f;
 
@@ -75,14 +73,14 @@ namespace RubberClimber
             }
         }
 
-        private void OnDestroy()
-        {
-            _inputActions?.Dispose();
-        }
+    private void OnDestroy()
+    {
+        _inputActions?.Dispose();
+    }
 
-        private void OnClickEnded(InputAction.CallbackContext context)
-        {
-            Vector3 endPosition = GetClickWorldPosition();
+    private void OnClickEnded(InputAction.CallbackContext context)
+    {
+        Vector3 endPosition = GetClickWorldPosition();
 
             if (controlScheme == ControlScheme.DragAndDrop)
             {
@@ -133,12 +131,12 @@ namespace RubberClimber
                 _currentPin = clickedPin;
             }
 
-            if (controlScheme == ControlScheme.DragAndDrop && _currentPin?.isFollowing == true)
-            {
-                Vector3 worldPosition = ScreenToWorldPosition(context.ReadValue<Vector2>());
-                _currentPin.transform.position = worldPosition;
-            }
+        if (controlScheme == ControlScheme.DragAndDrop && _currentPin?.isFollowing == true)
+        {
+            Vector3 worldPosition = ScreenToWorldPosition(context.ReadValue<Vector2>());
+            _currentPin.transform.position = worldPosition;
         }
+    }
 
         private void OnToggleModePressed(InputAction.CallbackContext context)
         {
@@ -149,27 +147,27 @@ namespace RubberClimber
             // Debug.Log($"Switched to {(_isDragMode ? "DRAG" : "SELECT")} MODE");
         }
 
-        public void SetControlScheme(ControlScheme scheme)
-        {
-            if (scheme == controlScheme) return;
-            controlScheme = scheme;
-            ClearCurrentPin();
-        }
+    public void SetControlScheme(ControlScheme scheme)
+    {
+        if (scheme == controlScheme) return;
+        controlScheme = scheme;
+        ClearCurrentPin();
+    }
 
-        private void StartDragging(PinLogic pin)
-        {
-            _currentPin = pin;
-            _currentPin.StartFollowingPin(_currentPin);
+    private void StartDragging(PinLogic pin)
+    {
+        _currentPin = pin;
+        _currentPin.StartFollowingPin(_currentPin);
 
             // Debug.Log($"Started dragging pin: {pin.name}");
         }
 
-        private void HandlePinSelection(PinLogic clickedPin)
-        {
-            _currentPin = (_currentPin == clickedPin) ? null : clickedPin;
+    private void HandlePinSelection(PinLogic clickedPin)
+    {
+        _currentPin = (_currentPin == clickedPin) ? null : clickedPin;
 
-            //   Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
-        }
+        //   Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
+    }
 
         private void HandleDragEnd(Vector3 endPosition)
         {
@@ -182,67 +180,66 @@ namespace RubberClimber
             }
         }
 
-        private void HandleSelectEnd(Vector3 endPosition)
+    private void HandleSelectEnd(Vector3 endPosition)
+    {
+        PinLogic clickedPin = FindClosestPin(endPosition);
+
+        if (clickedPin == null && _currentPin != null)
         {
-            PinLogic clickedPin = FindClosestPin(endPosition);
-
-            if (clickedPin == null && _currentPin != null)
-            {
-                // Move selected pin to empty space with animation
-                _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
-                //  Debug.Log($"Moved selected pin to: {endPosition}");
-                _currentPin = null;
-            }
-        }
-
-        private void ClearCurrentPin()
-        {
-            if (_currentPin?.isFollowing == true)
-            {
-                _currentPin.StopFollowingPin(_currentPin);
-            }
-
+            // Move selected pin to empty space with animation
+            _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
+            //  Debug.Log($"Moved selected pin to: {endPosition}");
             _currentPin = null;
         }
+    }
 
-        private Vector3 GetClickWorldPosition()
+    private void ClearCurrentPin()
+    {
+        if (_currentPin?.isFollowing == true)
         {
-            return ScreenToWorldPosition(_inputActions.PinMovement.Position.ReadValue<Vector2>());
+            _currentPin.StopFollowingPin(_currentPin);
         }
 
-        private Vector3 ScreenToWorldPosition(Vector2 screenPosition)
+        _currentPin = null;
+    }
+
+    private Vector3 GetClickWorldPosition()
+    {
+        return ScreenToWorldPosition(_inputActions.PinMovement.Position.ReadValue<Vector2>());
+    }
+
+    private Vector3 ScreenToWorldPosition(Vector2 screenPosition)
+    {
+        if (Camera.main == null)
         {
-            if (Camera.main == null)
+            Debug.LogWarning("No main camera found!");
+            return Vector3.zero;
+        }
+
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(
+            new Vector3(screenPosition.x, screenPosition.y, Camera.main.nearClipPlane));
+        worldPosition.z = 0f;
+        return worldPosition;
+    }
+
+    private PinLogic FindClosestPin(Vector3 worldPosition)
+    {
+        PinLogic[] allPins = FindObjectsByType<PinLogic>(FindObjectsSortMode.None);
+        PinLogic closestPin = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (PinLogic pin in allPins)
+        {
+            if (pin == null) continue;
+
+            float distance = Vector3.Distance(pin.transform.position, worldPosition);
+            if (distance < closestDistance && distance <= _maxClickDistance)
             {
-                Debug.LogWarning("No main camera found!");
-                return Vector3.zero;
+                closestDistance = distance;
+                closestPin = pin;
             }
-
-            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(
-                new Vector3(screenPosition.x, screenPosition.y, Camera.main.nearClipPlane));
-            worldPosition.z = 0f;
-            return worldPosition;
         }
 
-        private PinLogic FindClosestPin(Vector3 worldPosition)
-        {
-            PinLogic[] allPins = FindObjectsByType<PinLogic>(FindObjectsSortMode.None);
-            PinLogic closestPin = null;
-            float closestDistance = float.MaxValue;
-
-            foreach (PinLogic pin in allPins)
-            {
-                if (pin == null) continue;
-
-                float distance = Vector3.Distance(pin.transform.position, worldPosition);
-                if (distance < closestDistance && distance <= _maxClickDistance)
-                {
-                    closestDistance = distance;
-                    closestPin = pin;
-                }
-            }
-
-            return closestPin;
-        }
+        return closestPin;
     }
 }
