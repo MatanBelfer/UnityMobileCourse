@@ -1,12 +1,14 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SettingsMenu : MonoBehaviour
 {
     private SettingsItem[] settingsItems;
     
-    [Header("MainMenu")]
+    [Header("References")]
     [SerializeField] private MainMenuCallbacks mainMenu;
+    [SerializeField] private InputSystemManager inputManager;
 
     private void Start()
     {
@@ -15,6 +17,10 @@ public class SettingsMenu : MonoBehaviour
         LoadSettings();
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
+        
+        inputManager = InputSystemManager.Instance;
+
+        SceneManager.sceneLoaded += (_,_) => LoadSettings();
     }
 
     private void LoadSettings()
@@ -45,6 +51,10 @@ public class SettingsMenu : MonoBehaviour
     public void CloseMenu()
     {
         SaveSettings();
+        if (inputManager)
+        {
+            inputManager.LoadControlScheme();
+        }
         gameObject.SetActive(false);
     }
 
@@ -55,13 +65,11 @@ public class SettingsMenu : MonoBehaviour
             string prefsName = item.playerPrefsName;
             if (item.uiInputMethod == UIInputMethod.Slider && item.saveAsInt)
             {
-                print($"saved {item.playerPrefsName}");
                 int value = item.GetValue<int>();
                 PlayerPrefs.SetInt(prefsName,value);
             }
             else if (item.uiInputMethod == UIInputMethod.Slider)
             {
-                print($"saved {item.playerPrefsName}");
                 float value = item.GetValue<float>();
                 PlayerPrefs.SetFloat(prefsName, value);
             }

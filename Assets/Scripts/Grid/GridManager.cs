@@ -10,7 +10,8 @@ using UnityEditor;
 public class GridManager : ObjectPoolInterface
 {
     //grid settings
-    [SerializeField] private GridParameters gridParameters;
+    [SerializeField] private GridParameters[] gridParametersList;
+    private GridParameters gridParameters;
 
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
@@ -39,6 +40,17 @@ public class GridManager : ObjectPoolInterface
         }
 
         Instance = this;
+
+        InitializeGridParameters();
+    }
+
+    private void InitializeGridParameters()
+    {
+        string difficultyKey = "difficulty";
+        if (PlayerPrefs.HasKey(difficultyKey))
+        {
+            gridParameters = gridParametersList[PlayerPrefs.GetInt("difficulty")];
+        }
     }
 
     private void OnDestroy()

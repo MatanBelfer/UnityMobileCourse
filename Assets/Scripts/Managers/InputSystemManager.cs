@@ -36,7 +36,13 @@ public class InputSystemManager : MonoBehaviour
                 Destroy(gameObject);
             }
 
+            LoadControlScheme();
+        }
+
+        public void LoadControlScheme()
+        {
             controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
+            print(controlScheme.GetName());
         }
 
         private void OnEnable()
