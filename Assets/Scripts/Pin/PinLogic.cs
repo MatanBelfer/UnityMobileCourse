@@ -21,6 +21,8 @@ public class PinLogic : MonoBehaviour
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
+            
+            ManagersLoader.Game?.SetInitialScore(Row);
         }
     }
     
@@ -28,7 +30,8 @@ public class PinLogic : MonoBehaviour
     {
         if (pin == null ) return;
 
-        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(worldPosition);
+        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>()
+            .GetClosestPoint(worldPosition, out int chosenRow);
         if (landingPoint != null)
         {
             if (animate && !pin.isFollowing)
@@ -71,6 +74,8 @@ public class PinLogic : MonoBehaviour
                         GeometricRubberBand.MovingPinStatus.NotMoving);
                 }
             }
+            
+            ManagersLoader.Game?.UpdateScore(chosenRow);
         }
     }
     

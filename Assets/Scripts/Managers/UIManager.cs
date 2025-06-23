@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class UIManager : BaseManager
 {
@@ -10,6 +11,8 @@ public class UIManager : BaseManager
     private GameObject settingsMenu;
     [InspectorLabel("HUD")] [SerializeField]
     private GameObject HUD;
+    [InspectorLabel("Score Text Object")] [SerializeField]
+    private TMP_Text scoreText;
     [InspectorLabel("Screenshot Camera")] [SerializeField]
     private Camera screenshotCamera;
     
@@ -31,6 +34,8 @@ public class UIManager : BaseManager
         {
             pauseMenu.SetActive(false);
         }
+        ManagersLoader.Game.OnScoreChanged += score => scoreText.text = $"Score: {score}";
+        scoreText.text = "Score: 0";
     }
 
     protected override void OnReset()

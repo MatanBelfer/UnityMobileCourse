@@ -14,16 +14,20 @@ public enum Difficulty
 public class GameManager : BaseManager
 {
     //Score = rawScore - scoreOffset
-    [Header("Score")] private int rawScore = 0; // the score (height) reported by the pins
+    [Header("Score")] 
+    private int rawScore = 0; // the score (height) reported by the pins
     private int scoreOffset; // the starting initial score given by the highest pin on start.
     public int highScore { get; private set; }
     private string scorePath = "/score.json";
 
-    [Header("Pause")] public bool isPaused { get; private set; }
+    [Header("Pause")] 
+    public bool isPaused { get; private set; }
 
     //Scene Change events (to be called before scene change)
     public event Action OnRestartLevel;
     public event Action OnExitToMainMenu;
+    
+    public event Action<int> OnScoreChanged;
 
     //Initialize the singleton
     public void Awake()
@@ -48,6 +52,8 @@ public class GameManager : BaseManager
             ScoreData data = JsonUtility.FromJson<ScoreData>(json);
             highScore = data.score;
         }
+        
+        OnScoreChanged += s => print(s);
     }
 
     protected override void OnReset()
@@ -99,6 +105,7 @@ public class GameManager : BaseManager
     {
         //calculates the new score given the row the pin landed on
         if (landingRow > rawScore) rawScore = landingRow;
+        OnScoreChanged?.Invoke(GetScore());
     }
 
     public int GetScore()
