@@ -1,9 +1,8 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections;
-using TMPro;
 
-public class UIManager : MonoBehaviour
+public class UIManager : BaseManager
 {
     [InspectorLabel("Pause Menu")] [SerializeField]
     private GameObject pauseMenu;
@@ -11,31 +10,49 @@ public class UIManager : MonoBehaviour
     private GameObject settingsMenu;
     [InspectorLabel("HUD")] [SerializeField]
     private GameObject HUD;
-    [InspectorLabel("Score Text Object")] [SerializeField]
-    private TMP_Text scoreText;
     [InspectorLabel("Screenshot Camera")] [SerializeField]
     private Camera screenshotCamera;
     
     public bool isPauseMenuOpen { get; private set; }
-    public GameManager gameManager;
     
-    //Singleton
+    //Singleton for legacy compatibility
     public static UIManager Instance;
     
-    //Initialize the singleton
+   
     public void Awake()
     {
-        if (Instance != null)
+       base.Awake();
+       Instance = this; // Set for legacy compatibility
+    }
+
+    protected override void OnInitialize()
+    {
+        if (pauseMenu != null)
         {
-            Destroy(gameObject);
-            return;
-        }
-        else
-        {
-            Instance = this;
+            pauseMenu.SetActive(false);
         }
     }
-    
+
+    protected override void OnReset()
+    {
+        // Reset UI state
+        if (pauseMenu != null)
+        {
+            pauseMenu.SetActive(false);
+        }
+        isPauseMenuOpen = false;
+    }
+
+    protected override void OnCleanup()
+    {
+        // Reset UI state when cleaning up
+        if (pauseMenu != null)
+        {
+            pauseMenu.SetActive(false);
+        }
+        isPauseMenuOpen = false;
+    }
+
     private void OnDestroy()
     {
         if (Instance == this)
@@ -44,17 +61,13 @@ public class UIManager : MonoBehaviour
         }
     }
     
-    public void Start()
-    {
-        gameManager = GameManager.Instance;
-        gameManager.OnScoreChanged += score => scoreText.text = $"Score: {score}";
-        scoreText.text = "Score: 0";
-        pauseMenu.SetActive(false);
-    }
-    
     public void PauseMenu(bool openState)
     {
-        pauseMenu.SetActive(openState);
+        if (pauseMenu != null)
+        {
+            pauseMenu.SetActive(openState);
+            isPauseMenuOpen = openState;
+        }
     }
     
     public IEnumerator TakeScreenshot()
@@ -104,14 +117,14 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log($"Hiding all UI \r\n {HUD.name} \r\n {pauseMenu.name}");
         
-        HUD.SetActive(false);
-        pauseMenu.SetActive(false);
+        if (HUD != null) HUD.SetActive(false);
+        if (pauseMenu != null) pauseMenu.SetActive(false);
     }
     
     private void ShowAll()
     {
         Debug.Log("Showing all UI");
-        HUD.SetActive(true);
-        pauseMenu.SetActive(true);
+        if (HUD != null) HUD.SetActive(true);
+        if (pauseMenu != null) pauseMenu.SetActive(true);
     }
 }

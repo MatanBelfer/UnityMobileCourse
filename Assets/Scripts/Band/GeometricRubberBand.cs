@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GeometricRubberBand : MonoBehaviour
+public class GeometricRubberBand : BaseManager
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
     //the calculated area will exclude the obstacles and will be as small as possible, composed of only straight lines 
@@ -34,25 +34,12 @@ public class GeometricRubberBand : MonoBehaviour
     // [SerializeField] private SplineContainer splineContainer;
     // [SerializeField] private float splineTangentLengthRatio;
 
-    public static GeometricRubberBand Instance { get; private set; }
+    // private void Awake()
+    // {
+    //     InitializeSingleton();
+    // }
 
-    private void Awake()
-    {
-        InitializeSingleton();
-    }
-
-    private void InitializeSingleton()
-    {
-        if (Instance != null)
-        {
-            Destroy(this);
-            return;
-        }
-
-        Instance = this;
-    }
-
-    private void Start()
+    protected override void OnInitialize()
     {
         //initialize Pin dictionary
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new Pin(pinTrans));
@@ -74,6 +61,53 @@ public class GeometricRubberBand : MonoBehaviour
             } while (newPinNode.Next != null);
         }
         // LogActivePinNames();
+    }
+
+    protected override void OnReset()
+    {
+        Reset();
+
+    }
+
+    protected override void OnCleanup()
+    {
+        throw new NotImplementedException();
+    }
+
+    // private void InitializeSingleton()
+    // {
+    //     if (Instance != null)
+    //     {
+    //         Destroy(this);
+    //         return;
+    //     }
+    //
+    //     Instance = this;
+    // }
+
+
+    private void Start()
+    {
+        // //initialize Pin dictionary
+        // foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new Pin(pinTrans));
+        //
+        // //initialize active pins and segments
+        // UpdateActivePins();
+        // Pin firstPin = pinTransformDict[activePins.First.Value];
+        // AddFirstConnectedPin(firstPin);
+        // if (activePins.Count > 1)
+        // {
+        //     Pin prevPin = firstPin;
+        //     LinkedListNode<Transform> newPinNode = activePins.First;
+        //     do
+        //     {
+        //         newPinNode = newPinNode.Next;
+        //         Pin newPin = pinTransformDict[newPinNode.Value];
+        //         AddConnectedPinAfter(prevPin, newPin);
+        //         prevPin = newPin;
+        //     } while (newPinNode.Next != null);
+        // }
+        // // LogActivePinNames();
     }
 
     private void Update()
@@ -244,7 +278,7 @@ public class GeometricRubberBand : MonoBehaviour
         {
             var segmentToRemove = pinToRemove.nextSegment.transform;
             bandSegments.Remove(segmentToRemove); // Remove from tracking list
-            ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segmentToRemove.gameObject);
+            ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segmentToRemove.gameObject);
             pinToRemove.nextSegment = null;
         }
 
@@ -317,7 +351,7 @@ public class GeometricRubberBand : MonoBehaviour
     public void Reset()
     {
         Debug.Log("Resetting band");
-        if (ObjectPoolManager.Instance == null) Debug.Log("ObjectPoolManager is null");
+        if (ManagersLoader.Pool == null) Debug.Log("ObjectPoolManager is null");
 
 
         Debug.Log($" bandSegments is not null: {bandSegments != null}");
@@ -325,12 +359,11 @@ public class GeometricRubberBand : MonoBehaviour
         // Clean up all segments
         foreach (var segment in bandSegments.ToList()) // Use ToList to avoid modification during enumeration
         {
-            if (segment != null && segment != null)
+            if (segment != null)
             {
                 Debug.Log(
                     $" segment is not null: {segment != null} obj name: {segment.name} , parent is: {segment.parent.gameObject.name}");
-                segment.SetParent(null); // Unparent before returning to pool
-                ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, segment.gameObject);
+                ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segment.gameObject);
             }
         }
 
@@ -392,14 +425,14 @@ public class GeometricRubberBand : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Reset();
-            Instance = null;
-        }
-    }
+    // private void OnDestroy()
+    // {
+    //     if (Instance == this)
+    //     {
+    //         Reset();
+    //         Instance = null;
+    //     }
+    // }
 
     public enum MovingPinStatus
     {
@@ -523,9 +556,9 @@ public class Segment
 
     public Segment(string objectPoolName, Pin prevPin, Pin nextPin)
     {
-        transform = ObjectPoolManager.Instance.GetFromPool(objectPoolName).transform;
+        transform = ManagersLoader.Pool.GetFromPool(objectPoolName).transform;
         // Parent to GeometricRubberBand immediately after getting from pool
-        transform.SetParent(GeometricRubberBand.Instance.transform);
+        transform.SetParent(ManagersLoader.GetSceneManager<GeometricRubberBand>().transform);
 
         followScript = transform.GetComponent<FollowTwoTransforms>();
         followScript.target1 = prevPin.transform;

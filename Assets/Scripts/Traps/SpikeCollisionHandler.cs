@@ -13,6 +13,6 @@
         }
         
         // Normal pooling during gameplay
-        objectPoolManager.InsertToPool(poolName, gameObject);
+        ManagersLoader.Pool.InsertToPool(poolName, gameObject);
     }
 }

@@ -1,17 +1,13 @@
 using UnityEngine;
 using System.Collections;
 using PrimeTween;
-using System;
 
 public class PinLogic : MonoBehaviour
 {
     [SerializeField] private int Row;
     [SerializeField] private int Column;
-    [SerializeField] public GridManager gridManager;
     [SerializeField] private float moveDuration = 0.5f;
     [SerializeField] private Ease moveEase = Ease.OutQuad;
-    
-    private GameManager gameManager;
 
     public bool isFollowing { get; set; }
     private Tween currentMoveTween;
@@ -19,25 +15,20 @@ public class PinLogic : MonoBehaviour
     private IEnumerator Start()
     {
         yield return new WaitForSeconds(0.1f);
-        gameManager = GameManager.Instance;
 
-        Transform point = gridManager.GetPointAt(Row, Column);
+        Transform point = ManagersLoader.GetSceneManager<GridManager>().GetPointAt(Row, Column);
         if (point != null)
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
-            
-            gameManager?.SetInitialScore(Row);
         }
     }
     
-    
-    
     public void MovePinToPosition(PinLogic pin, Vector3 worldPosition, bool animate = true)
     {
-        if (pin == null || pin.gridManager == null) return;
+        if (pin == null ) return;
 
-        Transform landingPoint = pin.gridManager.GetClosestPoint(worldPosition, out int chosenRow);
+        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(worldPosition);
         if (landingPoint != null)
         {
             if (animate && !pin.isFollowing)
@@ -45,14 +36,13 @@ public class PinLogic : MonoBehaviour
                 Vector3 targetWorldPosition = landingPoint.position;
                 
                 // Notify rubber band that pin is starting to move
-                if (GeometricRubberBand.Instance != null)
+                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
                 {
-                    GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, 
+                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, 
                         GeometricRubberBand.MovingPinStatus.Moving);
                 }
                 
-                pin.currentMoveTween = 
-                    Tween.Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
+                pin.currentMoveTween = Tween.Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
                     .OnComplete(() =>
                     {
                         // Set parent and local position after animation completes
@@ -61,9 +51,9 @@ public class PinLogic : MonoBehaviour
                         pin.isFollowing = false;
                         
                         // Notify rubber band that pin stopped moving
-                        if (GeometricRubberBand.Instance != null)
+                        if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
                         {
-                            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform,
+                            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
                                 GeometricRubberBand.MovingPinStatus.NotMoving);
                         }
                     });
@@ -75,14 +65,12 @@ public class PinLogic : MonoBehaviour
                 pin.transform.localPosition = Vector3.zero;
                 pin.isFollowing = false;
                 
-                if (GeometricRubberBand.Instance != null)
+                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
                 {
-                    GeometricRubberBand.Instance.UpdateMovingPin(pin.transform,
+                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
                         GeometricRubberBand.MovingPinStatus.NotMoving);
                 }
             }
-            
-            gameManager?.UpdateScore(chosenRow);
         }
     }
     
@@ -93,9 +81,9 @@ public class PinLogic : MonoBehaviour
         pin.isFollowing = true;
         pin.transform.parent = null;
 
-        if (GeometricRubberBand.Instance != null)
+        if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
-            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
         }
     }
     
@@ -103,9 +91,9 @@ public class PinLogic : MonoBehaviour
     {
         // Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
 
-        if (pin == null || pin.gridManager == null) return;
+        if (pin == null ) return;
 
-        Transform landingPoint = pin.gridManager.GetClosestPoint(pin.transform.position);
+        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(pin.transform.position);
         if (landingPoint != null)
         {
             pin.transform.parent = landingPoint;
@@ -114,9 +102,9 @@ public class PinLogic : MonoBehaviour
 
         pin.isFollowing = false;
 
-        if (GeometricRubberBand.Instance != null)
+        if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
-            GeometricRubberBand.Instance.UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
         }
     }
 }

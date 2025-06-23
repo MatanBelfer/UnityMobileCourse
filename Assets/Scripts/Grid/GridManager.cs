@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 using UnityEditor;
 #endif
 
-public class GridManager : ObjectPoolInterface
+public class GridManager : BaseManager
 {
     //grid settings
     [SerializeField] private GridParameters[] gridParametersList;
@@ -15,9 +15,7 @@ public class GridManager : ObjectPoolInterface
 
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
-
-    public static GridManager Instance { get; private set; }
-
+    
     private HashSet<Transform> activePoints = new HashSet<Transform>();
 
     //privates
@@ -28,63 +26,106 @@ public class GridManager : ObjectPoolInterface
     private Queue<Transform[]> _gridRows = new();
     private int _rowNum;//1 based (not zero-based)
     private float _rowDist;
+    private bool _isGridInitialized = false;
 
     protected override void Awake()
     {
-        base.Awake();  // Call the base class Awake first
-        
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        base.Awake();
+    }
 
-        Instance = this;
-
+    protected override void OnInitialize()
+    {
         InitializeGridParameters();
+        
+        // Wait for ManagersLoader to be ready, then initialize synchronously
+        if (ManagersLoader.IsInitialized && ManagersLoader.Pool != null)
+        {
+            InitializeGridNow();
+        }
+        else
+        {
+            // If not ready yet, start the coroutine
+            StartCoroutine(InitializeWhenReady());
+        }
+    }
+
+    protected override void OnReset()
+    {
+        // Reset grid state
+        _isGridInitialized = false;
+        _gridRows.Clear();
+        activePoints.Clear();
+        _rowNum = 0;
+        
+        // Reinitialize
+        OnInitialize();
+    }
+
+    protected override void OnCleanup()
+    {
+        // Return all active objects to pools
+        foreach (var point in activePoints.ToList())
+        {
+            if (point != null && point.gameObject != null)
+            {
+                ReturnObjectToPool(point.gameObject);
+            }
+        }
+        
+        activePoints.Clear();
+        _gridRows.Clear();
+        _isGridInitialized = false;
+        _rowNum = 0;
     }
 
     private void InitializeGridParameters()
     {
         string difficultyKey = "difficulty";
-        if (PlayerPrefs.HasKey(difficultyKey))
+        if (PlayerPrefs.HasKey(difficultyKey) && gridParametersList != null && gridParametersList.Length > 0)
         {
-            gridParameters = gridParametersList[PlayerPrefs.GetInt("difficulty")];
+            int difficultyIndex = PlayerPrefs.GetInt(difficultyKey);
+            if (difficultyIndex >= 0 && difficultyIndex < gridParametersList.Length)
+            {
+                gridParameters = gridParametersList[difficultyIndex];
+            }
+            else
+            {
+                gridParameters = gridParametersList[0]; // Default to first parameters
+            }
         }
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this)
+        else if (gridParametersList != null && gridParametersList.Length > 0)
         {
-            Instance = null;
+            gridParameters = gridParametersList[0]; // Default to first parameters
         }
-    }
-
-    private void Start()
-    {
-        StartCoroutine(InitializeWhenReady());
     }
 
     private System.Collections.IEnumerator InitializeWhenReady()
     {
-        //TODO: yield return new WaitUntil(() => ManagersLoader.IsInitialized); instead of while
-        while (!ManagersLoader.IsInitialized)
-        {
-            yield return null;
-        }
-
-        objectPoolManager = ObjectPoolManager.Instance;
-        if (objectPoolManager == null)
+        // Wait for ManagersLoader to be initialized
+        yield return new WaitUntil(() => ManagersLoader.IsInitialized);
+        
+        if (ManagersLoader.Pool == null)
         {
             Debug.LogError("ObjectPoolManager not found! Make sure it's set up in the scene.");
             yield break;
         }
 
+        InitializeGridNow();
+    }
+
+    private void InitializeGridNow()
+    {
+        if (_isGridInitialized) return;
+        
+        if (gridParameters == null)
+        {
+            Debug.LogError("GridParameters not set! Make sure to assign grid parameters in the inspector.");
+            return;
+        }
 
         _rowDist = gridLength * (float)Math.Sqrt(3f) / 2;
-
         InitializeGrid();
+        _isGridInitialized = true;
     }
 
     private void InitializeGrid()
@@ -98,22 +139,30 @@ public class GridManager : ObjectPoolInterface
 
     public void Update()
     {
+        // Only update if grid is properly initialized
+        if (!_isGridInitialized || gridParameters == null) return;
+        
         transform.Translate(Vector3.down * (gridParameters.gridSpeed * Time.deltaTime));
     }
 
     public void SpawnNewRow()
     {
+        if (!_isGridInitialized || gridParameters == null) return;
         SpawnRow();
     }
 
     public int GetCurrentRowPointCount()
     {
+        if (gridParameters == null) return 0;
+        
         int nextRow = _rowNum;
         return (nextRow % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
     }
 
     private void SpawnRow()
     {
+        if (gridParameters == null) return;
+        
         if (_rowNum % 2 == 0)
         {
             SpawnRow(gridParameters.pointsPerRow);
@@ -126,6 +175,8 @@ public class GridManager : ObjectPoolInterface
 
     private void SpawnRow(int numPoints)
     {
+        if (gridParameters == null || ManagersLoader.Pool == null) return;
+        
         Transform[] rowPoints = new Transform[numPoints];
         Vector3[] positions = new Vector3[numPoints];
 
@@ -137,7 +188,6 @@ public class GridManager : ObjectPoolInterface
             // Only spawn spikes if we're at or past the trapStartRow
             if (_rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
             {
-                
                 SpawnSpike(positions[i]);
             }
         }
@@ -146,14 +196,14 @@ public class GridManager : ObjectPoolInterface
         _rowNum++;
     }
 
-
     private void SpawnSpike(Vector3 position)
     {
+        if (gridParameters == null || ManagersLoader.Pool == null) return;
         
         //turned off for testing
         // print("SpawnSpike has been turned off");
         // return;
-        GameObject spike = objectPoolManager.GetFromPool(gridParameters.spikePoolName);
+        GameObject spike = ManagersLoader.Pool.GetFromPool(gridParameters.spikePoolName);
         spike.transform.parent = transform;
         spike.transform.localPosition = position + _rowNum * _rowDist * Vector3.up;
         spike.SetActive(true);
@@ -179,7 +229,9 @@ public class GridManager : ObjectPoolInterface
 
     private Transform SpawnPoint(Vector3 position)
     {
-        GameObject newPoint = objectPoolManager.GetFromPool(poolName);
+        if (gridParameters == null || ManagersLoader.Pool == null) return null;
+        
+        GameObject newPoint = ManagersLoader.Pool.GetFromPool(gridParameters.pointPoolName);
         Transform newTransform = newPoint.transform;
         newTransform.parent = transform;
         newTransform.localPosition = position + _rowNum * _rowDist * Vector3.up;
@@ -226,7 +278,6 @@ public class GridManager : ObjectPoolInterface
         return GetClosestPoint(position, out var _);
     }
 
-
     #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
@@ -258,7 +309,6 @@ public class GridManager : ObjectPoolInterface
     }
     #endif
 
-
     /*
      * public methods to interact with the grid
      */
@@ -281,47 +331,14 @@ public class GridManager : ObjectPoolInterface
         return columnIndex >= 0 && columnIndex < rows[rowIndex].Length;
     }
 
-
-    public void ClearPoint(GameObject point)
-    {
-        if (point != null)
-        {
-            RemovePoint(point.transform);
-
-            objectPoolManager.InsertToPool(poolName, point);
-        }
-    }
-
-    public void ClearAllPoints()
-    {
-        foreach (var point in activePoints)
-        {
-            if (point != null)
-            {
-                objectPoolManager.InsertToPool(poolName, point.gameObject);
-            }
-        }
-
-        activePoints.Clear();
-        _gridRows.Clear();
-        _rowNum = 0;
-    }
-
-    public void ClearSpike(GameObject spike)
-    {
-        if (spike != null && objectPoolManager != null)
-        {
-            // Remove from grid first
-            spike.transform.SetParent(null);
-            spike.SetActive(false);
-            objectPoolManager.InsertToPool(gridParameters.spikePoolName, spike);
-        }
-    }
-    
     public void ReturnObjectToPool(GameObject obj)
     {
+        if (obj == null || ManagersLoader.Pool == null) return;
         
-        
-        objectPoolManager.InsertToPool(obj.GetComponent<ObjectPoolInterface>()?.poolName, obj);
+        var poolInterface = obj.GetComponent<ObjectPoolInterface>();
+        if (poolInterface != null && !string.IsNullOrEmpty(poolInterface.poolName))
+        {
+            ManagersLoader.Pool.InsertToPool(poolInterface.poolName, obj);
+        }
     }
 }
