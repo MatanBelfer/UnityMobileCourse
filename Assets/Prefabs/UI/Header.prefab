@@ -20,7 +20,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1102648597559469107, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
       propertyPath: m_fontSize
-      value: 200.45
+      value: 29.8
       objectReference: {fileID: 0}
     - target: {fileID: 1102648597559469107, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
       propertyPath: m_margin.w
@@ -56,7 +56,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3159387231938915882, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 239.07
       objectReference: {fileID: 0}
     - target: {fileID: 3159387231938915882, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
       propertyPath: m_SizeDelta.y

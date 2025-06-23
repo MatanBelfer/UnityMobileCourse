@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
 	//Scene Change events (to be called before scene change)
 	public event Action OnRestartLevel;
 	public event Action OnExitToMainMenu;
+	public event Action<int> OnScoreChanged;
 
 	//Initialize the singleton
 	public void Awake()
@@ -59,17 +60,13 @@ public class GameManager : MonoBehaviour
 			ScoreData data = JsonUtility.FromJson<ScoreData>(json);
 			highScore = data.score;
 		}
+
+		OnScoreChanged += s => print(s);
 	}
 
 	public void Start()
 	{
 		uiManager = UIManager.Instance;
-	}
-	
-	//test pause 
-	public void Update()
-	{
-
 	}
 	
 	//Destroy the singleton
@@ -115,6 +112,7 @@ public class GameManager : MonoBehaviour
 	{
 		//calculates the new score given the row the pin landed on
 		if (landingRow > rawScore) rawScore = landingRow;
+		OnScoreChanged?.Invoke(GetScore());
 	}
 
 	public int GetScore()

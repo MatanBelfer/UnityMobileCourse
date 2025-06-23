@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using PrimeTween;
+using System;
 
 public class PinLogic : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class PinLogic : MonoBehaviour
     [SerializeField] public GridManager gridManager;
     [SerializeField] private float moveDuration = 0.5f;
     [SerializeField] private Ease moveEase = Ease.OutQuad;
+    
+    private GameManager gameManager;
 
     public bool isFollowing { get; set; }
     private Tween currentMoveTween;
@@ -16,20 +19,25 @@ public class PinLogic : MonoBehaviour
     private IEnumerator Start()
     {
         yield return new WaitForSeconds(0.1f);
+        gameManager = GameManager.Instance;
 
         Transform point = gridManager.GetPointAt(Row, Column);
         if (point != null)
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
+            
+            gameManager?.SetInitialScore(Row);
         }
     }
+    
+    
     
     public void MovePinToPosition(PinLogic pin, Vector3 worldPosition, bool animate = true)
     {
         if (pin == null || pin.gridManager == null) return;
 
-        Transform landingPoint = pin.gridManager.GetClosestPoint(worldPosition);
+        Transform landingPoint = pin.gridManager.GetClosestPoint(worldPosition, out int chosenRow);
         if (landingPoint != null)
         {
             if (animate && !pin.isFollowing)
@@ -43,7 +51,8 @@ public class PinLogic : MonoBehaviour
                         GeometricRubberBand.MovingPinStatus.Moving);
                 }
                 
-                pin.currentMoveTween = Tween.Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
+                pin.currentMoveTween = 
+                    Tween.Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
                     .OnComplete(() =>
                     {
                         // Set parent and local position after animation completes
@@ -72,6 +81,8 @@ public class PinLogic : MonoBehaviour
                         GeometricRubberBand.MovingPinStatus.NotMoving);
                 }
             }
+            
+            gameManager?.UpdateScore(chosenRow);
         }
     }
     
