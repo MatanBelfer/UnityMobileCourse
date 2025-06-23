@@ -18,7 +18,7 @@ public class SettingsMenu : MonoBehaviour
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
         
-        inputManager = InputSystemManager.Instance;
+        inputManager = ManagersLoader.Input;
 
         SceneManager.sceneLoaded += (_,_) => LoadSettings();
     }

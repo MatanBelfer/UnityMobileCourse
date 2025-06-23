@@ -14,4 +14,9 @@ public class GridParameters : ScriptableObject
     [Range(0, 50)] public int trapStartRow = 5; // New parameter
     public string spikePoolName = "SpikePool";
     [Range(5, 30)] public int initialSpikePoolSize = 10;
+    
+    
+    [Header("Trap Settings")]
+    public GameObject pointPrefab;
+    public string pointPoolName = "Holes";
 }

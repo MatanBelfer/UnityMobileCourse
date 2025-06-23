@@ -8,7 +8,7 @@ public class SpikeInteraction : MonoBehaviour
 
     public void Start()
     {
-        OnTouchSpike += GameManager.Instance.RestartLevel;
+        OnTouchSpike += ManagersLoader.Game.RestartLevel;
     }
     
     public void OnCollisionEnter(Collision collision)
@@ -17,22 +17,27 @@ public class SpikeInteraction : MonoBehaviour
         {
             print("Restarting scene");
             
-            if (GeometricRubberBand.Instance != null)
+            // Use the new dynamic scene manager access
+            var rubberBand = ManagersLoader.GetSceneManager<GeometricRubberBand>();
+            if (rubberBand != null)
             {
-                GeometricRubberBand.Instance.Reset();  
+                rubberBand.Reset();  
             }
             
-            if (GridManager.Instance != null)
+            // Clean up grid manager
+            if (ManagersLoader.Grid != null)
             {
-                Destroy(GridManager.Instance.gameObject);
+                Destroy(ManagersLoader.Grid.gameObject);
             }
             
-            if (GeometricRubberBand.Instance != null)
+            // Clean up rubber band if it still exists
+            if (rubberBand != null)
             {
-                Destroy(GeometricRubberBand.Instance.gameObject);
+                Destroy(rubberBand.gameObject);
             }
 
             OnTouchSpike?.Invoke();
+
         }
     }
 }

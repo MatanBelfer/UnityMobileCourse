@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class LoseOnTouchPin : MonoBehaviour
 {
-    GameManager gameManager;
+    // GameManager gameManager;
 
-    void Start()
-    {
-        gameManager = GameManager.Instance;
-    }
+    // void Start()
+    // {
+    //     gameManager = GameManager.Instance;
+    // }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -17,7 +17,7 @@ public class LoseOnTouchPin : MonoBehaviour
         
         if (parent.CompareTag("Pin"))
         {
-            gameManager.RestartLevel();
+            ManagersLoader.Game.RestartLevel();
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class ObjectPoolManager : MonoBehaviour
+public class ObjectPoolManager : BaseManager
 {
     [SerializeField] private PoolSettings[] poolSettings;
     private Dictionary<string, Queue<GameObject>> pools = new();
@@ -17,27 +17,36 @@ public class ObjectPoolManager : MonoBehaviour
         public GameObject prefab;
     }
 
-    public static ObjectPoolManager Instance { get; private set; }
-
-    private void Awake()
+    protected override void OnInitialize()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
+        Debug.Log("ObjectPoolManager initialized");
         InitializePools();
     }
 
+    protected override void OnReset()
+    {
+        Debug.Log("ObjectPoolManager reset - returning active objects to pools");
+        ReturnAllActiveObjectsToPools();
+        // Don't reinitialize pools - they should persist
+    }
+
+    protected override void OnCleanup()
+    {
+        ReturnAllActiveObjectsToPools();
+        // Keep pools for reuse
+    }
+    
     public void InitializePools()
     {
+        // Only initialize if pools are empty
+        if (pools.Count > 0) return;
+        
         pools.Clear();
         activeObjects.Clear();
 
         foreach (PoolSettings settings in poolSettings)
         {
+            Debug.Log($"Initializing pool {settings.poolName}");
             string name = settings.poolName;
             int poolSize = settings.poolSize;
             GameObject prefab = settings.prefab;
@@ -59,7 +68,6 @@ public class ObjectPoolManager : MonoBehaviour
             if (@interface != null)
             {
                 @interface.poolName = poolName;
-                @interface.objectPoolManager = Instance;
             }
 
             pools[poolName].Enqueue(newobj);
@@ -105,7 +113,6 @@ public class ObjectPoolManager : MonoBehaviour
             if (interface_ != null)
             {
                 interface_.poolName = poolName;
-                interface_.objectPoolManager = Instance;
             }
         }
 
@@ -117,28 +124,17 @@ public class ObjectPoolManager : MonoBehaviour
 
     public void InsertToPool(string poolName, GameObject obj)
     {
-        
-        Debug.Log("obj name is: " + obj.name + " parent is: " + obj.transform.parent.gameObject.name + " pool is: " + poolName);
-
         if (obj == null)
         {
-            Debug.Log($"Attempted to insert null object into pool {poolName}");
+            Debug.LogWarning($"Attempted to insert null object into pool {poolName}");
             return;
         }
 
         CheckPoolExists(poolName);
         if (!activeObjects[poolName].Contains(obj))
         {
-            Debug.LogWarning(
-                $"Attempted to remove object {obj.name} from pool {poolName} that is not present in the pool.");
+            Debug.LogWarning($"Attempted to remove object {obj.name} from pool {poolName} that is not present in the pool.");
             return;
-        }
-
-        // Remove from current parent first
-        Transform originalParent = obj.transform.parent;
-        if (originalParent != null)
-        {
-            obj.transform.SetParent(null);
         }
 
         obj.SetActive(false);
@@ -147,10 +143,10 @@ public class ObjectPoolManager : MonoBehaviour
         activeObjects[poolName].Remove(obj);
     }
 
-    public void OnSceneUnloaded()
+    private void ReturnAllActiveObjectsToPools()
     {
         // Return all active objects to their pools
-        foreach (var poolName in pools.Keys)
+        foreach (var poolName in pools.Keys.ToList())
         {
             var activeSet = activeObjects[poolName];
             foreach (var obj in activeSet.ToList())
@@ -160,16 +156,7 @@ public class ObjectPoolManager : MonoBehaviour
                     InsertToPool(poolName, obj);
                 }
             }
-
             activeSet.Clear();
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
         }
     }
 }
