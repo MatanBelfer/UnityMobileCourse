@@ -12,20 +12,20 @@ public abstract class BaseManager : MonoBehaviour
     {
         if (IsInitialized) return;
 
-        Debug.Log($"Initializing {GetType().Name}");
+//        Debug.Log($"Initializing {GetType().Name}");
         OnInitialize();
         IsInitialized = true;
     }
 
     public virtual void ResetManager()
     {
-        Debug.Log($"Resetting {GetType().Name}");
+        //Debug.Log($"Resetting {GetType().Name}");
         OnReset();
     }
 
     public virtual void CleanupManager()
     {
-        Debug.Log($"Cleaning up {GetType().Name}");
+       // Debug.Log($"Cleaning up {GetType().Name}");
         OnCleanup();
         IsInitialized = false;
     }

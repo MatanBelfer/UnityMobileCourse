@@ -53,7 +53,7 @@ public class GameManager : BaseManager
             highScore = data.score;
         }
         
-        OnScoreChanged += s => print(s);
+//        OnScoreChanged += s => print(s);
     }
 
     protected override void OnReset()

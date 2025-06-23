@@ -33,7 +33,7 @@ public class InputSystemManager : BaseManager
         // Create input actions only once
         if (_inputActions == null)
         {
-            Debug.Log("Creating input actions for InputSystemManager awake");
+//            Debug.Log("Creating input actions for InputSystemManager awake");
             _inputActions = new PlayerInputActions();
         }
 
@@ -67,7 +67,7 @@ public class InputSystemManager : BaseManager
 
         if (_inputActions != null && !_isInputEnabled)
         {
-            Debug.Log("Enabling input for InputSystemManager");
+//            Debug.Log("Enabling input for InputSystemManager");
             _inputActions.PinMovement.Enable();
 
             //UI related 
@@ -80,7 +80,7 @@ public class InputSystemManager : BaseManager
             _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
 
             _isInputEnabled = true;
-            Debug.Log("Input enabled for InputSystemManager");
+//            Debug.Log("Input enabled for InputSystemManager");
         }
         else
         {
@@ -122,6 +122,7 @@ public class InputSystemManager : BaseManager
     {
         Vector3 endPosition = GetClickWorldPosition();
 
+//        print($"OnClickEnded was called while controlScheme is {controlScheme.GetName()}");
         if (controlScheme == ControlScheme.DragAndDrop)
         {
             HandleDragEnd(endPosition);
@@ -129,6 +130,7 @@ public class InputSystemManager : BaseManager
         else
         {
             HandleSelectEnd(endPosition);
+           // print("OnCLickEnded caused HandleSelectEnd to be called");
         }
     }
 
@@ -221,11 +223,12 @@ public class InputSystemManager : BaseManager
     private void HandleSelectEnd(Vector3 endPosition)
     {
         PinLogic clickedPin = FindClosestPin(endPosition);
-
+        print($"HandleSelectEnd was called with clickedPin: {clickedPin} and _currentPin: {_currentPin}");
         if (clickedPin == null && _currentPin != null)
         {
             // Move selected pin to empty space with animation
             _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
+            print("MovePinToPosition Called");
             //  Debug.Log($"Moved selected pin to: {endPosition}");
             _currentPin = null;
         }

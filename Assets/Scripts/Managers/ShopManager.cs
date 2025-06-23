@@ -79,7 +79,7 @@ public class ShopManager : BaseManager
         {
             string json = File.ReadAllText(path);
             savedPurchasedSkinsAreEquipped = JsonUtility.FromJson<Dictionary<string, bool>>(json);
-            print($"loaded shop items from {path}");
+//            print($"loaded shop items from {path}");
         }
         else
         {

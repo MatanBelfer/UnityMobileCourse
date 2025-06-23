@@ -36,6 +36,7 @@ public class PinLogic : MonoBehaviour
         {
             if (animate && !pin.isFollowing)
             {
+                print($"{gameObject.name} is moving");
                 Vector3 targetWorldPosition = landingPoint.position;
                 
                 // Notify rubber band that pin is starting to move

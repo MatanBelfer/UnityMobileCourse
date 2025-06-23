@@ -48,12 +48,12 @@ public class ManagersLoader : MonoBehaviour
         RefreshSceneManagers();
         
         IsInitialized = true;
-        Debug.Log("ManagersLoader initialized successfully!");
+        //Debug.Log("ManagersLoader initialized successfully!");
     }
 
     private void InitializeCoreManagers()
     {
-        Debug.Log("Initializing Core Managers...");
+        //Debug.Log("Initializing Core Managers...");
         
         // Find and assign core managers from the serialized array
         if (coreManagers != null && coreManagers.Length > 0)
@@ -76,7 +76,7 @@ public class ManagersLoader : MonoBehaviour
 
     private void RefreshSceneManagers()
     {
-        Debug.Log("Refreshing Scene Managers...");
+        //Debug.Log("Refreshing Scene Managers...");
         
         // Clear previous references
         sceneManagersDict.Clear();
@@ -101,7 +101,7 @@ public class ManagersLoader : MonoBehaviour
             {
                 sceneManagersDict[manager.GetType()] = manager;
                 manager.InitManager();
-                Debug.Log($"Initialized scene manager: {manager.GetType().Name}");
+//                Debug.Log($"Initialized scene manager: {manager.GetType().Name}");
             }
         }
     }
@@ -114,7 +114,7 @@ public class ManagersLoader : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"Scene loaded: {scene.name}");
+//        Debug.Log($"Scene loaded: {scene.name}");
         
         // Use Unity's built-in frame delay
         Invoke(nameof(RefreshSceneManagers), 0f);
@@ -122,7 +122,7 @@ public class ManagersLoader : MonoBehaviour
 
     private void OnSceneUnloaded(Scene scene)
     {
-        Debug.Log($"Scene unloaded: {scene.name}");
+//        Debug.Log($"Scene unloaded: {scene.name}");
         
         // Reset core managers that need scene refresh (but don't cleanup)
         Pool?.ResetManager();

@@ -19,13 +19,13 @@ public class ObjectPoolManager : BaseManager
 
     protected override void OnInitialize()
     {
-        Debug.Log("ObjectPoolManager initialized");
+        //Debug.Log("ObjectPoolManager initialized");
         InitializePools();
     }
 
     protected override void OnReset()
     {
-        Debug.Log("ObjectPoolManager reset - returning active objects to pools");
+       // Debug.Log("ObjectPoolManager reset - returning active objects to pools");
         ReturnAllActiveObjectsToPools();
         // Don't reinitialize pools - they should persist
     }
@@ -46,7 +46,7 @@ public class ObjectPoolManager : BaseManager
 
         foreach (PoolSettings settings in poolSettings)
         {
-            Debug.Log($"Initializing pool {settings.poolName}");
+//            Debug.Log($"Initializing pool {settings.poolName}");
             string name = settings.poolName;
             int poolSize = settings.poolSize;
             GameObject prefab = settings.prefab;
