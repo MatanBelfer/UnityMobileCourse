@@ -1,3 +1,4 @@
+using System.Dynamic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,19 +39,27 @@ public class InputSystemManager : BaseManager
         }
 
         LoadControlScheme();
-        EnableInput();
+        
+    }
+
+    public void LoadControlScheme()
+    {
+        controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
+        OnReset();
+
+
     }
 
     protected override void OnReset()
     {
         // Keep input enabled during reset, just clear current pin
         _currentPin = null;
-        LoadControlScheme();
-
+        DisableInput(controlScheme);
+        
         // Re-enable input if it was disabled
         if (!_isInputEnabled)
         {
-            EnableInput();
+            EnableInput(controlScheme);
         }
     }
 
@@ -61,54 +70,113 @@ public class InputSystemManager : BaseManager
         _currentPin = null;
     }
 
-    private void EnableInput()
+//     private void EnableInput()
+//     {
+//         if (_inputActions == null)
+//         {
+//             Debug.Log("Input actions is null");
+//             return;
+//         }
+//
+//         if (!_isInputEnabled)
+//         {
+// //            Debug.Log("Enabling input for InputSystemManager");
+//             _inputActions.PinMovement.Enable();
+//
+//             //UI related 
+//             _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
+//
+//             // Input events
+//             _inputActions.PinMovement.Click.canceled += OnClickEnded;
+//             _inputActions.PinMovement.Position.started += OnPositionChanged;
+//             _inputActions.PinMovement.Position.performed += OnPositionChanged;
+//             _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
+//
+//             _isInputEnabled = true;
+// //            Debug.Log("Input enabled for InputSystemManager");
+//         }
+//     }
+
+    private void EnableInput(ControlScheme scheme)
     {
-        if (_inputActions == null) Debug.Log("Input actions is null");
-
-        if (_inputActions != null && !_isInputEnabled)
+        if (_inputActions == null)
         {
-//            Debug.Log("Enabling input for InputSystemManager");
-            _inputActions.PinMovement.Enable();
+            Debug.Log("Input actions is null");
+            return;
+        }
 
+        if (!_isInputEnabled)
+        {
+            _inputActions.PinMovement.Enable();
             //UI related 
             _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
+            switch (scheme)
+            {
+                case ControlScheme.DragAndDrop:
+                    _inputActions.PinMovement.Position.started += OnPositionChanged;
+                    _inputActions.PinMovement.Position.performed += OnPositionChanged;
+                    _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
+                    
+                    break;
+                case ControlScheme.TapTap:
+                    _inputActions.PinMovement.Position.started += OnPositionChanged;
+                    _inputActions.PinMovement.Click.canceled += OnClickEnded;
+                    break;
+                default:
+                    Debug.Log("Invalid control scheme");
+                    break;
+            }
 
-            // Input events
-            _inputActions.PinMovement.Click.canceled += OnClickEnded;
-            _inputActions.PinMovement.Position.started += OnPositionChanged;
-            _inputActions.PinMovement.Position.performed += OnPositionChanged;
-            _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
-
+            
             _isInputEnabled = true;
-//            Debug.Log("Input enabled for InputSystemManager");
-        }
-        else
-        {
-            Debug.LogWarning("Input ");
+            Debug.Log($"Input enabled for InputSystemManager controlScheme: {controlScheme}");
         }
     }
 
-    private void DisableInput()
+    private void DisableInput(ControlScheme scheme)
     {
         if (_inputActions != null && _isInputEnabled)
-        {
-            _inputActions.PinMovement.Click.canceled -= OnClickEnded;
-            _inputActions.PinMovement.Position.started -= OnPositionChanged;
-            _inputActions.PinMovement.Position.performed -= OnPositionChanged;
-            _inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
-            _inputActions.PinMovement.TakeScreenshot.performed -= OnTakeScreenshot;
 
-            _inputActions.PinMovement.Disable();
-            _isInputEnabled = false;
-            Debug.Log("Input disabled for InputSystemManager");
+
+            switch (scheme)
+            {
+                case ControlScheme.DragAndDrop:
+                    _inputActions.PinMovement.Position.started -= OnPositionChanged;
+                    _inputActions.PinMovement.Position.performed -= OnPositionChanged;
+                    _inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
+
+                    break;
+                case ControlScheme.TapTap:
+                    _inputActions.PinMovement.Position.started -= OnPositionChanged;
+                    _inputActions.PinMovement.Click.canceled -= OnClickEnded;
+                    break;
+                default:
+                    Debug.Log("Invalid control scheme");
+                    break;
+            }
+
+        _inputActions.PinMovement.Disable();
+        _isInputEnabled = false;
+        Debug.Log("Input disabled for InputSystemManager");
+        {
+            // _inputActions.PinMovement.Click.canceled -= OnClickEnded;
+            // _inputActions.PinMovement.Position.started -= OnPositionChanged;
+            // _inputActions.PinMovement.Position.performed -= OnPositionChanged;
+            // _inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
+            // _inputActions.PinMovement.TakeScreenshot.performed -= OnTakeScreenshot;
+            //
+            // _inputActions.PinMovement.Disable();
+            // _isInputEnabled = false;
+            // Debug.Log("Input disabled for InputSystemManager");
         }
     }
 
-    public void LoadControlScheme()
-    {
-        controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
-        print(controlScheme.GetName());
-    }
+    // public void LoadControlScheme(ControlScheme scheme)
+    // {
+    //     DisableInput(scheme);
+    //     controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
+    //     print(controlScheme.GetName());
+    // }
 
     private void OnTakeScreenshot(InputAction.CallbackContext obj)
     {
@@ -130,7 +198,7 @@ public class InputSystemManager : BaseManager
         else
         {
             HandleSelectEnd(endPosition);
-           // print("OnCLickEnded caused HandleSelectEnd to be called");
+            // print("OnCLickEnded caused HandleSelectEnd to be called");
         }
     }
 
@@ -156,7 +224,7 @@ public class InputSystemManager : BaseManager
 
         if (_currentPin != null)
         {
-            // Debug.Log($"Pin found at click position {clickPosition}");
+            Debug.Log($"Pin found  {_currentPin.name} at click position {clickPosition}");
             if (controlScheme == ControlScheme.DragAndDrop)
             {
                 StartDragging(_currentPin);
@@ -192,6 +260,10 @@ public class InputSystemManager : BaseManager
         if (scheme == controlScheme) return;
         controlScheme = scheme;
         ClearCurrentPin();
+
+        // Save the control scheme to PlayerPrefs
+        PlayerPrefs.SetInt("controlScheme", (int)scheme);
+        PlayerPrefs.Save();
     }
 
     private void StartDragging(PinLogic pin)
@@ -206,7 +278,7 @@ public class InputSystemManager : BaseManager
     {
         _currentPin = (_currentPin == clickedPin) ? null : clickedPin;
 
-        //   Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
+        Debug.Log(_currentPin == null ? "Pin deselected" : $"Pin selected: {_currentPin.name}");
     }
 
     private void HandleDragEnd(Vector3 endPosition)
@@ -223,13 +295,36 @@ public class InputSystemManager : BaseManager
     private void HandleSelectEnd(Vector3 endPosition)
     {
         PinLogic clickedPin = FindClosestPin(endPosition);
-        print($"HandleSelectEnd was called with clickedPin: {clickedPin} and _currentPin: {_currentPin}");
-        if (clickedPin == null && _currentPin != null)
+        Debug.Log($"position: {endPosition}");
+
+        // Fixed null reference exception by checking if pins are null before accessing their names
+        string clickedPinName = clickedPin != null ? clickedPin.name : "null";
+        string currentPinName = _currentPin != null ? _currentPin.name : "null";
+        Debug.Log($"HandleSelectEnd was called with clickedPin: {clickedPinName} and _currentPin: {currentPinName}");
+
+        // Handle tap-tap logic properly
+        if (clickedPin != null)
         {
-            // Move selected pin to empty space with animation
+            // Clicked on a pin - select/deselect it
+            if (_currentPin == clickedPin)
+            {
+                // Deselect if clicking the same pin
+                _currentPin = null;
+                Debug.Log("Pin deselected");
+            }
+            else
+            {
+                // Select the new pin
+                _currentPin = clickedPin;
+                Debug.Log($"Pin selected: {_currentPin.name}");
+            }
+        }
+        else if (_currentPin != null)
+        {
+            // Clicked on empty space with a pin selected - move the pin
             _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
             print("MovePinToPosition Called");
-            //  Debug.Log($"Moved selected pin to: {endPosition}");
+            Debug.Log($"Moved selected pin to: {endPosition}");
             _currentPin = null;
         }
     }
@@ -292,7 +387,7 @@ public class InputSystemManager : BaseManager
     // Only disable input when the object is being destroyed
     private void OnDestroy()
     {
-        DisableInput();
+        DisableInput(controlScheme);
 
         // Dispose of input actions only when the manager is actually destroyed
         if (_inputActions != null)

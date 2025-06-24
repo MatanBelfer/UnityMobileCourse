@@ -17,15 +17,12 @@ public class UIManager : BaseManager
     private Camera screenshotCamera;
     
     public bool isPauseMenuOpen { get; private set; }
-    
-    //Singleton for legacy compatibility
-    public static UIManager Instance;
+
     
    
     public void Awake()
     {
        base.Awake();
-       Instance = this; // Set for legacy compatibility
     }
 
     protected override void OnInitialize()
@@ -60,10 +57,7 @@ public class UIManager : BaseManager
 
     private void OnDestroy()
     {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
+   
     }
     
     public void PauseMenu(bool openState)
