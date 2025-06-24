@@ -39,28 +39,25 @@ public class InputSystemManager : BaseManager
         }
 
         LoadControlScheme();
-        
     }
 
     public void LoadControlScheme()
     {
         controlScheme = (ControlScheme)PlayerPrefs.GetInt("controlScheme");
-        OnReset();
-
-
+        EnableInput();
     }
 
     protected override void OnReset()
     {
         // Keep input enabled during reset, just clear current pin
         _currentPin = null;
-        DisableInput(controlScheme);
-        
+        // DisableInput(controlScheme);
+
         // Re-enable input if it was disabled
-        if (!_isInputEnabled)
-        {
-            EnableInput(controlScheme);
-        }
+        // if (!_isInputEnabled)
+        // {
+        //     EnableInput(controlScheme);
+        // }
     }
 
     protected override void OnCleanup()
@@ -70,34 +67,8 @@ public class InputSystemManager : BaseManager
         _currentPin = null;
     }
 
-//     private void EnableInput()
-//     {
-//         if (_inputActions == null)
-//         {
-//             Debug.Log("Input actions is null");
-//             return;
-//         }
-//
-//         if (!_isInputEnabled)
-//         {
-// //            Debug.Log("Enabling input for InputSystemManager");
-//             _inputActions.PinMovement.Enable();
-//
-//             //UI related 
-//             _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
-//
-//             // Input events
-//             _inputActions.PinMovement.Click.canceled += OnClickEnded;
-//             _inputActions.PinMovement.Position.started += OnPositionChanged;
-//             _inputActions.PinMovement.Position.performed += OnPositionChanged;
-//             _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
-//
-//             _isInputEnabled = true;
-// //            Debug.Log("Input enabled for InputSystemManager");
-//         }
-//     }
 
-    private void EnableInput(ControlScheme scheme)
+    private void EnableInput()
     {
         if (_inputActions == null)
         {
@@ -110,34 +81,42 @@ public class InputSystemManager : BaseManager
             _inputActions.PinMovement.Enable();
             //UI related 
             _inputActions.PinMovement.TakeScreenshot.performed += OnTakeScreenshot;
-            switch (scheme)
+            
+            switch (controlScheme)
             {
                 case ControlScheme.DragAndDrop:
                     _inputActions.PinMovement.Position.started += OnPositionChanged;
                     _inputActions.PinMovement.Position.performed += OnPositionChanged;
                     _inputActions.PinMovement.ToggleMode.started += OnToggleModePressed;
-                    
+
                     break;
                 case ControlScheme.TapTap:
                     _inputActions.PinMovement.Position.started += OnPositionChanged;
-                    _inputActions.PinMovement.Click.canceled += OnClickEnded;
                     break;
                 default:
                     Debug.Log("Invalid control scheme");
                     break;
             }
 
-            
+            _inputActions.PinMovement.Click.canceled += OnClickEnded;
             _isInputEnabled = true;
             Debug.Log($"Input enabled for InputSystemManager controlScheme: {controlScheme}");
         }
+        else
+        {
+            Debug.Log("Input already enabled for InputSystemManager");
+            DisableInput(controlScheme == ControlScheme.DragAndDrop
+                ? ControlScheme.TapTap
+                : ControlScheme.DragAndDrop);
+            EnableInput();
+        }
+        
     }
 
     private void DisableInput(ControlScheme scheme)
     {
         if (_inputActions != null && _isInputEnabled)
-
-
+        {
             switch (scheme)
             {
                 case ControlScheme.DragAndDrop:
@@ -148,27 +127,20 @@ public class InputSystemManager : BaseManager
                     break;
                 case ControlScheme.TapTap:
                     _inputActions.PinMovement.Position.started -= OnPositionChanged;
-                    _inputActions.PinMovement.Click.canceled -= OnClickEnded;
                     break;
                 default:
                     Debug.Log("Invalid control scheme");
                     break;
             }
+            _inputActions.PinMovement.Click.canceled -= OnClickEnded;
 
-        _inputActions.PinMovement.Disable();
-        _isInputEnabled = false;
-        Debug.Log("Input disabled for InputSystemManager");
-        {
-            // _inputActions.PinMovement.Click.canceled -= OnClickEnded;
-            // _inputActions.PinMovement.Position.started -= OnPositionChanged;
-            // _inputActions.PinMovement.Position.performed -= OnPositionChanged;
-            // _inputActions.PinMovement.ToggleMode.started -= OnToggleModePressed;
-            // _inputActions.PinMovement.TakeScreenshot.performed -= OnTakeScreenshot;
-            //
-            // _inputActions.PinMovement.Disable();
-            // _isInputEnabled = false;
-            // Debug.Log("Input disabled for InputSystemManager");
+            _inputActions.PinMovement.Disable();
+            _isInputEnabled = false;
+            Debug.Log("Input disabled for InputSystemManager");
         }
+
+        
+        
     }
 
     // public void LoadControlScheme(ControlScheme scheme)
