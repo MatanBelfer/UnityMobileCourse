@@ -185,7 +185,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b88abfd9aebecf41a643f9462055484, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skinCollection: {fileID: 11400000, guid: b12ba4351871dba4ba4268917823ba66, type: 2}
+  skinCollection: {fileID: 0}
   money: 0
   shopPanel: {fileID: 789069382}
   shopItemPrefab: {fileID: 3503208305798190736, guid: a1df450daf2432941bee8ef8ae75acd9, type: 3}

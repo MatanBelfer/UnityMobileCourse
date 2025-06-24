@@ -20,8 +20,9 @@ public class SkinShopItem : MonoBehaviour
         // this.asset = asset;
         this.isPurchased = isPurchased;
         this.isEquipped = isEquipped;
+        print(asset.displayName);
         image.sprite = asset.sprite;
-        nameText.text = asset.skinName;
+        nameText.text = asset.displayName;
         
         switch (isPurchased, isEquipped)
         {

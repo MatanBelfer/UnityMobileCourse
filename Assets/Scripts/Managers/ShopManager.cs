@@ -45,7 +45,7 @@ public class ShopManager : BaseManager
     public void Start()
     {
         InstantiateShopItems();
-        if (testMode && title != null)
+        if (testMode && title)
         {
             try
             {
@@ -67,14 +67,15 @@ public class ShopManager : BaseManager
 
     private void LoadShopItems()
     {
-        if (skinCollection == null)
-        {
-            Debug.LogError("SkinCollection is not assigned in ShopManager!");
-            return;
-        }
+        // if (skinCollection == null)
+        // {
+        //     Debug.LogError("SkinCollection is not assigned in ShopManager!");
+        //     return;
+        // }
 
-        Resources.LoadAll("Skins");
-        skins = skinCollection.skinDictionary;        string path = Application.persistentDataPath + saveDataPath;
+        skinCollection = Resources.Load<ShopAssetCollection>("Skins/Skins");
+        skins = skinCollection.skinDictionary;
+        string path = Application.persistentDataPath + saveDataPath;
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
@@ -108,9 +109,11 @@ public class ShopManager : BaseManager
         }
 
         shopItems = new SkinShopItem[skins.Count];
+        print($"shop manager has {skins.Count} skins to instantiate");
         int index = 0;
         foreach (var skin in skins)
         {
+            print($"instantiating skin {skin.Key}");// / {skin.Value.name}");
             GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
             SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
             
