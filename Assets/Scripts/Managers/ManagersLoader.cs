@@ -14,9 +14,6 @@ public class ManagersLoader : MonoBehaviour
     public static GameManager Game { get; private set; }
     public static InputSystemManager Input { get; private set; }
     
-    // Static access to scene managers  
-    public static GridManager Grid { get; private set; }
-    public static ShopManager Shop { get; private set; }
     
     // Dictionary for dynamic scene manager access
     private static Dictionary<System.Type, BaseManager> sceneManagersDict = new Dictionary<System.Type, BaseManager>();
@@ -80,9 +77,7 @@ public class ManagersLoader : MonoBehaviour
         
         // Clear previous references
         sceneManagersDict.Clear();
-        Grid = null;
-        Shop = null;
-        
+
         // Find all scene managers in the current scene (exclude core managers)
         var foundManagers = FindObjectsByType<BaseManager>(FindObjectsInactive.Include, FindObjectsSortMode.None)
             .Where(m => !IsCoreManager(m))
@@ -90,9 +85,7 @@ public class ManagersLoader : MonoBehaviour
             
         currentSceneManagers = foundManagers;
         
-        // Assign specific scene manager references
-        Grid = foundManagers.OfType<GridManager>().FirstOrDefault();
-        Shop = foundManagers.OfType<ShopManager>().FirstOrDefault();
+
         
         // Populate the dictionary and initialize
         foreach (var manager in foundManagers)
@@ -143,9 +136,6 @@ public class ManagersLoader : MonoBehaviour
             }
         }
         
-        // Clear scene manager references
-        Grid = null;
-        Shop = null;
         sceneManagersDict.Clear();
         currentSceneManagers = null;
     }

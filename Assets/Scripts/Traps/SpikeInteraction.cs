@@ -25,9 +25,9 @@ public class SpikeInteraction : MonoBehaviour
             }
             
             // Clean up grid manager
-            if (ManagersLoader.Grid != null)
+            if (ManagersLoader.GetSceneManager<GridManager>() != null)
             {
-                Destroy(ManagersLoader.Grid.gameObject);
+                Destroy(ManagersLoader.GetSceneManager<GridManager>().gameObject);
             }
             
             // Clean up rubber band if it still exists
