@@ -736,6 +736,7 @@ MonoBehaviour:
   pauseMenu: {fileID: 5513596601207423674}
   settingsMenu: {fileID: 7385034364908035605}
   HUD: {fileID: 4046298956475421015}
+  scoreText: {fileID: 0}
   screenshotCamera: {fileID: 0}
 --- !u!1 &6202906442440368064
 GameObject:
@@ -1315,7 +1316,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 679194523914362097, guid: 1a5d55957d9bca941bf8c0ae5cc0de41, type: 3}
       propertyPath: m_fontSize
-      value: 96.7
+      value: 105.35
       objectReference: {fileID: 0}
     - target: {fileID: 679194523914362097, guid: 1a5d55957d9bca941bf8c0ae5cc0de41, type: 3}
       propertyPath: m_fontSizeMax

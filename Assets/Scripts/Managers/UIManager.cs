@@ -2,6 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class UIManager : BaseManager
 {
@@ -27,12 +28,20 @@ public class UIManager : BaseManager
 
     protected override void OnInitialize()
     {
-        if (pauseMenu != null)
-        {
-            pauseMenu.SetActive(false);
-        }
-        ManagersLoader.Game.OnScoreChanged += score => scoreText.text = $"Score: {score}";
+        //Initialize element visibility
+        pauseMenu?.SetActive(false);
+        HUD?.SetActive(false);
+        
+        //react to score change
+        GameManager gameManager = ManagersLoader.Game;
+        gameManager.OnScoreChanged += score => scoreText.text = $"Score: {score}";
         scoreText.text = "Score: 0";
+        
+        //react to start game
+        SceneManager.sceneLoaded += (scene, _) =>
+        {
+            if (scene.name == "Game") HUD?.SetActive(true);
+        };
     }
 
     protected override void OnReset()
