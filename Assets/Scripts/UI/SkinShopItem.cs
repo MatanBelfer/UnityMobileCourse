@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class SkinShopItem : MonoBehaviour
 {
+    /// <summary>
+    /// Data of a shop item, used in ShopManager
+    /// </summary>
     // private SkinAsset asset;
     private bool isPurchased;
     private bool isEquipped;

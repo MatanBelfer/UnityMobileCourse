@@ -7,8 +7,7 @@ using System.Linq;
 
 public class ShopManager : BaseManager
 {
-    [Header("Data")] 
-    //[SerializeField] private ShopAssetCollection skinCollection;
+    [Header("Data")]
     private Dictionary<string, SkinAsset> skins;
     private Dictionary<string, bool> savedPurchasedSkinsAreEquipped; // <skin name, is equipped> from json
     [SerializeField] private int money;
@@ -17,7 +16,7 @@ public class ShopManager : BaseManager
 
     [Header("UI")] [SerializeField] private GameObject shopPanel;
     [SerializeField] private GameObject shopItemPrefab;
-
+    
     [Header("Testing")] [SerializeField] private bool testMode;
     [SerializeField] private TMP_Text title;
 
@@ -45,36 +44,9 @@ public class ShopManager : BaseManager
         SaveShopItems();
     }
 
-    // public void Start()
-    // {
-    //     if (testMode && title)
-    //     {
-    //         try
-    //         {
-    //             if (shopItems != null && shopItems.Length > 0)
-    //             {
-    //                 title.text = string.Join(", ", shopItems.Select(item => item.skinName).ToArray());
-    //             }
-    //             else
-    //             {
-    //                 title.text = "No Shop Items Found";
-    //             }
-    //         }
-    //         catch
-    //         {
-    //             title.text = "Skins Not Found";
-    //         }
-    //     }
-    // }
 
     private void LoadShopItems()
     {
-        // if (skinCollection == null)
-        // {
-        //     Debug.LogError("SkinCollection is not assigned in ShopManager!");
-        //     return;
-        // }
-
         var skinAssetArray = Resources.LoadAll<SkinAsset>("Skins");
         skins = skinAssetArray.ToDictionary(skin => skin.name);
         string path = Application.persistentDataPath + saveDataPath;
@@ -111,11 +83,9 @@ public class ShopManager : BaseManager
         }
 
         shopItems = new SkinShopItem[skins.Count];
-        //print($"shop manager has {skins.Count} skins to instantiate");
         int index = 0;
         foreach (var skin in skins)
         {
-            //print($"instantiating skin {skin.Key}");// / {skin.Value.name}");
             GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
             SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
             
@@ -138,7 +108,6 @@ public class ShopManager : BaseManager
             string json = JsonUtility.ToJson(savedPurchasedSkinsAreEquipped);
             string path = Application.persistentDataPath + saveDataPath;
             File.WriteAllText(path, json);
-           // print($"saved purchased shop items to {path}");
         }
     }
 }

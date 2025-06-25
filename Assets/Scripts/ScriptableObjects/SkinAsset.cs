@@ -5,31 +5,25 @@ using UnityEngine.UI;
 public class SkinAsset : ScriptableObject
 {
     [SerializeField] private string _displayName;
-    [SerializeField] private Sprite _sprite;
+    public string displayName {get => _displayName;}
     private string spriteName;
     [SerializeField] private int _price;
-    public string displayName {get => _displayName;}
-
+    public int price => _price;
+    [SerializeField] private Sprite _sprite;
     public Sprite sprite
     {
         get
         {
             if (!_sprite)
             {
-                Debug.Log($"{name} is trying to load sprite: {spriteName}...");
                 _sprite = Resources.Load<Sprite>("Skins/" + spriteName);
-                string successs = _sprite ? "succeeded" : "failed";
-                Debug.Log($"load {successs} for {name}");
-                
             }
             return _sprite;
         }
     }
+    
     private void OnValidate()
     {
         spriteName = _sprite.name;
     }
-
-
-    public int price {get => _price;}
 }
