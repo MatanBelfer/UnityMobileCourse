@@ -138,9 +138,6 @@ public class InputSystemManager : BaseManager
             _isInputEnabled = false;
             Debug.Log("Input disabled for InputSystemManager");
         }
-
-        
-        
     }
 
     // public void LoadControlScheme(ControlScheme scheme)

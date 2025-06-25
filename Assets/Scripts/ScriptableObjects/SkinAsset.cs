@@ -14,16 +14,22 @@ public class SkinAsset : ScriptableObject
     {
         get
         {
-            Debug.Log(spriteName);
-            if (!_sprite) _sprite = Resources.Load<Sprite>("Skins/" + spriteName);
+            if (!_sprite)
+            {
+                Debug.Log($"{name} is trying to load sprite: {spriteName}...");
+                _sprite = Resources.Load<Sprite>("Skins/" + spriteName);
+                string successs = _sprite ? "succeeded" : "failed";
+                Debug.Log($"load {successs} for {name}");
+                
+            }
             return _sprite;
         }
     }
-
-    public void SetSpriteName(string name)
+    private void OnValidate()
     {
-        spriteName = name;
+        spriteName = _sprite.name;
     }
+
 
     public int price {get => _price;}
 }
