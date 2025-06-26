@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7863057312965699086}
   m_Layer: 3
   m_Name: Rubber Band Anchor
-  m_TagString: Untagged
+  m_TagString: SolidForBand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -45,4 +45,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   poolName: 
-  objectPoolManager: {fileID: 0}
