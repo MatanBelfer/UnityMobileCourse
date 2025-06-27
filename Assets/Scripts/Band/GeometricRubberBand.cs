@@ -3,8 +3,9 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.ProBuilder.MeshOperations;
 
-public class GeometricRubberBand : BaseManager
+public class GeometricRubberBand : BaseManager, IEnumerable
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
     //the calculated area will exclude the obstacles and will be as small as possible, composed of only straight lines 
@@ -31,44 +32,47 @@ public class GeometricRubberBand : BaseManager
     [SerializeField] private string bandSegmentsPool;
 
     private Vector2 centerOfActivePins; //the center of the active pins
-    // [SerializeField] private float pinRadius; //the radius of the pins
-
-    // [SerializeField] private SplineContainer splineContainer;
-    // [SerializeField] private float splineTangentLengthRatio;
-
-    // private void Awake()
-    // {
-    //     InitializeSingleton();
-    // }
+    
+    //-------------rework---------------
+    /// <summary>
+    /// holds a linked structure of Bends that point to segments and anchors.
+    /// anchors can move, and when an anchor crosses a segment, it becomes part of the band until it returns
+    /// to where it came from 
+    /// </summary>
+    private Bend rootBend; //the bend from which to start drawing the band
+    [Header("Rework")]
+    [SerializeField] private RubberBandAnchor[] allAnchors; //all the anchors in the scene
+    [SerializeField] private RubberBandAnchor[] initialBand; //the initial set of bends that compose the band
+    private LinkedList<Bend> bends = new(); //the bends that compose the band
+    private LinkedList<BandSegment> segments = new(); //the segments that compose the band
 
     protected override void OnInitialize()
     {
         //initialize Pin dictionary
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
-
-        //initialize active pins and segments
-        UpdateActivePins();
-        BandVertex firstPin = pinTransformDict[activePins.First.Value];
-        AddFirstConnectedPin(firstPin);
-        if (activePins.Count > 1)
-        {
-            BandVertex prevPin = firstPin;
-            LinkedListNode<Transform> newPinNode = activePins.First;
-            do
-            {
-                newPinNode = newPinNode.Next;
-                BandVertex newPin = pinTransformDict[newPinNode.Value];
-                AddConnectedPinAfter(prevPin, newPin);
-                prevPin = newPin;
-            } while (newPinNode.Next != null);
-        }
-        // LogActivePinNames();
+        //
+        // //initialize active pins and segments
+        // UpdateActivePins();
+        // BandVertex firstPin = pinTransformDict[activePins.First.Value];
+        // AddFirstConnectedPin(firstPin);
+        // if (activePins.Count > 1)
+        // {
+        //     BandVertex prevPin = firstPin;
+        //     LinkedListNode<Transform> newPinNode = activePins.First;
+        //     do
+        //     {
+        //         newPinNode = newPinNode.Next;
+        //         BandVertex newPin = pinTransformDict[newPinNode.Value];
+        //         AddConnectedPinAfter(prevPin, newPin);
+        //         prevPin = newPin;
+        //     } while (newPinNode.Next != null);
+        // }
+        // // LogActivePinNames();
     }
 
     protected override void OnReset()
     {
         Reset();
-
     }
 
     protected override void OnCleanup()
@@ -76,11 +80,66 @@ public class GeometricRubberBand : BaseManager
         throw new NotImplementedException();
     }
 
-    private void Update()
+    // private void Update()
+    // {
+    //     UpdateBandSegments();
+    // }
+
+    private void InitializeSegments()
     {
-        UpdateBandSegments();
+        //using initialBand, construct the respective Bends
+        if (initialBand.Length < 3)
+        {
+            Debug.Log("Initial band must have at least 3 anchors");
+            return;
+        }
+        
+        //first constructs the bends
+        for (int i = 0; i < initialBand.Length; i++)
+        {
+            Bend currentBend;
+            RubberBandAnchor anchor = initialBand[i];
+            if (i == 0)
+            {
+                rootBend = new Bend(anchor);
+                currentBend = rootBend;
+            }
+            else
+            {
+                currentBend = new Bend(anchor);
+            }
+            bends.AddLast(currentBend);
+        }
+
+        //add the segments
+        LinkedListNode<Bend> node = bends.First;
+        do
+        {
+            BandSegment newSegment = GetSegmentFromPool();
+            segments.AddLast(newSegment);
+            Bend bend = node.Value;
+            Bend nextBend = node.NextOrFirst().Value;
+            bend.nextSegment = newSegment;
+            newSegment.prevBend = bend;
+            newSegment.nextBend = nextBend;
+            nextBend.prevSegment = newSegment;
+            
+            node = node.Next;
+        } while (!node.IsLast());
+    }
+    
+    private BandSegment GetSegmentFromPool(Bend prevBend)
+    {
+        BandSegment segment = GetSegmentFromPool();
+        segment.prevBend = prevBend;
+        return segment;
     }
 
+    private BandSegment GetSegmentFromPool()
+    {
+        return ManagersLoader.Pool.GetFromPool(bandSegmentsPool).GetComponent<BandSegment>();
+    }
+    
     private void UpdateActivePins()
     {
         //updates the "activePins" linkedlist and the activity status of the pins
@@ -152,111 +211,111 @@ public class GeometricRubberBand : BaseManager
         return hull;
     }
 
-    private void AddFirstConnectedPin(BandVertex newPin)
-    {
-        if (connectedActivePins.Count != 0)
-        {
-            throw new Exception("Cannot add first connected pin when there are already connected pins");
-        }
+    // private void AddFirstConnectedPin(BandVertex newPin)
+    // {
+    //     if (connectedActivePins.Count != 0)
+    //     {
+    //         throw new Exception("Cannot add first connected pin when there are already connected pins");
+    //     }
+    //
+    //     connectedActivePins.Add(newPin);
+    //     newPin.prevPin = newPin;
+    //     newPin.nextPin = newPin;
+    //     SetSegmentOfPin(newPin, newPin);
+    // }
 
-        connectedActivePins.Add(newPin);
-        newPin.prevPin = newPin;
-        newPin.nextPin = newPin;
-        SetSegmentOfPin(newPin, newPin);
-    }
+    // private void SetSegmentOfPin(BandVertex currentPin, BandVertex nextPin)
+    // {
+    //     if (currentPin.nextSegment == null)
+    //     {
+    //         var segment = new Segment(bandSegmentsPool, currentPin, nextPin);
+    //         bandSegments.Add(segment.transform); // Track new segment
+    //     }
+    //     else
+    //     {
+    //         Segment segment = currentPin.nextSegment;
+    //         segment.PrevVertex = currentPin;
+    //         segment.NextVertex = nextPin;
+    //         segment.transform.gameObject.SetActive(true);
+    //     }
+    // }
 
-    private void SetSegmentOfPin(BandVertex currentPin, BandVertex nextPin)
-    {
-        if (currentPin.nextSegment == null)
-        {
-            var segment = new Segment(bandSegmentsPool, currentPin, nextPin);
-            bandSegments.Add(segment.transform); // Track new segment
-        }
-        else
-        {
-            Segment segment = currentPin.nextSegment;
-            segment.PrevVertex = currentPin;
-            segment.NextVertex = nextPin;
-            segment.transform.gameObject.SetActive(true);
-        }
-    }
+    // private void AddConnectedPinAfter(BandVertex refPin, BandVertex newPin)
+    // {
+    //     BandVertex oldNext = refPin.nextPin; //the pin that was after the reference pin
+    //
+    //     //remove the old connection
+    //     Segment oldSegment = refPin.nextSegment;
+    //     // ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.transform.gameObject);
+    //
+    //     //add the new pin
+    //     connectedActivePins.Add(newPin);
+    //
+    //     //setup links
+    //     refPin.nextPin = newPin;
+    //     newPin.prevPin = refPin;
+    //     newPin.nextPin = oldNext;
+    //     oldNext.prevPin = newPin;
+    //
+    //     //add segments
+    //     SetSegmentOfPin(refPin, newPin);
+    //     SetSegmentOfPin(newPin, oldNext);
+    // }
 
-    private void AddConnectedPinAfter(BandVertex refPin, BandVertex newPin)
-    {
-        BandVertex oldNext = refPin.nextPin; //the pin that was after the reference pin
-
-        //remove the old connection
-        Segment oldSegment = refPin.nextSegment;
-        // ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.transform.gameObject);
-
-        //add the new pin
-        connectedActivePins.Add(newPin);
-
-        //setup links
-        refPin.nextPin = newPin;
-        newPin.prevPin = refPin;
-        newPin.nextPin = oldNext;
-        oldNext.prevPin = newPin;
-
-        //add segments
-        SetSegmentOfPin(refPin, newPin);
-        SetSegmentOfPin(newPin, oldNext);
-    }
-
-    private void RemoveConnectedPin(BandVertex pinToRemove)
-    {
-        connectedActivePins.Remove(pinToRemove);
-        pinToRemove.prevPin.nextPin = pinToRemove.nextPin;
-        pinToRemove.nextPin.prevPin = pinToRemove.prevPin;
-
-        // Return old segment to pool
-        if (pinToRemove.nextSegment != null)
-        {
-            var segmentToRemove = pinToRemove.nextSegment.transform;
-            bandSegments.Remove(segmentToRemove); // Remove from tracking list
-            ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segmentToRemove.gameObject);
-            pinToRemove.nextSegment = null;
-        }
-
-        // Create new segment between prev and next pins
-        SetSegmentOfPin(pinToRemove.prevPin, pinToRemove.nextPin);
-    }
+    // private void RemoveConnectedPin(BandVertex pinToRemove)
+    // {
+    //     connectedActivePins.Remove(pinToRemove);
+    //     pinToRemove.prevPin.nextPin = pinToRemove.nextPin;
+    //     pinToRemove.nextPin.prevPin = pinToRemove.prevPin;
+    //
+    //     // Return old segment to pool
+    //     if (pinToRemove.nextSegment != null)
+    //     {
+    //         var segmentToRemove = pinToRemove.nextSegment.transform;
+    //         bandSegments.Remove(segmentToRemove); // Remove from tracking list
+    //         ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segmentToRemove.gameObject);
+    //         pinToRemove.nextSegment = null;
+    //     }
+    //
+    //     // Create new segment between prev and next pins
+    //     SetSegmentOfPin(pinToRemove.prevPin, pinToRemove.nextPin);
+    // }
 
     private void UpdateBandSegments()
     {
-        //updates the segments of the band if needed (a pin changed its activity status)
-
-        //check if there's a moving pin that will cause the band to update
-        if (movingPin == null) return;
-        UpdateActivePins();
-
-        //go through activePins and make sure connectedActivePins is in the same order
-        //also track which Pins should be removed (if they're not in activePins)
-        HashSet<BandVertex> pinsToRemove = new();
-        foreach (BandVertex pin in connectedActivePins) pinsToRemove.Add(pin);
-        LinkedListNode<Transform> node = activePins.First;
-        while (node != null)
-        {
-            //do not remove this pin from connectedActivePins
-            pinsToRemove.Remove(pinTransformDict[node.Value]);
-            //check if its next is the same as the corresponding Pin
-            BandVertex currentPin = pinTransformDict[node.Value];
-            BandVertex nextPin = pinTransformDict[node.CyclicNext().Value];
-            if (currentPin.nextPin != nextPin)
-            {
-                AddConnectedPinAfter(currentPin, nextPin);
-                // print("added pin");
-            }
-
-            node = node.Next;
-        }
-
-        //remove the remaining pins from connectedActivePins
-        foreach (BandVertex pin in pinsToRemove)
-        {
-            RemoveConnectedPin(pin);
-            // print("removed pin");
-        }
+        // //updates the segments of the band if needed (a pin became active)
+        //
+        // //check if there's a moving pin that will cause the band to update
+        // if (movingPin == null) return;
+        // UpdateActivePins();
+        //
+        // //go through activePins and make sure connectedActivePins is in the same order
+        // //also track which Pins should be removed (if they're not in activePins)
+        // HashSet<BandVertex> pinsToRemove = new();
+        // foreach (BandVertex pin in connectedActivePins) pinsToRemove.Add(pin);
+        // LinkedListNode<Transform> node = activePins.First;
+        // while (node != null)
+        // {
+        //     //do not remove this pin from connectedActivePins
+        //     pinsToRemove.Remove(pinTransformDict[node.Value]);
+        //     //check if its next is the same as the corresponding Pin
+        //     BandVertex currentPin = pinTransformDict[node.Value];
+        //     BandVertex nextPin = pinTransformDict[node.CyclicNext().Value];
+        //     if (currentPin.nextPin != nextPin)
+        //     {
+        //         AddConnectedPinAfter(currentPin, nextPin);
+        //         // print("added pin");
+        //     }
+        //
+        //     node = node.Next;
+        // }
+        //
+        // //remove the remaining pins from connectedActivePins
+        // foreach (BandVertex pin in pinsToRemove)
+        // {
+        //     RemoveConnectedPin(pin);
+        //     // print("removed pin");
+        // }
     }
 
     public void Reset()
@@ -284,15 +343,15 @@ public class GeometricRubberBand : BaseManager
         connectedActivePins.Clear();
         foreach (var pin in pinTransformDict.Values)
         {
-            if (pin.nextSegment != null)
-            {
-                pin.nextSegment = null;
-            }
-
-            if (pin.prevSegment != null)
-            {
-                pin.prevSegment = null;
-            }
+            // if (pin.nextSegment != null)
+            // {
+            //     pin.nextSegment = null;
+            // }
+            //
+            // if (pin.prevSegment != null)
+            // {
+            //     pin.prevSegment = null;
+            // }
 
             pin.nextPin = null;
             pin.prevPin = null;
@@ -302,26 +361,26 @@ public class GeometricRubberBand : BaseManager
         movingPin = null;
     }
 
-    private void LogActivePinNames()
-    {
-        List<string> activePinsNames = new();
-        List<string> conActivePinsNames = new();
-        foreach (Transform pin in activePins)
-        {
-            activePinsNames.Add(pin.name);
-        }
-
-        BandVertex currentPin = pinTransformDict[activePins.First.Value];
-        for (int i = 0; i < connectedActivePins.Count; i++)
-        {
-            conActivePinsNames.Add(currentPin.transform.name);
-            currentPin = currentPin.nextPin;
-        }
-
-        print("activePins: " + string.Join(", ", activePinsNames) + "\n" +
-              "connectedActivePins: " + string.Join(", ", conActivePinsNames));
-        ;
-    }
+    // private void LogActivePinNames()
+    // {
+    //     List<string> activePinsNames = new();
+    //     List<string> conActivePinsNames = new();
+    //     foreach (Transform pin in activePins)
+    //     {
+    //         activePinsNames.Add(pin.name);
+    //     }
+    //
+    //     BandVertex currentPin = pinTransformDict[activePins.First.Value];
+    //     for (int i = 0; i < connectedActivePins.Count; i++)
+    //     {
+    //         conActivePinsNames.Add(currentPin.transform.name);
+    //         currentPin = currentPin.nextPin;
+    //     }
+    //
+    //     print("activePins: " + string.Join(", ", activePinsNames) + "\n" +
+    //           "connectedActivePins: " + string.Join(", ", conActivePinsNames));
+    //     ;
+    // }
 
     public void UpdateMovingPin(Transform pin, MovingPinStatus status)
     {
@@ -341,14 +400,58 @@ public class GeometricRubberBand : BaseManager
         NotMoving,
         Moving
     }
+    
+    public class Bend
+    {
+        public RubberBandAnchor anchor { get; private set; }
+        public bool isClockwise { get; private set; }
+        public BandSegment nextSegment { get; set; }
+        public BandSegment prevSegment { get; set; }
+        
+        public Bend(RubberBandAnchor anchor, bool isClockwise = false)
+        {
+            this.anchor = anchor;
+            this.isClockwise = isClockwise;
+        }
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return new BandEnumerator(this);
+    }
+
+    public class BandEnumerator : IEnumerator
+    {
+        private GeometricRubberBand band;
+        
+        public BandEnumerator(GeometricRubberBand band)
+        {
+            this.band = band;
+            Reset();
+        }
+
+        private Bend _current;
+        public object Current => _current;
+
+        public void Reset()
+        {
+            _current = band.rootBend;
+        }
+
+        public bool MoveNext()
+        {
+            _current = _current.nextSegment.nextBend;
+            return _current != null;
+        }
+    }
 }
 
 public class BandVertex
 {
     public Transform transform;
     public bool active; //part of the band
-    public Segment nextSegment; //the segment that follows this pin
-    public Segment prevSegment; //the segment that precedes this pin
+    // public Segment nextSegment; //the segment that follows this pin
+    // public Segment prevSegment; //the segment that precedes this pin
     public BandVertex nextPin; //the pin that follows this pin
     public BandVertex prevPin; //the pin that precedes this pin
 
@@ -358,38 +461,38 @@ public class BandVertex
     }
 }
 
-public class Segment
-{
-    public Transform transform;
-    private FollowTwoTransforms followScript;
-    private BandVertex prevVertex;
-    private BandVertex nextVertex;
-
-    public BandVertex PrevVertex
-    {
-        get { return prevVertex; }
-        set { followScript.target1 = value.transform; prevVertex = value; }
-    }
-
-    public BandVertex NextVertex
-    {
-        get { return nextVertex; }
-        set { followScript.target2 = value.transform; nextVertex = value;}
-    }
-
-    public Segment(string objectPoolName, BandVertex prevVertex, BandVertex nextVertex)
-    {
-        transform = ManagersLoader.Pool.GetFromPool(objectPoolName).transform;
-        // Parent to GeometricRubberBand immediately after getting from pool
-        transform.SetParent(ManagersLoader.GetSceneManager<GeometricRubberBand>().transform);
-
-        followScript = transform.GetComponent<FollowTwoTransforms>();
-        followScript.target1 = prevVertex.transform;
-        followScript.target2 = nextVertex.transform;
-
-        this.nextVertex = nextVertex;
-        this.prevVertex = prevVertex;
-        this.prevVertex.nextSegment = this;
-        this.nextVertex.prevSegment = this;
-    }
-}
+// public class Segment
+// {
+//     public Transform transform;
+//     private FollowTwoTransforms followScript;
+//     private BandVertex prevVertex;
+//     private BandVertex nextVertex;
+//
+//     public BandVertex PrevVertex
+//     {
+//         get { return prevVertex; }
+//         set { followScript.target1 = value.transform; prevVertex = value; }
+//     }
+//
+//     public BandVertex NextVertex
+//     {
+//         get { return nextVertex; }
+//         set { followScript.target2 = value.transform; nextVertex = value;}
+//     }
+//
+//     public Segment(string objectPoolName, BandVertex prevVertex, BandVertex nextVertex)
+//     {
+//         transform = ManagersLoader.Pool.GetFromPool(objectPoolName).transform;
+//         // Parent to GeometricRubberBand immediately after getting from pool
+//         transform.SetParent(ManagersLoader.GetSceneManager<GeometricRubberBand>().transform);
+//
+//         followScript = transform.GetComponent<FollowTwoTransforms>();
+//         followScript.target1 = prevVertex.transform;
+//         followScript.target2 = nextVertex.transform;
+//
+//         this.nextVertex = nextVertex;
+//         this.prevVertex = prevVertex;
+//         this.prevVertex.nextSegment = this;
+//         this.nextVertex.prevSegment = this;
+//     }
+// }

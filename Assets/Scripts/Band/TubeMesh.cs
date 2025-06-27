@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class BandSegmentMesh : MonoBehaviour
+public class TubeMesh : MonoBehaviour
 {
 	[SerializeField] private MeshFilter meshFilter;
     void Start()
