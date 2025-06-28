@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 using System;
 using TMPro;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 
 public enum Difficulty
 {

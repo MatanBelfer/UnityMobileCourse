@@ -89,6 +89,7 @@ public class ObjectPoolManager : BaseManager
 
     public GameObject GetFromPool(string poolName)
     {
+        print("GetFromPool");
         CheckPoolExists(poolName);
         Queue<GameObject> pool = pools[poolName];
 
@@ -119,6 +120,7 @@ public class ObjectPoolManager : BaseManager
         obj.transform.SetParent(null);
         obj.SetActive(true);
         activeObjects[poolName].Add(obj);
+        print(obj.name);
         return obj;
     }
 

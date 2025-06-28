@@ -137,6 +137,7 @@ public class GeometricRubberBand : BaseManager, IEnumerable
 
     private BandSegment GetSegmentFromPool()
     {
+        print("GetSegmentFromPool");
         return ManagersLoader.Pool.GetFromPool(bandSegmentsPool).GetComponent<BandSegment>();
     }
     

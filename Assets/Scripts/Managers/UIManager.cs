@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+
 using UnityEngine;
 using System.Collections;
 using TMPro;
@@ -6,15 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class UIManager : BaseManager
 {
-    [InspectorLabel("Pause Menu")] [SerializeField]
+    [Header("Pause Menu")] [SerializeField]
     private GameObject pauseMenu;
-    [InspectorLabel("Settings Menu")] [SerializeField]
+    [Header("Settings Menu")] [SerializeField]
     private GameObject settingsMenu;
-    [InspectorLabel("HUD")] [SerializeField]
+    [Header("HUD")] [SerializeField]
     private GameObject HUD;
-    [InspectorLabel("Score Text Object")] [SerializeField]
+    [Header("Score Text Object")] [SerializeField]
     private TMP_Text scoreText;
-    [InspectorLabel("Screenshot Camera")] [SerializeField]
+    [Header("Screenshot Camera")] [SerializeField]
     private Camera screenshotCamera;
     
     public bool isPauseMenuOpen { get; private set; }
