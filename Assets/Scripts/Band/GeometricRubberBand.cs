@@ -50,6 +50,8 @@ public class GeometricRubberBand : BaseManager, IEnumerable
     {
         //initialize Pin dictionary
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
+        
+        InitializeSegments();
         //
         // //initialize active pins and segments
         // UpdateActivePins();
@@ -112,19 +114,21 @@ public class GeometricRubberBand : BaseManager, IEnumerable
         }
 
         //add the segments
-        LinkedListNode<Bend> node = bends.First;
+        LinkedListNode<Bend> node = bends.Last;
         do
         {
+            node = node.NextOrFirst();
+            
             BandSegment newSegment = GetSegmentFromPool();
             segments.AddLast(newSegment);
+            
             Bend bend = node.Value;
             Bend nextBend = node.NextOrFirst().Value;
+            
             bend.nextSegment = newSegment;
             newSegment.prevBend = bend;
             newSegment.nextBend = nextBend;
             nextBend.prevSegment = newSegment;
-            
-            node = node.Next;
         } while (!node.IsLast());
     }
     
