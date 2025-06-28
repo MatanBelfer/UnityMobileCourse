@@ -4,7 +4,12 @@ using UnityEngine;
 public class BandSegment : MonoBehaviour
 {
     [SerializeField] private FollowTwoTransforms followScript;
-    
+
+    private void Awake()
+    {
+        followScript.follow = false;
+    }
+
     private GeometricRubberBand.Bend _prevBend;
     private Transform prevTransform;
     public GeometricRubberBand.Bend prevBend
@@ -31,34 +36,52 @@ public class BandSegment : MonoBehaviour
         }
     }
     
-    //positions of the start and end anchors this frame and last frame 
-    private Vector2[] currentPosition { get; set; } = new Vector2[2];
-    private Vector2[] previousPosition { get; set; } = new Vector2[2];
-
-    private void Start()
+    
+    private Vector2[] _position = new Vector2[2];
+    public Vector2 position1
     {
-        followScript.OnMove += RecordPositions;
-        
-        currentPosition[0] = prevTransform.position;
-        currentPosition[1] = nextTransform.position;
-        for (int i = 0; i < 2; i++)
+        get => _position[0];
+        set
         {
-            previousPosition[i] = currentPosition[i];
+            _position[0] = value;
+            followScript.UpdatePosition(value, _position[1]);
+        }
+    }public Vector2 position2
+    {
+        get => _position[1];
+        set
+        {
+            _position[1] = value;
+            followScript.UpdatePosition(_position[0], value);
         }
     }
+    
+    // private Vector2[] previousPosition { get; set; } = new Vector2[2];
 
-    private void Update()
-    {
-        RecordPositions();
-    }
-
-    private void RecordPositions()
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            previousPosition[i] = currentPosition[i];
-        }
-        currentPosition[0] = prevTransform.position;
-        currentPosition[1] = nextTransform.position;
-    }
+//     private void Start()
+//     {
+//         followScript.OnMove += RecordPositions;
+//         
+//         currentPosition[0] = prevTransform.position;
+//         currentPosition[1] = nextTransform.position;
+//         for (int i = 0; i < 2; i++)
+//         {
+//             previousPosition[i] = currentPosition[i];
+//         }
+//     }
+//
+//     private void Update()
+//     {
+//         RecordPositions();
+//     }
+//
+//     private void RecordPositions()
+//     {
+//         for (int i = 0; i < 2; i++)
+//         {
+//             previousPosition[i] = currentPosition[i];
+//         }
+//         currentPosition[0] = prevTransform.position;
+//         currentPosition[1] = nextTransform.position;
+//     }
 }

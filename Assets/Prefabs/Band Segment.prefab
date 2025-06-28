@@ -131,9 +131,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 033159ab421003c4a8057c3170775248, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target1: {fileID: 0}
-  target2: {fileID: 0}
-  follow: 1
+  _target1: {fileID: 0}
+  _target2: {fileID: 0}
+  follow: 0
 --- !u!114 &-6497915964653111272
 MonoBehaviour:
   m_ObjectHideFlags: 0

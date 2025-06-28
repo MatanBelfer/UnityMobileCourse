@@ -53,7 +53,7 @@ public class GeometricRubberBand : BaseManager
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
         
         InitializeBendsAndSegments();
-        UpdateSegments();
+        UpdateSegmentConnections();
         //
         // //initialize active pins and segments
         // UpdateActivePins();
@@ -121,36 +121,8 @@ public class GeometricRubberBand : BaseManager
         // UpdateBandSegments();
         CalculateIntersections();
         RemoveWrongBends();
-        UpdateSegments();
-    }
-    
-    private void UpdateSegments()
-    {
-        //add new segments and update connections
-        for (LinkedListNode<Bend> node = bends.First; node != null; node = node.Next)
-        {
-            Bend bend = node.Value;
-            Bend nextBend = node.NextOrFirst().Value;
-            BandSegment nextSegment = bend.nextSegment;
-            if (!nextSegment)
-            {
-                nextSegment = GetSegmentFromPool();
-                segments.Add(nextSegment);
-            }
-
-            bend.nextSegment = nextSegment;
-            nextSegment.prevBend = bend;
-            nextSegment.nextBend = nextBend;
-            nextBend.prevSegment = nextSegment;
-        }
-        
-        //remove segments that are no longer needed
-        segments.RemoveWhere(seg =>
-        {
-            bool remove = !bends.Select(bend => bend.nextSegment).Contains(seg);
-            if (remove) ManagersLoader.Pool.InsertToPool(bandSegmentsPool, seg.gameObject);
-            return remove;
-        });
+        UpdateSegmentConnections();
+        UpdateSegmentPositions();
     }
 
     private BandSegment GetSegmentFromPool(Bend prevBend)
@@ -265,10 +237,48 @@ public class GeometricRubberBand : BaseManager
             node = node.Next;
         }
     }
-
+    
     private float CrossProduct2d(Vector2 a, Vector2 b)
     {
         return a.x * b.y - a.y * b.x;
+    }
+    
+    private void UpdateSegmentConnections()
+    {
+        //add new segments and update connections
+        for (LinkedListNode<Bend> node = bends.First; node != null; node = node.Next)
+        {
+            Bend bend = node.Value;
+            Bend nextBend = node.NextOrFirst().Value;
+            BandSegment nextSegment = bend.nextSegment;
+            if (!nextSegment)
+            {
+                nextSegment = GetSegmentFromPool();
+                segments.Add(nextSegment);
+            }
+
+            bend.nextSegment = nextSegment;
+            nextSegment.prevBend = bend;
+            nextSegment.nextBend = nextBend;
+            nextBend.prevSegment = nextSegment;
+        }
+        
+        //remove segments that are no longer needed
+        segments.RemoveWhere(seg =>
+        {
+            bool remove = !bends.Select(bend => bend.nextSegment).Contains(seg);
+            if (remove) ManagersLoader.Pool.InsertToPool(bandSegmentsPool, seg.gameObject);
+            return remove;
+        });
+    }
+
+    private void UpdateSegmentPositions()
+    {
+        foreach (BandSegment segment in segments)
+        {
+            segment.position1 = segment.prevBend.anchor.currentPosition;
+            segment.position2 = segment.nextBend.anchor.currentPosition;
+        }
     }
     
     private void UpdateActivePins()
