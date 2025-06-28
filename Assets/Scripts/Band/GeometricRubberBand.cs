@@ -74,37 +74,6 @@ public class GeometricRubberBand : BaseManager
         // // LogActivePinNames();
     }
 
-    protected override void OnReset()
-    {
-        Reset();
-    }
-
-    protected override void OnCleanup()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void Update()
-    {
-        // UpdateBandSegments();
-        CalculateIntersections();
-        UpdateSegments();
-    }
-
-    #if UNITY_EDITOR
-    private void OnDrawGizmos()
-    {
-        int index = 0;
-        float offset = 0;
-        foreach (Bend bend in bends)
-        {
-            string cw = bend.isClockwise ? "CW" : "CCW";
-            Handles.Label(bend.anchor.transform.position + offset * Vector3.down,
-                $"{bend.anchor.name}\nIndex: {index++}\n{cw}");
-        }
-    }
-    #endif
-
     private void InitializeBendsAndSegments()
     {
         //using initialBand, construct the respective Bends
@@ -122,7 +91,39 @@ public class GeometricRubberBand : BaseManager
             bends.AddLast(newBend);
         }
     }
+    
+    protected override void OnReset()
+    {
+        Reset();
+    }
 
+    protected override void OnCleanup()
+    {
+        throw new NotImplementedException();
+    }
+
+    #if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        int index = 0;
+        float offset = 0;
+        foreach (Bend bend in bends)
+        {
+            string cw = bend.isClockwise ? "CW" : "CCW";
+            Handles.Label(bend.anchor.transform.position + offset * Vector3.down,
+                $"{bend.anchor.name}\nIndex: {index++}\n{cw}");
+        }
+    }
+    #endif
+
+    private void Update()
+    {
+        // UpdateBandSegments();
+        CalculateIntersections();
+        UpdateSegments();
+        RemoveWrongBends();
+    }
+    
     private void UpdateSegments()
     {
         //add new segments and update connections
@@ -144,7 +145,12 @@ public class GeometricRubberBand : BaseManager
         }
         
         //remove segments that are no longer needed
-        segments.RemoveWhere(seg => !bends.Select(bend => bend.nextSegment).Contains(seg));
+        segments.RemoveWhere(seg =>
+        {
+            bool remove = !bends.Select(bend => bend.nextSegment).Contains(seg);
+            if (remove) ManagersLoader.Pool.InsertToPool(bandSegmentsPool, seg.gameObject);
+            return remove;
+        });
     }
 
     private BandSegment GetSegmentFromPool(Bend prevBend)
@@ -173,9 +179,9 @@ public class GeometricRubberBand : BaseManager
             RubberBandAnchor[] relevantAnchors = allAnchors.Where(a =>
                 (a != start) && (a != end)).ToArray();
             
-            print($"Segment connected to {start.name} and {end.name}\n" +
-                  $"will check intesections with anchors: " +
-                  $"{string.Join(", ", relevantAnchors.Select(a => a.name).ToArray())}");
+            // print($"Segment connected to {start.name} and {end.name}\n" +
+            //       $"will check intesections with anchors: " +
+            //       $"{string.Join(", ", relevantAnchors.Select(a => a.name).ToArray())}");
 
             Vector2[] startPos = { start.previousPosition, start.currentPosition };
             Vector2[] endPos = { end.previousPosition, end.currentPosition };
@@ -201,8 +207,8 @@ public class GeometricRubberBand : BaseManager
                 }
                 if (skipAnchor) continue;
 
-                print($"{anchor.name} has dot prods: " +
-                      $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
+                // print($"{anchor.name} has dot prods: " +
+                //       $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
                 
                 //now check which side of the segment the anchor is in the two frames
                 //using cross product
@@ -212,7 +218,7 @@ public class GeometricRubberBand : BaseManager
                 bool[] leftSide = {crossProd[0] > 0, crossProd[1] > 0};
                 if (leftSide[0] == leftSide[1]) continue; //the anchor stayed on the same side
                 
-                print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
+                //print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
                 
                 intersectingAnchors.Add(anchor, (leftSide[1], dotProd[1]));
             }
@@ -232,6 +238,31 @@ public class GeometricRubberBand : BaseManager
                 bends.AddAfter(prevBend, newBend);
                 prevBend = prevBend.Next;
             }
+        }
+    }
+
+    private void RemoveWrongBends()
+    {
+        //removes each bend that shouldn't affect the Band
+        LinkedListNode<Bend> node = bends.First;
+        while (node != null)
+        {
+            Bend bend = node.Value;
+            Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
+            Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
+            Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
+            float crossProd = CrossProduct2d(prevStart2NextEnd, prevStart2Here);
+            
+            if (bend.isClockwise && crossProd < 0 || !bend.isClockwise && crossProd > 0)
+            {
+                LinkedListNode<Bend> nextNode = node.Next;
+                print($"removing {node.Value.anchor.name} because it has\n" +
+                      $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
+                bends.Remove(node);
+                node = nextNode;
+                continue;
+            }
+            node = node.Next;
         }
     }
 
