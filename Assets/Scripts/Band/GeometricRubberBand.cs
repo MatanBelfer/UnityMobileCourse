@@ -3,9 +3,10 @@ using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine.ProBuilder.MeshOperations;
 
-public class GeometricRubberBand : BaseManager, IEnumerable
+public class GeometricRubberBand : BaseManager
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
     //the calculated area will exclude the obstacles and will be as small as possible, composed of only straight lines 
@@ -44,14 +45,14 @@ public class GeometricRubberBand : BaseManager, IEnumerable
     [SerializeField] private RubberBandAnchor[] allAnchors; //all the anchors in the scene
     [SerializeField] private RubberBandAnchor[] initialBand; //the initial set of bends that compose the band
     private LinkedList<Bend> bends = new(); //the bends that compose the band
-    private LinkedList<BandSegment> segments = new(); //the segments that compose the band
+    private HashSet<BandSegment> segments = new(); //the segments that compose the band
 
     protected override void OnInitialize()
     {
         //initialize Pin dictionary
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
         
-        InitializeSegments();
+        InitializeBendsAndSegments();
         //
         // //initialize active pins and segments
         // UpdateActivePins();
@@ -82,12 +83,27 @@ public class GeometricRubberBand : BaseManager, IEnumerable
         throw new NotImplementedException();
     }
 
-    // private void Update()
-    // {
-    //     UpdateBandSegments();
-    // }
+    private void Update()
+    {
+        // UpdateBandSegments();
+        CalculateIntersections();
+    }
 
-    private void InitializeSegments()
+    #if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        int index = 0;
+        float offset = 0;
+        foreach (Bend bend in bends)
+        {
+            string cw = bend.isClockwise ? "CW" : "CCW";
+            Handles.Label(bend.anchor.transform.position + offset * Vector3.down,
+                $"{bend.anchor.name}\nIndex: {index++}\n{cw}");
+        }
+    }
+    #endif
+
+    private void InitializeBendsAndSegments()
     {
         //using initialBand, construct the respective Bends
         if (initialBand.Length < 3)
@@ -120,7 +136,7 @@ public class GeometricRubberBand : BaseManager, IEnumerable
             node = node.NextOrFirst();
             
             BandSegment newSegment = GetSegmentFromPool();
-            segments.AddLast(newSegment);
+            segments.Add(newSegment);
             
             Bend bend = node.Value;
             Bend nextBend = node.NextOrFirst().Value;
@@ -141,8 +157,88 @@ public class GeometricRubberBand : BaseManager, IEnumerable
 
     private BandSegment GetSegmentFromPool()
     {
-        print("GetSegmentFromPool");
         return ManagersLoader.Pool.GetFromPool(bandSegmentsPool).GetComponent<BandSegment>();
+    }
+
+    private void CalculateIntersections()
+    {
+        //change the structure of the band by adding in new intersections
+        foreach (BandSegment segment in segments)
+        {
+            //check for intersections with all anchors other than the ones the segment is connected to
+            Dictionary<RubberBandAnchor, (bool, float)> intersectingAnchors = 
+                new(); //running list of the intersecting anchors
+                       //along with their isCW and their dot product with the segment
+            RubberBandAnchor start = segment.prevBend.anchor;
+            RubberBandAnchor end = segment.nextBend.anchor;
+            RubberBandAnchor[] relevantAnchors = allAnchors.Where(a =>
+                (a != start) && (a != end)).ToArray();
+            
+            print($"Segment connected to {start.name} and {end.name}\n" +
+                  $"will check intesections with anchors: " +
+                  $"{string.Join(", ", relevantAnchors.Select(a => a.name).ToArray())}");
+
+            Vector2[] startPos = { start.previousPosition, start.currentPosition };
+            Vector2[] endPos = { end.previousPosition, end.currentPosition };
+            Vector2[] start2End = {endPos[0] - startPos[0], endPos[1] - startPos[1] };
+            float[] sqrSegmentLength = {start2End[0].sqrMagnitude, start2End[1].sqrMagnitude};
+            foreach (RubberBandAnchor anchor in relevantAnchors)
+            {
+                Vector2[] anchorPos = { anchor.previousPosition, anchor.currentPosition };
+                //intersection happens when the anchor moves from one side of the segment to the other
+                //while being "in front of it" for at least one of the two frames
+                //it means the anchor can be projected onto the segment
+                
+                //first, check the projections
+                float[] dotProd = {Vector2.Dot(start2End[0],(anchorPos[0] - startPos[0])), Vector2.Dot(start2End[1],(anchorPos[1] - startPos[1]))};
+                bool skipAnchor = false;
+                for (int i = 0; i < 2; i++)
+                {
+                    if (!(dotProd[i] >= 0 && dotProd[i] < sqrSegmentLength[i]))
+                    {
+                        skipAnchor = true;
+                        break;
+                    }
+                }
+                if (skipAnchor) continue;
+
+                print($"{anchor.name} has dot prods: " +
+                      $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
+                
+                //now check which side of the segment the anchor is in the two frames
+                //using cross product
+                Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
+                float[] crossProd =
+                    { CrossProduct2d(start2End[0], start2Anchor[0]), CrossProduct2d(start2End[1], start2Anchor[1]) };
+                bool[] leftSide = {crossProd[0] > 0, crossProd[1] > 0};
+                if (leftSide[0] == leftSide[1]) continue; //the anchor stayed on the same side
+                
+                print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
+                
+                intersectingAnchors.Add(anchor, (leftSide[1], dotProd[1]));
+            }
+            
+            //if more than one anchor has intersected, handle them in order of dot product
+            if (intersectingAnchors.Count > 1)
+            {
+                intersectingAnchors = intersectingAnchors.OrderBy(x => x.Value.Item2)
+                    .ToDictionary(x => x.Key, x => x.Value);
+            }
+            
+            //now add the new bends
+            LinkedListNode<Bend> prevBend = bends.Find(segment.nextBend);
+            foreach (KeyValuePair<RubberBandAnchor, (bool, float)> anchor in intersectingAnchors)
+            {
+                Bend newBend = new Bend(anchor.Key, anchor.Value.Item1);
+                bends.AddAfter(prevBend, newBend);
+                prevBend = prevBend.Next;
+            }
+        }
+    }
+
+    private float CrossProduct2d(Vector2 a, Vector2 b)
+    {
+        return a.x * b.y - a.y * b.x;
     }
     
     private void UpdateActivePins()
@@ -419,36 +515,6 @@ public class GeometricRubberBand : BaseManager, IEnumerable
             this.isClockwise = isClockwise;
         }
     }
-
-    public IEnumerator GetEnumerator()
-    {
-        return new BandEnumerator(this);
-    }
-
-    public class BandEnumerator : IEnumerator
-    {
-        private GeometricRubberBand band;
-        
-        public BandEnumerator(GeometricRubberBand band)
-        {
-            this.band = band;
-            Reset();
-        }
-
-        private Bend _current;
-        public object Current => _current;
-
-        public void Reset()
-        {
-            _current = band.rootBend;
-        }
-
-        public bool MoveNext()
-        {
-            _current = _current.nextSegment.nextBend;
-            return _current != null;
-        }
-    }
 }
 
 public class BandVertex
@@ -465,39 +531,3 @@ public class BandVertex
         this.transform = transform;
     }
 }
-
-// public class Segment
-// {
-//     public Transform transform;
-//     private FollowTwoTransforms followScript;
-//     private BandVertex prevVertex;
-//     private BandVertex nextVertex;
-//
-//     public BandVertex PrevVertex
-//     {
-//         get { return prevVertex; }
-//         set { followScript.target1 = value.transform; prevVertex = value; }
-//     }
-//
-//     public BandVertex NextVertex
-//     {
-//         get { return nextVertex; }
-//         set { followScript.target2 = value.transform; nextVertex = value;}
-//     }
-//
-//     public Segment(string objectPoolName, BandVertex prevVertex, BandVertex nextVertex)
-//     {
-//         transform = ManagersLoader.Pool.GetFromPool(objectPoolName).transform;
-//         // Parent to GeometricRubberBand immediately after getting from pool
-//         transform.SetParent(ManagersLoader.GetSceneManager<GeometricRubberBand>().transform);
-//
-//         followScript = transform.GetComponent<FollowTwoTransforms>();
-//         followScript.target1 = prevVertex.transform;
-//         followScript.target2 = nextVertex.transform;
-//
-//         this.nextVertex = nextVertex;
-//         this.prevVertex = prevVertex;
-//         this.prevVertex.nextSegment = this;
-//         this.nextVertex.prevSegment = this;
-//     }
-// }

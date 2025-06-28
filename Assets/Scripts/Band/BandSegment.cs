@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class BandSegment : MonoBehaviour
@@ -5,25 +6,52 @@ public class BandSegment : MonoBehaviour
     [SerializeField] private FollowTwoTransforms followScript;
     
     private GeometricRubberBand.Bend _prevBend;
+    private Transform prevTransform;
     public GeometricRubberBand.Bend prevBend
     {
         get => _prevBend;
         set
         {
             _prevBend = value;
-            followScript.target1 = value.anchor.transform;
+            prevTransform = value.anchor.transform;
+            followScript.target1 = prevTransform;
         }
     }
 
     private GeometricRubberBand.Bend _nextBend;
-
+    private Transform nextTransform;
     public GeometricRubberBand.Bend nextBend
     {
         get => _nextBend;
         set
         {
             _nextBend = value;
-            followScript.target2 = value.anchor.transform;
+            nextTransform = value.anchor.transform;
+            followScript.target2 = nextTransform;
         }
+    }
+    
+    //positions of the start and end anchors this frame and last frame 
+    public Vector2[] currentPosition { get; private set; } = new Vector2[2];
+    public Vector2[] previousPosition { get; private set; } = new Vector2[2];
+
+    private void Start()
+    {
+        currentPosition[0] = prevTransform.position;
+        currentPosition[1] = nextTransform.position;
+        for (int i = 0; i < 2; i++)
+        {
+            previousPosition[i] = currentPosition[i];
+        }
+    }
+
+    private void Update()
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            previousPosition[i] = currentPosition[i];
+        }
+        currentPosition[0] = prevTransform.position;
+        currentPosition[1] = nextTransform.position;
     }
 }
