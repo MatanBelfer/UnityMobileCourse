@@ -32,11 +32,13 @@ public class BandSegment : MonoBehaviour
     }
     
     //positions of the start and end anchors this frame and last frame 
-    public Vector2[] currentPosition { get; private set; } = new Vector2[2];
-    public Vector2[] previousPosition { get; private set; } = new Vector2[2];
+    private Vector2[] currentPosition { get; set; } = new Vector2[2];
+    private Vector2[] previousPosition { get; set; } = new Vector2[2];
 
     private void Start()
     {
+        followScript.OnMove += RecordPositions;
+        
         currentPosition[0] = prevTransform.position;
         currentPosition[1] = nextTransform.position;
         for (int i = 0; i < 2; i++)
@@ -46,6 +48,11 @@ public class BandSegment : MonoBehaviour
     }
 
     private void Update()
+    {
+        RecordPositions();
+    }
+
+    private void RecordPositions()
     {
         for (int i = 0; i < 2; i++)
         {

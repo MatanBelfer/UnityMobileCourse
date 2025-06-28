@@ -120,8 +120,8 @@ public class GeometricRubberBand : BaseManager
     {
         // UpdateBandSegments();
         CalculateIntersections();
-        UpdateSegments();
         RemoveWrongBends();
+        UpdateSegments();
     }
     
     private void UpdateSegments()
@@ -256,8 +256,8 @@ public class GeometricRubberBand : BaseManager
             if (bend.isClockwise && crossProd < 0 || !bend.isClockwise && crossProd > 0)
             {
                 LinkedListNode<Bend> nextNode = node.Next;
-                print($"removing {node.Value.anchor.name} because it has\n" +
-                      $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
+                // print($"removing {node.Value.anchor.name} because it has\n" +
+                //        $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
                 bends.Remove(node);
                 node = nextNode;
                 continue;
