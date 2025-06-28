@@ -53,6 +53,7 @@ public class GeometricRubberBand : BaseManager
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
         
         InitializeBendsAndSegments();
+        UpdateSegments();
         //
         // //initialize active pins and segments
         // UpdateActivePins();
@@ -87,6 +88,7 @@ public class GeometricRubberBand : BaseManager
     {
         // UpdateBandSegments();
         CalculateIntersections();
+        UpdateSegments();
     }
 
     #if UNITY_EDITOR
@@ -115,39 +117,36 @@ public class GeometricRubberBand : BaseManager
         //first constructs the bends
         for (int i = 0; i < initialBand.Length; i++)
         {
-            Bend currentBend;
             RubberBandAnchor anchor = initialBand[i];
-            if (i == 0)
-            {
-                rootBend = new Bend(anchor);
-                currentBend = rootBend;
-            }
-            else
-            {
-                currentBend = new Bend(anchor);
-            }
-            bends.AddLast(currentBend);
+            Bend newBend = new Bend(anchor);
+            bends.AddLast(newBend);
         }
+    }
 
-        //add the segments
-        LinkedListNode<Bend> node = bends.Last;
-        do
+    private void UpdateSegments()
+    {
+        //add new segments and update connections
+        for (LinkedListNode<Bend> node = bends.First; node != null; node = node.Next)
         {
-            node = node.NextOrFirst();
-            
-            BandSegment newSegment = GetSegmentFromPool();
-            segments.Add(newSegment);
-            
             Bend bend = node.Value;
             Bend nextBend = node.NextOrFirst().Value;
-            
-            bend.nextSegment = newSegment;
-            newSegment.prevBend = bend;
-            newSegment.nextBend = nextBend;
-            nextBend.prevSegment = newSegment;
-        } while (!node.IsLast());
+            BandSegment nextSegment = bend.nextSegment;
+            if (!nextSegment)
+            {
+                nextSegment = GetSegmentFromPool();
+                segments.Add(nextSegment);
+            }
+
+            bend.nextSegment = nextSegment;
+            nextSegment.prevBend = bend;
+            nextSegment.nextBend = nextBend;
+            nextBend.prevSegment = nextSegment;
+        }
+        
+        //remove segments that are no longer needed
+        segments.RemoveWhere(seg => !bends.Select(bend => bend.nextSegment).Contains(seg));
     }
-    
+
     private BandSegment GetSegmentFromPool(Bend prevBend)
     {
         BandSegment segment = GetSegmentFromPool();
@@ -162,7 +161,7 @@ public class GeometricRubberBand : BaseManager
 
     private void CalculateIntersections()
     {
-        //change the structure of the band by adding in new intersections
+        //change the structure of the band by adding in new bends when anchors intersect segments
         foreach (BandSegment segment in segments)
         {
             //check for intersections with all anchors other than the ones the segment is connected to
@@ -226,7 +225,7 @@ public class GeometricRubberBand : BaseManager
             }
             
             //now add the new bends
-            LinkedListNode<Bend> prevBend = bends.Find(segment.nextBend);
+            LinkedListNode<Bend> prevBend = bends.Find(segment.prevBend);
             foreach (KeyValuePair<RubberBandAnchor, (bool, float)> anchor in intersectingAnchors)
             {
                 Bend newBend = new Bend(anchor.Key, anchor.Value.Item1);
