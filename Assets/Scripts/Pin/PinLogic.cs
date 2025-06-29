@@ -11,7 +11,7 @@ public class PinLogic : MonoBehaviour
 
     public bool isFollowing { get; set; }
     private Tween currentMoveTween;
-    
+
     private IEnumerator Start()
     {
         yield return new WaitForSeconds(0.1f);
@@ -21,64 +21,81 @@ public class PinLogic : MonoBehaviour
         {
             transform.parent = point;
             transform.localPosition = Vector3.zero;
-            
+
             ManagersLoader.Game?.SetInitialScore(Row);
         }
     }
-    
+
     public void MovePinToPosition(PinLogic pin, Vector3 worldPosition, bool animate = true)
     {
-        if (pin == null ) return;
+        if (pin == null) return;
 
         Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>()
             .GetClosestPoint(worldPosition, out int chosenRow);
+
+        GridPoint _gridPoint = landingPoint.GetComponent<GridPoint>();
+
+
         if (landingPoint != null)
         {
-            if (animate && !pin.isFollowing)
+            if (_gridPoint.isBlocked)
             {
-                print($"{gameObject.name} is moving");
-                Vector3 targetWorldPosition = landingPoint.position;
+                //TODO point is blocked by another pin or trap 
+                //select next closest
                 
-                // Notify rubber band that pin is starting to move
-                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
-                {
-                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, 
-                        GeometricRubberBand.MovingPinStatus.Moving);
-                }
-                
-                pin.currentMoveTween = Tween.Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
-                    .OnComplete(() =>
-                    {
-                        // Set parent and local position after animation completes
-                        pin.transform.parent = landingPoint;
-                        pin.transform.localPosition = Vector3.zero;
-                        pin.isFollowing = false;
-                        
-                        // Notify rubber band that pin stopped moving
-                        if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
-                        {
-                            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
-                                GeometricRubberBand.MovingPinStatus.NotMoving);
-                        }
-                    });
             }
             else
             {
-                // Instant movement (for drag mode)
-                pin.transform.parent = landingPoint;
-                pin.transform.localPosition = Vector3.zero;
-                pin.isFollowing = false;
-                
-                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                if (animate && !pin.isFollowing)
                 {
-                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
-                        GeometricRubberBand.MovingPinStatus.NotMoving);
+                    print($"{gameObject.name} is moving");
+                    Vector3 targetWorldPosition = landingPoint.position;
+
+                    // Notify rubber band that pin is starting to move
+                    if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                    {
+                        ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
+                            GeometricRubberBand.MovingPinStatus.Moving);
+                    }
+
+                    pin.currentMoveTween = Tween
+                        .Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
+                        .OnComplete(() =>
+                        {
+                            // Set parent and local position after animation completes
+                            pin.transform.parent = landingPoint;
+                            pin.transform.localPosition = Vector3.zero;
+                            pin.isFollowing = false;
+
+                            // Notify rubber band that pin stopped moving
+                            if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                            {
+                                ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
+                                    GeometricRubberBand.MovingPinStatus.NotMoving);
+                            }
+                        });
+                }
+                else
+                {
+                    // Instant movement (for drag mode)
+                    pin.transform.parent = landingPoint;
+                    pin.transform.localPosition = Vector3.zero;
+                    pin.isFollowing = false;
+
+                    if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                    {
+                        ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
+                            GeometricRubberBand.MovingPinStatus.NotMoving);
+                    }
                 }
             }
-            
+
+
             ManagersLoader.Game?.UpdateScore(chosenRow);
         }
     }
+
+    
     
     public void StartFollowingPin(PinLogic pin)
     {
@@ -89,15 +106,16 @@ public class PinLogic : MonoBehaviour
 
         if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
-            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+            ManagersLoader.GetSceneManager<GeometricRubberBand>()
+                .UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
         }
     }
-    
+
     public void StopFollowingPin(PinLogic pin)
     {
         // Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
 
-        if (pin == null ) return;
+        if (pin == null) return;
 
         Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(pin.transform.position);
         if (landingPoint != null)
@@ -110,7 +128,8 @@ public class PinLogic : MonoBehaviour
 
         if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
-            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+            ManagersLoader.GetSceneManager<GeometricRubberBand>()
+                .UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
         }
     }
 }

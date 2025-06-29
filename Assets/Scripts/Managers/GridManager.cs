@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -15,7 +16,7 @@ public class GridManager : BaseManager
 
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
-    
+
     private HashSet<Transform> activePoints = new HashSet<Transform>();
 
     //privates
@@ -24,7 +25,7 @@ public class GridManager : BaseManager
 
     //grid structure
     private Queue<Transform[]> _gridRows = new();
-    private int _rowNum;//1 based (not zero-based)
+    private int _rowNum; //1 based (not zero-based)
     private float _rowDist;
     private bool _isGridInitialized = false;
 
@@ -36,7 +37,7 @@ public class GridManager : BaseManager
     protected override void OnInitialize()
     {
         InitializeGridParameters();
-        
+
         // Wait for ManagersLoader to be ready, then initialize synchronously
         if (ManagersLoader.IsInitialized && ManagersLoader.Pool != null)
         {
@@ -56,7 +57,7 @@ public class GridManager : BaseManager
         _gridRows.Clear();
         activePoints.Clear();
         _rowNum = 0;
-        
+
         // Reinitialize
         OnInitialize();
     }
@@ -71,7 +72,7 @@ public class GridManager : BaseManager
                 ReturnObjectToPool(point.gameObject);
             }
         }
-        
+
         activePoints.Clear();
         _gridRows.Clear();
         _isGridInitialized = false;
@@ -103,7 +104,7 @@ public class GridManager : BaseManager
     {
         // Wait for ManagersLoader to be initialized
         yield return new WaitUntil(() => ManagersLoader.IsInitialized);
-        
+
         if (ManagersLoader.Pool == null)
         {
             Debug.LogError("ObjectPoolManager not found! Make sure it's set up in the scene.");
@@ -116,7 +117,7 @@ public class GridManager : BaseManager
     private void InitializeGridNow()
     {
         if (_isGridInitialized) return;
-        
+
         if (gridParameters == null)
         {
             Debug.LogError("GridParameters not set! Make sure to assign grid parameters in the inspector.");
@@ -141,7 +142,7 @@ public class GridManager : BaseManager
     {
         // Only update if grid is properly initialized
         if (!_isGridInitialized || gridParameters == null) return;
-        
+
         transform.Translate(Vector3.down * (gridParameters.gridSpeed * Time.deltaTime));
     }
 
@@ -154,7 +155,7 @@ public class GridManager : BaseManager
     public int GetCurrentRowPointCount()
     {
         if (gridParameters == null) return 0;
-        
+
         int nextRow = _rowNum;
         return (nextRow % 2 == 0) ? gridParameters.pointsPerRow : gridParameters.pointsPerRow - 1;
     }
@@ -162,7 +163,7 @@ public class GridManager : BaseManager
     private void SpawnRow()
     {
         if (gridParameters == null) return;
-        
+
         if (_rowNum % 2 == 0)
         {
             SpawnRow(gridParameters.pointsPerRow);
@@ -176,19 +177,26 @@ public class GridManager : BaseManager
     private void SpawnRow(int numPoints)
     {
         if (gridParameters == null || ManagersLoader.Pool == null) return;
-        
+
         Transform[] rowPoints = new Transform[numPoints];
         Vector3[] positions = new Vector3[numPoints];
-
+        GridPoint _Point;
         for (int i = 0; i < numPoints; i++)
         {
             positions[i].x = (-(numPoints - 1) * gridParameters.pointSpacing / 2) + i * gridParameters.pointSpacing;
-            rowPoints[i] = SpawnPoint(positions[i]);
-
+            _Point =  SpawnPoint(positions[i]).GetComponent<GridPoint>();
+            // rowPoints[i] = SpawnPoint(positions[i]);
+            rowPoints[i] = _Point.transform;
+            // rowPoints[i].GetComponent<GridPoint>().column = i;
+            _Point.column = i;
+            
+            
             // Only spawn spikes if we're at or past the trapStartRow
             if (_rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
             {
                 SpawnSpike(positions[i]);
+                _Point.isBlocked = true;
+                HidePoint(rowPoints[i]);
             }
         }
 
@@ -199,18 +207,22 @@ public class GridManager : BaseManager
     private void SpawnSpike(Vector3 position)
     {
         if (gridParameters == null || ManagersLoader.Pool == null) return;
-        
-        //turned off for testing
-        // print("SpawnSpike has been turned off");
-        // return;
         GameObject spike = ManagersLoader.Pool.GetFromPool(gridParameters.spikePoolName);
         spike.transform.parent = transform;
         spike.transform.localPosition = position + _rowNum * _rowDist * Vector3.up;
+
         spike.SetActive(true);
+    }
+
+
+    private void HidePoint(Transform point)
+    {
+        point.gameObject.SetActive(false);
     }
 
     public void RemovePoint(Transform point)
     {
+        Debug.Log($"removing point from grid {point.gameObject.name}");
         var currentRows = _gridRows.ToArray();
         for (int i = 0; i < currentRows.Length; i++)
         {
@@ -219,8 +231,10 @@ public class GridManager : BaseManager
             {
                 if (row[j] == point)
                 {
-                    row[j] = null;
+                    Debug.Log("found point to remove");
                     activePoints.Remove(point);
+                    ReturnObjectToPool(point.gameObject);
+                    row[j] = null;
                     return;
                 }
             }
@@ -230,15 +244,18 @@ public class GridManager : BaseManager
     private Transform SpawnPoint(Vector3 position)
     {
         if (gridParameters == null || ManagersLoader.Pool == null) return null;
-        
-        GameObject newPoint = ManagersLoader.Pool.GetFromPool(gridParameters.pointPoolName);
-        Transform newTransform = newPoint.transform;
+
+        var newPoint = ManagersLoader.Pool.GetFromPool(gridParameters.pointPoolName);
+        var newTransform = newPoint.transform;
+
         newTransform.parent = transform;
         newTransform.localPosition = position + _rowNum * _rowDist * Vector3.up;
         newPoint.SetActive(true);
         activePoints.Add(newTransform);
+
         return newTransform;
     }
+
 
     public Transform GetClosestPoint(Vector2 position, out int chosenRow)
     {
@@ -269,7 +286,7 @@ public class GridManager : BaseManager
         {
             throw new Exception("Couldn't find closest point");
         }
-        
+
         return closestPoint;
     }
 
@@ -278,7 +295,7 @@ public class GridManager : BaseManager
         return GetClosestPoint(position, out var _);
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (!_showDebugInfo || !Application.isPlaying) return;
@@ -307,7 +324,7 @@ public class GridManager : BaseManager
             }
         }
     }
-    #endif
+#endif
 
     /*
      * public methods to interact with the grid
@@ -334,7 +351,7 @@ public class GridManager : BaseManager
     public void ReturnObjectToPool(GameObject obj)
     {
         if (obj == null || ManagersLoader.Pool == null) return;
-        
+
         var poolInterface = obj.GetComponent<ObjectPoolInterface>();
         if (poolInterface != null && !string.IsNullOrEmpty(poolInterface.poolName))
         {
