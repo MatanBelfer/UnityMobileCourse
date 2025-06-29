@@ -106,9 +106,13 @@ public class GeometricRubberBand : BaseManager
     private void OnDrawGizmos()
     {
         int index = 0;
-        float offset = 0;
+        Dictionary<RubberBandAnchor, int> numBendsInAnchor = new();
         foreach (Bend bend in bends)
         {
+            if (numBendsInAnchor.ContainsKey(bend.anchor)) numBendsInAnchor[bend.anchor]++;
+            else numBendsInAnchor.Add(bend.anchor, 1);
+            
+            float offset = (numBendsInAnchor[bend.anchor] - 1) * 0.25f;
             string cw = bend.isClockwise ? "CW" : "CCW";
             Handles.Label(bend.anchor.transform.position + offset * Vector3.down,
                 $"{bend.anchor.name}\nIndex: {index++}\n{cw}");
@@ -171,7 +175,8 @@ public class GeometricRubberBand : BaseManager
                 bool skipAnchor = false;
                 for (int i = 0; i < 2; i++)
                 {
-                    if (!(dotProd[i] >= 0 && dotProd[i] < sqrSegmentLength[i]))
+                    const float margin = 0f;
+                    if (!(dotProd[i] > -margin && dotProd[i] < sqrSegmentLength[i] + margin))
                     {
                         skipAnchor = true;
                         break;
@@ -224,12 +229,13 @@ public class GeometricRubberBand : BaseManager
             Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
             Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
             float crossProd = CrossProduct2d(prevStart2NextEnd, prevStart2Here);
-            
-            if (bend.isClockwise && crossProd < 0 || !bend.isClockwise && crossProd > 0)
+
+            float stickage = 0f;
+            if (bend.isClockwise && crossProd < -stickage || !bend.isClockwise && crossProd > stickage)
             {
                 LinkedListNode<Bend> nextNode = node.Next;
-                // print($"removing {node.Value.anchor.name} because it has\n" +
-                //        $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
+                print($"removing {node.Value.anchor.name} because it has\n" +
+                       $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
                 bends.Remove(node);
                 node = nextNode;
                 continue;
@@ -276,8 +282,15 @@ public class GeometricRubberBand : BaseManager
     {
         foreach (BandSegment segment in segments)
         {
-            segment.position1 = segment.prevBend.anchor.currentPosition;
-            segment.position2 = segment.nextBend.anchor.currentPosition;
+            Bend[] bends = {segment.prevBend, segment.nextBend};
+            bool[] isCW = bends.Select(bend => bend.isClockwise).ToArray();
+            Vector2[] anchorPos = bends.Select(bend => bend.anchor.currentPosition).ToArray();
+            Vector2 direction = (anchorPos[1] -  anchorPos[0]).normalized;
+            Vector2 left = new Vector2(-direction.y, direction.x); //rotated left 90 degrees
+
+            float tempRadius = 0.1f;
+            segment.position1 = anchorPos[0] + (isCW[0] ? 1f : -1f) * tempRadius * left;
+            segment.position2 = anchorPos[1] + (isCW[1] ? 1f : -1f) * tempRadius * left;
         }
     }
     
