@@ -332,18 +332,22 @@ public class GridManager : BaseManager
 
     public Transform GetPointAt(int rowIndex, int columnIndex)
     {
-        if (!IsValidPosition(rowIndex, columnIndex))
+        if (!IsValidPosition(rowIndex, columnIndex) )
             return null;
 
         var rows = _gridRows.ToArray();
         return rows[rowIndex][columnIndex];
     }
 
+    public bool IsPointBlocked(int rowIndex, int columnIndex)
+    {
+        return GetPointAt(rowIndex, columnIndex)?.GetComponent<GridPoint>().isBlocked ?? false;
+    }
     public bool IsValidPosition(int rowIndex, int columnIndex)
     {
         if (rowIndex < 0 || rowIndex >= _gridRows.Count)
             return false;
-
+        
         var rows = _gridRows.ToArray();
         return columnIndex >= 0 && columnIndex < rows[rowIndex].Length;
     }

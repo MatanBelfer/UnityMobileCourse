@@ -42,6 +42,7 @@ public class PinLogic : MonoBehaviour
             {
                 //TODO point is blocked by another pin or trap 
                 //select next closest
+                Debug.Log("Selected next closest point");
                 
             }
             else
