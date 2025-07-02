@@ -42,9 +42,9 @@ public class PinLogic : MonoBehaviour
 
         GridPoint _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
 
-        Debug.Log($"Target world position: {worldPosition}");
-        Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
-        Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
+        // Debug.Log($"Target world position: {worldPosition}");
+        // Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
+        // Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
 
         if (landingPoint != null)
         {
@@ -72,7 +72,7 @@ public class PinLogic : MonoBehaviour
             }
             else
             {
-                Debug.Log($"Using original point: {landingPoint.name} at position: {landingPoint.position}");
+                // Debug.Log($"Using original point: {landingPoint.name} at position: {landingPoint.position}");
             }
 
             if (animate)
@@ -115,7 +115,7 @@ public class PinLogic : MonoBehaviour
                 // _currentGridPoint.isBlocked = true;
                 isFollowing = false;
 
-                Debug.Log($"Pin instantly moved to: {transform.position} (parent: {landingPoint.name})");
+                // Debug.Log($"Pin instantly moved to: {transform.position} (parent: {landingPoint.name})");
 
                 if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
                 {
@@ -131,18 +131,18 @@ public class PinLogic : MonoBehaviour
 
     public void StartFollowingPin()
     {
-        Debug.Log($" pin current grid point null: {_currentGridPoint == null}");
+        // Debug.Log($" pin current grid point null: {_currentGridPoint == null}");
 
         // Only try to access _currentGridPoint if it's not null
         if (_currentGridPoint != null)
         {
-            Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
+            // Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
             _currentGridPoint.isBlocked = false; // Free up the current position
             _currentGridPoint = null; // Clear the reference
         }
         else
         {
-            Debug.Log("Current grid point is null - pin may not be placed on grid yet");
+            // Debug.Log("Current grid point is null - pin may not be placed on grid yet");
         }
 
         isFollowing = true;
@@ -157,7 +157,7 @@ public class PinLogic : MonoBehaviour
 
     public void StopFollowingPin()
     {
-        Debug.Log("inside stop following pin method pin: {" + name + "}");
+        // Debug.Log("inside stop following pin method pin: {" + name + "}");
 
 
         Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(transform.position);

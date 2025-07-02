@@ -123,8 +123,8 @@ public class GeometricRubberBand : BaseManager
     private void Update()
     {
         // UpdateBandSegments();
-        CalculateIntersections();
         RemoveWrongBends();
+        CalculateIntersections();
         UpdateSegmentConnections();
         UpdateSegmentPositions();
     }
@@ -173,34 +173,32 @@ public class GeometricRubberBand : BaseManager
                 //it means the anchor can be projected onto the segment
                 
                 //first, check the projections
-                float[] dotProd = {Vector2.Dot(start2End[0],(anchorPos[0] - startPos[0])), Vector2.Dot(start2End[1],(anchorPos[1] - startPos[1]))};
-                bool skipAnchor = false;
-                for (int i = 0; i < 2; i++)
+                Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
+                bool[] pointInFrontOfVec = {false, false};
+                float[] dotProd =
                 {
-                    const float margin = 0f;
-                    if (!(dotProd[i] > -margin && dotProd[i] < sqrSegmentLength[i] + margin))
-                    {
-                        skipAnchor = true;
-                        break;
-                    }
-                }
-                if (skipAnchor) continue;
+                    ProjectedPos(start2End[0], start2Anchor[0], sqrSegmentLength[0], out pointInFrontOfVec[0]),
+                    ProjectedPos(start2End[1], start2Anchor[1], sqrSegmentLength[1], out pointInFrontOfVec[1])
+                };
+                // float[] dotProd = {Vector2.Dot(start2End[0],start2Anchor[0]), Vector2.Dot(start2End[1],start2Anchor[1])};
+                if (pointInFrontOfVec.Any(b => !b)) continue;
 
                 // print($"{anchor.name} has dot prods: " +
                 //       $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
                 
                 //now check which side of the segment the anchor is in the two frames
                 //using cross product
-                Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
                 bool[] leftSide = new bool[2];
                 bool[] rightSide = new bool[2];
                 RelativeSideOfLine(start2End[0], start2Anchor[0], out leftSide[0], out rightSide[0]);
                 RelativeSideOfLine(start2End[1], start2Anchor[1], out leftSide[1], out rightSide[1]);
                 if (leftSide[0] && leftSide[1] || rightSide[0] && rightSide[1]) continue; //the anchor stayed on the same side
+                if (!leftSide[0] && !rightSide[0]) continue; //the anchor was on the segment
                 
                 //print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
                 
-                intersectingAnchors.Add(anchor, (leftSide[1], dotProd[1]));
+                intersectingAnchors.Add(anchor, (rightSide[0], dotProd[1])); 
+                //isCW = rightSide[0] because an anchor that came from the right side would make a clockwise bend
             }
             
             //if more than one anchor has intersected, handle them in order of dot product
@@ -221,9 +219,17 @@ public class GeometricRubberBand : BaseManager
         }
     }
 
+    private float ProjectedPos(Vector2 projectOn, Vector2 point, float lhsSqrMag, out bool pointInFrontOfVec)
+    {
+        float dotProd = Vector2.Dot(projectOn, point);
+        pointInFrontOfVec = dotProd >= 0 && dotProd <= lhsSqrMag;
+        return dotProd;
+    }
+    
     private void RemoveWrongBends()
     {
-        //removes each bend that shouldn't affect the Band (negative bending angle)
+        //removes each bend that shouldn't affect the Band
+        //negative bending angle + while bend is in front of the line it breaks 
         LinkedListNode<Bend> node = bends.First;
         while (node != null)
         {
@@ -234,10 +240,20 @@ public class GeometricRubberBand : BaseManager
             // Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
             // Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
             // Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
+
+            bool bendInFrontOfLine;
+            ProjectedPos(prevStart2NextEnd, prevStart2Here, prevStart2NextEnd.sqrMagnitude, out bendInFrontOfLine);
+            if (!bendInFrontOfLine)
+            {
+                node = node.Next;
+                continue;
+            }
+            
             var crossProd = RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out var left, out var right);
 
             if (bend.isClockwise && right || !bend.isClockwise && left)
             {
+                RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out _, out _); //test
                 LinkedListNode<Bend> nextNode = node.Next;
                 print($"removing {node.Value.anchor.name} because it has\n" +
                        $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
