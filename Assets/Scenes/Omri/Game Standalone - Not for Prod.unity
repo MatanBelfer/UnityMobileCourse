@@ -972,7 +972,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridParametersList:
   - {fileID: 11400000, guid: d6017224ba0f1fa4b8f49639157197cf, type: 2}
-  - {fileID: 11400000, guid: d6017224ba0f1fa4b8f49639157197cf, type: 2}
   gridLength: 0.5
 --- !u!4 &464263980
 Transform:
@@ -1414,17 +1413,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
   m_PrefabInstance: {fileID: 1488966222}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1221318743 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8430514246679351656, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
-  m_PrefabInstance: {fileID: 1488966222}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a44255b9706a84409cf96565b29315a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1285084962
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1475,6 +1463,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7510422569753405943, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
+      propertyPath: controlScheme
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9032350121663502465, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
@@ -1915,11 +1907,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.72
+      value: -0.716
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.2
+      value: 0.287
       objectReference: {fileID: 0}
     - target: {fileID: 892449315734885377, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2097,19 +2089,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eeeb1d7d189e9f4fa86e72cf3e4df51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pins:
-  - {fileID: 1452840420}
-  - {fileID: 845793746}
-  - {fileID: 1221318742}
-  - {fileID: 171785048}
+  pins: []
   obstacles: []
   bandSegmentsPool: BandSegments
-  allAnchors:
-  - {fileID: 1452840421}
-  - {fileID: 1108977628}
-  - {fileID: 1221318743}
-  - {fileID: 1773699661}
-  - {fileID: 2056263390}
+  allAnchors: []
   initialBand:
   - {fileID: 1452840421}
   - {fileID: 1108977628}
@@ -2234,17 +2217,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8573417736375085141, guid: ebd33ed9443b90b44a37ac914fcf5a89, type: 3}
   m_PrefabInstance: {fileID: 30600631}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2056263390 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -2999087423774541527, guid: ebd33ed9443b90b44a37ac914fcf5a89, type: 3}
-  m_PrefabInstance: {fileID: 30600631}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a44255b9706a84409cf96565b29315a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -4,8 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine.ProBuilder.MeshOperations;
-
+using Unity.Mathematics;
 public class GeometricRubberBand : BaseManager
 {
     //calculates the lines composing the rubber band, using anchors and obstacles
@@ -160,8 +159,10 @@ public class GeometricRubberBand : BaseManager
             //       $"will check intesections with anchors: " +
             //       $"{string.Join(", ", relevantAnchors.Select(a => a.name).ToArray())}");
 
-            Vector2[] startPos = { start.previousPosition, start.currentPosition };
-            Vector2[] endPos = { end.previousPosition, end.currentPosition };
+            Vector2[] startPos = { segment.previousPos[0], segment.currentPos[0] };
+            Vector2[] endPos = { segment.previousPos[1], segment.currentPos[1] };
+            // Vector2[] startPos = { start.previousPosition, start.currentPosition };
+            // Vector2[] endPos = { end.previousPosition, end.currentPosition };
             Vector2[] start2End = {endPos[0] - startPos[0], endPos[1] - startPos[1] };
             float[] sqrSegmentLength = {start2End[0].sqrMagnitude, start2End[1].sqrMagnitude};
             foreach (RubberBandAnchor anchor in relevantAnchors)
@@ -227,9 +228,12 @@ public class GeometricRubberBand : BaseManager
         while (node != null)
         {
             Bend bend = node.Value;
-            Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
-            Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
-            Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
+            Vector2 prevStart = bend.prevSegment.startPos;
+            Vector2 prevStart2NextEnd = bend.nextSegment.endPos - prevStart;
+            Vector2 prevStart2Here = bend.prevSegment.endPos - prevStart;
+            // Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
+            // Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
+            // Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
             var crossProd = RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out var left, out var right);
 
             if (bend.isClockwise && right || !bend.isClockwise && left)
@@ -299,9 +303,10 @@ public class GeometricRubberBand : BaseManager
             Vector2 direction = (anchorPos[1] -  anchorPos[0]).normalized;
             Vector2 left = new Vector2(-direction.y, direction.x); //rotated left 90 degrees
             float[] baseRadius = bends.Select(bend => bend.anchor.baseRadius).ToArray();
-
-            segment.position1 = anchorPos[0] + (isCW[0] ? 1f : -1f) * baseRadius[0] * left;
-            segment.position2 = anchorPos[1] + (isCW[1] ? 1f : -1f) * baseRadius[1] * left;
+            
+            Vector2 startPos = anchorPos[0] + (isCW[0] ? 1f : -1f) * baseRadius[0] * left;
+            Vector2 endPos = anchorPos[1] + (isCW[1] ? 1f : -1f) * baseRadius[1] * left;
+            segment.UpdatePosition(startPos, endPos);
         }
     }
     
