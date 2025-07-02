@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
 
-public class GridPoint :ObjectPoolInterface
+public class GridPoint : ObjectPoolInterface
 {
     public int GridRow { get; set; }
-    public int column;
-    public bool isBlocked;
+    public int column { get; set; }
+    public bool isBlocked = false;
 }

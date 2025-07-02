@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using PrimeTween;
@@ -11,6 +12,7 @@ public class PinLogic : MonoBehaviour
 
     public bool isFollowing { get; set; }
     private Tween currentMoveTween;
+    private GridPoint _currentGridPoint;
 
     private IEnumerator Start()
     {
@@ -22,115 +24,172 @@ public class PinLogic : MonoBehaviour
             transform.parent = point;
             transform.localPosition = Vector3.zero;
 
+            // Set the current grid point reference
+            _currentGridPoint = point.GetComponent<GridPoint>();
+            if (_currentGridPoint != null)
+            {
+                _currentGridPoint.isBlocked = true; // Mark as blocked since pin is occupying it
+            }
+
             ManagersLoader.Game?.SetInitialScore(Row);
         }
     }
 
-    public void MovePinToPosition(PinLogic pin, Vector3 worldPosition, bool animate = true)
+    public void MovePinToPosition(Vector3 worldPosition, bool animate = true)
     {
-        if (pin == null) return;
-
         Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>()
             .GetClosestPoint(worldPosition, out int chosenRow);
 
-        GridPoint _gridPoint = landingPoint.GetComponent<GridPoint>();
+        GridPoint _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
 
+        Debug.Log($"Target world position: {worldPosition}");
+        Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
+        Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
 
         if (landingPoint != null)
         {
-            if (_gridPoint.isBlocked)
+            if (_gridLandingPoint.isBlocked)
             {
-                //TODO point is blocked by another pin or trap 
-                //select next closest
-                Debug.Log("Selected next closest point");
-                
-            }
-            else
-            {
-                if (animate && !pin.isFollowing)
+                Debug.Log("Initial point is blocked, searching for next closest available point");
+
+                // Use the new GridManager method to find an available point
+                GridManager gridManager = ManagersLoader.GetSceneManager<GridManager>();
+                Transform nextClosestPoint = gridManager.GetClosestAvailablePoint(worldPosition, out int newChosenRow);
+
+                if (nextClosestPoint != null)
                 {
-                    print($"{gameObject.name} is moving");
-                    Vector3 targetWorldPosition = landingPoint.position;
-
-                    // Notify rubber band that pin is starting to move
-                    if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
-                    {
-                        ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
-                            GeometricRubberBand.MovingPinStatus.Moving);
-                    }
-
-                    pin.currentMoveTween = Tween
-                        .Position(pin.transform, targetWorldPosition, pin.moveDuration, pin.moveEase)
-                        .OnComplete(() =>
-                        {
-                            // Set parent and local position after animation completes
-                            pin.transform.parent = landingPoint;
-                            pin.transform.localPosition = Vector3.zero;
-                            pin.isFollowing = false;
-
-                            // Notify rubber band that pin stopped moving
-                            if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
-                            {
-                                ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
-                                    GeometricRubberBand.MovingPinStatus.NotMoving);
-                            }
-                        });
+                    landingPoint = nextClosestPoint;
+                    _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
+                    chosenRow = newChosenRow;
+                    Debug.Log(
+                        $"Found alternative point: {landingPoint.name} at position: {landingPoint.position} at row {chosenRow}");
                 }
                 else
                 {
-                    // Instant movement (for drag mode)
-                    pin.transform.parent = landingPoint;
-                    pin.transform.localPosition = Vector3.zero;
-                    pin.isFollowing = false;
-
-                    if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
-                    {
-                        ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(pin.transform,
-                            GeometricRubberBand.MovingPinStatus.NotMoving);
-                    }
+                    Debug.LogWarning("No available points found for pin placement");
+                    return;
                 }
             }
+            else
+            {
+                Debug.Log($"Using original point: {landingPoint.name} at position: {landingPoint.position}");
+            }
 
+            if (animate)
+            {
+                print($"{gameObject.name} is moving to {landingPoint.position}");
+                Vector3 targetWorldPosition = landingPoint.position;
+
+                // Notify rubber band that pin is starting to move
+                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                {
+                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(transform,
+                        GeometricRubberBand.MovingPinStatus.Moving);
+                }
+
+                currentMoveTween = Tween
+                    .Position(transform, targetWorldPosition, moveDuration, moveEase)
+                    .OnComplete(() =>
+                    {
+                        transform.parent = landingPoint;
+                        transform.localPosition = Vector3.zero;
+                        _currentGridPoint = _gridLandingPoint;
+                        _currentGridPoint.isBlocked = true;
+                        isFollowing = false;
+
+                        Debug.Log($"Pin landed at: {transform.position} (parent: {landingPoint.name})");
+
+                        if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                        {
+                            ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(transform,
+                                GeometricRubberBand.MovingPinStatus.NotMoving);
+                        }
+                    });
+            }
+            else
+            {
+                // Instant movement (for drag mode)
+                transform.parent = landingPoint;
+                transform.localPosition = Vector3.zero;
+                _currentGridPoint = _gridLandingPoint;
+                // _currentGridPoint.isBlocked = true;
+                isFollowing = false;
+
+                Debug.Log($"Pin instantly moved to: {transform.position} (parent: {landingPoint.name})");
+
+                if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
+                {
+                    ManagersLoader.GetSceneManager<GeometricRubberBand>().UpdateMovingPin(transform,
+                        GeometricRubberBand.MovingPinStatus.NotMoving);
+                }
+            }
 
             ManagersLoader.Game?.UpdateScore(chosenRow);
         }
     }
 
-    
-    
-    public void StartFollowingPin(PinLogic pin)
-    {
-        if (pin == null) return;
 
-        pin.isFollowing = true;
-        pin.transform.parent = null;
+    public void StartFollowingPin()
+    {
+        Debug.Log($" pin current grid point null: {_currentGridPoint == null}");
+
+        // Only try to access _currentGridPoint if it's not null
+        if (_currentGridPoint != null)
+        {
+            Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
+            _currentGridPoint.isBlocked = false; // Free up the current position
+            _currentGridPoint = null; // Clear the reference
+        }
+        else
+        {
+            Debug.Log("Current grid point is null - pin may not be placed on grid yet");
+        }
+
+        isFollowing = true;
+        transform.parent = null;
 
         if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
             ManagersLoader.GetSceneManager<GeometricRubberBand>()
-                .UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.Moving);
+                .UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.Moving);
         }
     }
 
-    public void StopFollowingPin(PinLogic pin)
+    public void StopFollowingPin()
     {
-        // Debug.Log("inside stop following pin method pin: {" + pin.name + "}");
+        Debug.Log("inside stop following pin method pin: {" + name + "}");
 
-        if (pin == null) return;
 
-        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(pin.transform.position);
-        if (landingPoint != null)
+        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(transform.position);
+        if (landingPoint != null )
         {
-            pin.transform.parent = landingPoint;
-            pin.transform.localPosition = Vector3.zero;
+            transform.parent = landingPoint;
+            transform.localPosition = Vector3.zero;
+            _currentGridPoint.isBlocked = true;
+        }
+        else
+        {
+            landingPoint = FindNextClosestAvailablePoint(transform.position);
+            transform.parent = landingPoint;
+            transform.localPosition = Vector3.zero;
+            landingPoint.GetComponent<GridPoint>().isBlocked = true;
         }
 
-        pin.isFollowing = false;
+        _currentGridPoint = landingPoint.GetComponent<GridPoint>();
+        isFollowing = false;
 
         if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
         {
             ManagersLoader.GetSceneManager<GeometricRubberBand>()
-                .UpdateMovingPin(pin.transform, GeometricRubberBand.MovingPinStatus.NotMoving);
+                .UpdateMovingPin(transform, GeometricRubberBand.MovingPinStatus.NotMoving);
         }
+    }
+
+    private Transform FindNextClosestAvailablePoint(Vector3 worldPosition)
+    {
+        GridManager gridManager = ManagersLoader.GetSceneManager<GridManager>();
+
+        // Use the new GridManager method to find the closest available point
+        return gridManager.GetClosestAvailablePoint(worldPosition, out int _);
     }
 }
