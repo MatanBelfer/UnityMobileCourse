@@ -46,6 +46,7 @@ public class GeometricRubberBand : BaseManager
     [SerializeField] private RubberBandAnchor[] initialBand; //the initial set of bends that compose the band
     private LinkedList<Bend> bends = new(); //the bends that compose the band
     private HashSet<BandSegment> segments = new(); //the segments that compose the band
+    private float stickage = 0.01f; //makes sure that zero-angle bends still count as bends (for animation)
 
     protected override void OnInitialize()
     {
@@ -190,10 +191,11 @@ public class GeometricRubberBand : BaseManager
                 //now check which side of the segment the anchor is in the two frames
                 //using cross product
                 Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
-                float[] crossProd =
-                    { CrossProduct2d(start2End[0], start2Anchor[0]), CrossProduct2d(start2End[1], start2Anchor[1]) };
-                bool[] leftSide = {crossProd[0] > 0, crossProd[1] > 0};
-                if (leftSide[0] == leftSide[1]) continue; //the anchor stayed on the same side
+                bool[] leftSide = new bool[2];
+                bool[] rightSide = new bool[2];
+                RelativeSideOfLine(start2End[0], start2Anchor[0], out leftSide[0], out rightSide[0]);
+                RelativeSideOfLine(start2End[1], start2Anchor[1], out leftSide[1], out rightSide[1]);
+                if (leftSide[0] && leftSide[1] || rightSide[0] && rightSide[1]) continue; //the anchor stayed on the same side
                 
                 //print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
                 
@@ -228,11 +230,7 @@ public class GeometricRubberBand : BaseManager
             Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
             Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
             Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
-            float crossProd = CrossProduct2d(prevStart2NextEnd, prevStart2Here); //if this is positive, the bend is on the left side of the line from the prev
-            //to the next anchors. If the bend is not clockwise, it should be removed.
-            float stickage = 0.01f; //makes sure that zero-angle bends still count as bends (for animation)
-            bool left = crossProd > stickage;
-            bool right = crossProd < -stickage;
+            var crossProd = RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out var left, out var right);
 
             if (bend.isClockwise && right || !bend.isClockwise && left)
             {
@@ -246,7 +244,17 @@ public class GeometricRubberBand : BaseManager
             node = node.Next;
         }
     }
-    
+
+    private float RelativeSideOfLine(Vector2 lineStart2End, Vector2 lineStart2Here, out bool left, out bool right)
+    {
+        //returns true for left if the point is "strongly" to the left of the line (more that the stickage value)
+        //same for the right. if both are false, the point is considered collinear with the line. 
+        float crossProd = CrossProduct2d(lineStart2End, lineStart2Here);
+        left = crossProd > stickage;
+        right = crossProd < -stickage;
+        return crossProd;
+    }
+
     private float CrossProduct2d(Vector2 a, Vector2 b)
     {
         return a.x * b.y - a.y * b.x;
