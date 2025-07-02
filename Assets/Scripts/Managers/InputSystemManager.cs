@@ -238,7 +238,7 @@ public class InputSystemManager : BaseManager
     private void StartDragging(PinLogic pin)
     {
         _currentPin = pin;
-        _currentPin.StartFollowingPin(_currentPin);
+        _currentPin.StartFollowingPin();
 
         // Debug.Log($"Started dragging pin: {pin.name}");
     }
@@ -254,8 +254,8 @@ public class InputSystemManager : BaseManager
     {
         if (_currentPin != null)
         {
-            _currentPin.MovePinToPosition(_currentPin, endPosition, false); // No animation for drag
-            _currentPin.StopFollowingPin(_currentPin);
+            _currentPin.MovePinToPosition( endPosition, false); // No animation for drag
+            _currentPin.StopFollowingPin();
             //   Debug.Log($"Finished dragging pin: {_currentPin.name}");
             _currentPin = null;
         }
@@ -291,7 +291,7 @@ public class InputSystemManager : BaseManager
         else if (_currentPin != null)
         {
             // Clicked on empty space with a pin selected - move the pin
-            _currentPin.MovePinToPosition(_currentPin, endPosition, true); // With animation for select
+            _currentPin.MovePinToPosition(endPosition, true); // With animation for select
             print("MovePinToPosition Called");
             Debug.Log($"Moved selected pin to: {endPosition}");
             _currentPin = null;
@@ -302,7 +302,7 @@ public class InputSystemManager : BaseManager
     {
         if (_currentPin?.isFollowing == true)
         {
-            _currentPin.StopFollowingPin(_currentPin);
+            _currentPin.StopFollowingPin();
         }
 
         _currentPin = null;

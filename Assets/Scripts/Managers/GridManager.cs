@@ -362,4 +362,188 @@ public class GridManager : BaseManager
             ManagersLoader.Pool.InsertToPool(poolInterface.poolName, obj);
         }
     }
+    
+    /// <summary>
+    /// Gets all available (non-blocked) points in the grid
+    /// </summary>
+    /// <returns>List of available transforms</returns>
+    public List<Transform> GetAllAvailablePoints()
+    {
+        List<Transform> availablePoints = new List<Transform>();
+        
+        foreach (var row in _gridRows)
+        {
+            foreach (var point in row)
+            {
+                if (point != null && point.gameObject.activeInHierarchy)
+                {
+                    GridPoint gridPoint = point.GetComponent<GridPoint>();
+                    if (gridPoint != null && !gridPoint.isBlocked)
+                    {
+                        availablePoints.Add(point);
+                    }
+                }
+            }
+        }
+        
+        return availablePoints;
+    }
+
+    /// <summary>
+    /// Finds the closest available point to the given world position
+    /// </summary>
+    /// <param name="worldPosition">Target world position</param>
+    /// <param name="chosenRow">Output parameter for the row of the chosen point</param>
+    /// <returns>Transform of the closest available point, or null if none found</returns>
+    public Transform GetClosestAvailablePoint(Vector3 worldPosition, out int chosenRow)
+    {
+        Transform closestPoint = null;
+        float minDistance = float.MaxValue;
+        chosenRow = -1;
+
+        int currentRowInQueue = 0;
+        foreach (var row in _gridRows)
+        {
+            foreach (var point in row)
+            {
+                if (point == null || !point.gameObject.activeInHierarchy) continue;
+
+                GridPoint gridPoint = point.GetComponent<GridPoint>();
+                if (gridPoint == null || gridPoint.isBlocked) continue;
+
+                float dist = Vector3.Distance(point.position, worldPosition);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closestPoint = point;
+                    chosenRow = _rowNum - _gridRows.Count + currentRowInQueue + 1;
+                }
+            }
+            currentRowInQueue++;
+        }
+
+        return closestPoint;
+    }
+
+    /// <summary>
+    /// Overload without row output parameter
+    /// </summary>
+    public Transform GetClosestAvailablePoint(Vector3 worldPosition)
+    {
+        return GetClosestAvailablePoint(worldPosition, out var _);
+    }
+
+    /// <summary>
+    /// Gets the row and column indices of a given point
+    /// </summary>
+    /// <param name="point">The transform to find indices for</param>
+    /// <param name="rowIndex">Output row index</param>
+    /// <param name="columnIndex">Output column index</param>
+    /// <returns>True if point was found, false otherwise</returns>
+    public bool GetPointIndices(Transform point, out int rowIndex, out int columnIndex)
+    {
+        rowIndex = -1;
+        columnIndex = -1;
+        
+        if (point == null) return false;
+        
+        var rows = _gridRows.ToArray();
+        for (int i = 0; i < rows.Length; i++)
+        {
+            for (int j = 0; j < rows[i].Length; j++)
+            {
+                if (rows[i][j] == point)
+                {
+                    rowIndex = i;
+                    columnIndex = j;
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// Gets points within a certain radius of the given position
+    /// </summary>
+    /// <param name="worldPosition">Center position</param>
+    /// <param name="radius">Search radius</param>
+    /// <param name="onlyAvailable">If true, only returns non-blocked points</param>
+    /// <returns>List of points within radius, sorted by distance</returns>
+    public List<Transform> GetPointsInRadius(Vector3 worldPosition, float radius, bool onlyAvailable = true)
+    {
+        List<Transform> pointsInRadius = new List<Transform>();
+        
+        foreach (var row in _gridRows)
+        {
+            foreach (var point in row)
+            {
+                if (point == null || !point.gameObject.activeInHierarchy) continue;
+            
+                if (onlyAvailable)
+                {
+                    GridPoint gridPoint = point.GetComponent<GridPoint>();
+                    if (gridPoint == null || gridPoint.isBlocked) continue;
+                }
+            
+                float distance = Vector3.Distance(point.position, worldPosition);
+                if (distance <= radius)
+                {
+                    pointsInRadius.Add(point);
+                }
+            }
+        }
+        
+        // Sort by distance
+        pointsInRadius.Sort((a, b) => 
+            Vector3.Distance(worldPosition, a.position).CompareTo(
+                Vector3.Distance(worldPosition, b.position)));
+        
+        return pointsInRadius;
+    }
+
+    /// <summary>
+    /// Gets neighboring points around a specific grid position
+    /// </summary>
+    /// <param name="rowIndex">Row index of center point</param>
+    /// <param name="columnIndex">Column index of center point</param>
+    /// <param name="radius">How many grid positions away to search</param>
+    /// <param name="onlyAvailable">If true, only returns non-blocked points</param>
+    /// <returns>List of neighboring points</returns>
+    public List<Transform> GetNeighboringPoints(int rowIndex, int columnIndex, int radius = 1, bool onlyAvailable = true)
+    {
+        List<Transform> neighbors = new List<Transform>();
+        
+        for (int r = rowIndex - radius; r <= rowIndex + radius; r++)
+        {
+            for (int c = columnIndex - radius; c <= columnIndex + radius; c++)
+            {
+                // Skip the center point itself
+                if (r == rowIndex && c == columnIndex) continue;
+            
+                if (IsValidPosition(r, c))
+                {
+                    Transform point = GetPointAt(r, c);
+                    if (point != null && point.gameObject.activeInHierarchy)
+                    {
+                        if (onlyAvailable)
+                        {
+                            GridPoint gridPoint = point.GetComponent<GridPoint>();
+                            if (gridPoint != null && !gridPoint.isBlocked)
+                            {
+                                neighbors.Add(point);
+                            }
+                        }
+                        else
+                        {
+                            neighbors.Add(point);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return neighbors;
+    }
 }
