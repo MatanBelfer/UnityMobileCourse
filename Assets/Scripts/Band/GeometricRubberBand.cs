@@ -46,6 +46,8 @@ public class GeometricRubberBand : BaseManager
     private LinkedList<Bend> bends = new(); //the bends that compose the band
     private HashSet<BandSegment> segments = new(); //the segments that compose the band
     private float stickage = 0.01f; //makes sure that zero-angle bends still count as bends (for animation)
+    [SerializeField] private float _additiveBandRadius;
+    public float addBandR => _additiveBandRadius; //the added radius each time the band wraps around an anchor 
 
     protected override void OnInitialize()
     {
@@ -88,6 +90,7 @@ public class GeometricRubberBand : BaseManager
         {
             RubberBandAnchor anchor = initialBand[i];
             Bend newBend = new Bend(anchor);
+            anchor.bendsOnMe.Add(newBend);
             bends.AddLast(newBend);
         }
     }
@@ -120,13 +123,22 @@ public class GeometricRubberBand : BaseManager
     }
     #endif
 
-    private void Update()
+    private void Update() //TODO: change this to FixedUpdate
     {
         // UpdateBandSegments();
-        RemoveWrongBends();
-        CalculateIntersections();
-        UpdateSegmentConnections();
-        UpdateSegmentPositions();
+        UpdateAnchorPositions();
+        RemoveWrongBends(); //bends that are backwards
+        CalculateIntersections(); //between anchors and segments, which form new bends
+        UpdateSegmentConnections(); //connect the bends with segments
+        UpdateSegmentPositions(); //move the segments to the correct positions
+    }
+
+    private void UpdateAnchorPositions()
+    {
+        foreach (RubberBandAnchor anchor in allAnchors)
+        {
+            anchor.UpdatePosition();
+        }
     }
 
     private BandSegment GetSegmentFromPool(Bend prevBend)
@@ -172,17 +184,25 @@ public class GeometricRubberBand : BaseManager
                 //while being "in front of it" for at least one of the two frames
                 //it means the anchor can be projected onto the segment
                 
-                //first, check the projections
+                //first, check the projection
                 Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
                 bool[] pointInFrontOfVec = {false, false};
                 float[] dotProd =
                 {
-                    ProjectedPos(start2End[0], start2Anchor[0], sqrSegmentLength[0], out pointInFrontOfVec[0]),
-                    ProjectedPos(start2End[1], start2Anchor[1], sqrSegmentLength[1], out pointInFrontOfVec[1])
+                    VectorUtils.ProjectedPos(start2End[0], start2Anchor[0], sqrSegmentLength[0], out pointInFrontOfVec[0]),
+                    VectorUtils.ProjectedPos(start2End[1], start2Anchor[1], sqrSegmentLength[1], out pointInFrontOfVec[1])
                 };
                 // float[] dotProd = {Vector2.Dot(start2End[0],start2Anchor[0]), Vector2.Dot(start2End[1],start2Anchor[1])};
                 if (pointInFrontOfVec.Any(b => !b)) continue;
 
+                //now get the potential intersection position from the anhor
+                Vector2 anchorToSegment = dotProd[1] / sqrSegmentLength[1] * start2End[1] - start2Anchor[1];
+                float totalRadius = anchor.baseRadius + addBandR * anchor.GetNumWraps(anchorToSegment);
+                Vector2 currentInteractionPos = anchorPos[1] + anchorToSegment.normalized * totalRadius;
+                Vector2[] interactionPos = {currentInteractionPos + anchorPos[0] - anchorPos[1], currentInteractionPos };
+                //estimated previous position of the interaction point using the motion of the anchor
+                Vector2[] startToIntPoint = { interactionPos[0] - startPos[0], interactionPos[1] - startPos[1] };
+                
                 // print($"{anchor.name} has dot prods: " +
                 //       $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
                 
@@ -190,8 +210,8 @@ public class GeometricRubberBand : BaseManager
                 //using cross product
                 bool[] leftSide = new bool[2];
                 bool[] rightSide = new bool[2];
-                RelativeSideOfLine(start2End[0], start2Anchor[0], out leftSide[0], out rightSide[0]);
-                RelativeSideOfLine(start2End[1], start2Anchor[1], out leftSide[1], out rightSide[1]);
+                VectorUtils.RelativeSideOfLine(start2End[0], startToIntPoint[0], out leftSide[0], out rightSide[0],stickage);
+                VectorUtils.RelativeSideOfLine(start2End[1], startToIntPoint[1], out leftSide[1], out rightSide[1],stickage);
                 if (leftSide[0] && leftSide[1] || rightSide[0] && rightSide[1]) continue; //the anchor stayed on the same side
                 if (!leftSide[0] && !rightSide[0]) continue; //the anchor was on the segment
                 
@@ -215,16 +235,18 @@ public class GeometricRubberBand : BaseManager
                 Bend newBend = new Bend(anchor.Key, anchor.Value.Item1);
                 bends.AddAfter(prevBend, newBend);
                 prevBend = prevBend.Next;
+                anchor.Key.bendsOnMe.Add(newBend);
             }
         }
     }
-
-    private float ProjectedPos(Vector2 projectOn, Vector2 point, float lhsSqrMag, out bool pointInFrontOfVec)
-    {
-        float dotProd = Vector2.Dot(projectOn, point);
-        pointInFrontOfVec = dotProd >= 0 && dotProd <= lhsSqrMag;
-        return dotProd;
-    }
+    //
+    // private float ProjectedPos(Vector2 projectOn, Vector2 point, float lhsSqrMag, out bool pointInFrontOfVec)
+    // {
+    //     //not normalized projection of point on projectOn, lhsSqrMag is the square magnitude of the vector
+    //     float dotProd = Vector2.Dot(projectOn, point);
+    //     pointInFrontOfVec = dotProd >= 0 && dotProd <= lhsSqrMag;
+    //     return dotProd;
+    // }
     
     private void RemoveWrongBends()
     {
@@ -242,22 +264,23 @@ public class GeometricRubberBand : BaseManager
             // Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
 
             bool bendInFrontOfLine;
-            ProjectedPos(prevStart2NextEnd, prevStart2Here, prevStart2NextEnd.sqrMagnitude, out bendInFrontOfLine);
+            VectorUtils.ProjectedPos(prevStart2NextEnd, prevStart2Here, prevStart2NextEnd.sqrMagnitude, out bendInFrontOfLine);
             if (!bendInFrontOfLine)
             {
                 node = node.Next;
                 continue;
             }
             
-            var crossProd = RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out var left, out var right);
+            var crossProd = VectorUtils.RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out var left, out var right,stickage);
 
             if (bend.isClockwise && right || !bend.isClockwise && left)
             {
-                RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out _, out _); //test
+                // RelativeSideOfLine(prevStart2NextEnd, prevStart2Here, out _, out _); //test
                 LinkedListNode<Bend> nextNode = node.Next;
                 print($"removing {node.Value.anchor.name} because it has\n" +
                        $"isCW = {bend.isClockwise}, crossProd = {crossProd}");
                 bends.Remove(node);
+                bend.anchor.bendsOnMe.Remove(bend); //remove it from the anchor it was on
                 node = nextNode;
                 continue;
             }
@@ -265,20 +288,20 @@ public class GeometricRubberBand : BaseManager
         }
     }
 
-    private float RelativeSideOfLine(Vector2 lineStart2End, Vector2 lineStart2Here, out bool left, out bool right)
-    {
-        //returns true for left if the point is "strongly" to the left of the line (more that the stickage value)
-        //same for the right. if both are false, the point is considered collinear with the line. 
-        float crossProd = CrossProduct2d(lineStart2End, lineStart2Here);
-        left = crossProd > stickage;
-        right = crossProd < -stickage;
-        return crossProd;
-    }
+    // private float RelativeSideOfLine(Vector2 lineStart2End, Vector2 lineStart2Here, out bool left, out bool right)
+    // {
+    //     //returns true for left if the point is "strongly" to the left of the line (more that the stickage value)
+    //     //same for the right. if both are false, the point is considered collinear with the line. 
+    //     float crossProd = CrossProduct2d(lineStart2End, lineStart2Here);
+    //     left = crossProd > stickage;
+    //     right = crossProd < -stickage;
+    //     return crossProd;
+    // }
 
-    private float CrossProduct2d(Vector2 a, Vector2 b)
-    {
-        return a.x * b.y - a.y * b.x;
-    }
+    // private float CrossProduct2d(Vector2 a, Vector2 b)
+    // {
+    //     return a.x * b.y - a.y * b.x;
+    // }
     
     private void UpdateSegmentConnections()
     {

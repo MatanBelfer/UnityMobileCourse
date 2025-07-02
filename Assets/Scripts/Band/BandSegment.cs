@@ -79,4 +79,13 @@ public class BandSegment : MonoBehaviour
         currentPos[1] = endPos;
         followScript.UpdatePosition(startPos, endPos);
     }
+
+    public Vector2 leftRotated
+    {
+        get
+        {
+            Vector2 startToEnd = endPos - startPos;
+            return new Vector2(-startToEnd.y, startToEnd.x);
+        }
+    }
 }
