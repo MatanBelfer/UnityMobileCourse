@@ -220,7 +220,7 @@ public class GeometricRubberBand : BaseManager
 
     private void RemoveWrongBends()
     {
-        //removes each bend that shouldn't affect the Band
+        //removes each bend that shouldn't affect the Band (negative bending angle)
         LinkedListNode<Bend> node = bends.First;
         while (node != null)
         {
@@ -228,10 +228,13 @@ public class GeometricRubberBand : BaseManager
             Vector2 prevStart = node.PreviousOrLast().Value.anchor.currentPosition;
             Vector2 prevStart2NextEnd = node.NextOrFirst().Value.anchor.currentPosition - prevStart;
             Vector2 prevStart2Here = bend.anchor.currentPosition - prevStart;
-            float crossProd = CrossProduct2d(prevStart2NextEnd, prevStart2Here);
+            float crossProd = CrossProduct2d(prevStart2NextEnd, prevStart2Here); //if this is positive, the bend is on the left side of the line from the prev
+            //to the next anchors. If the bend is not clockwise, it should be removed.
+            float stickage = 0.01f; //makes sure that zero-angle bends still count as bends (for animation)
+            bool left = crossProd > stickage;
+            bool right = crossProd < -stickage;
 
-            float stickage = 0f;
-            if (bend.isClockwise && crossProd < -stickage || !bend.isClockwise && crossProd > stickage)
+            if (bend.isClockwise && right || !bend.isClockwise && left)
             {
                 LinkedListNode<Bend> nextNode = node.Next;
                 print($"removing {node.Value.anchor.name} because it has\n" +
