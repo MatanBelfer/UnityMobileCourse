@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Services.Analytics;
+using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,15 +38,20 @@ public class ManagersLoader : MonoBehaviour
         
         // Initialize core managers immediately
         InitializeCoreManagers();
-        
+
         // Subscribe to scene events AFTER core managers are ready
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
-        
+
         // Initialize scene managers for current scene
         RefreshSceneManagers();
-        
+
         IsInitialized = true;
+        // Initialize Analytics
+        UnityServices.InitializeAsync();
+        AnalyticsService.Instance.StartDataCollection();
+        CustomEventSample.RecordCustomEventWithParameters();
+        
         //Debug.Log("ManagersLoader initialized successfully!");
     }
 
