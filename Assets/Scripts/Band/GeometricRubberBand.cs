@@ -287,10 +287,10 @@ public class GeometricRubberBand : BaseManager
             Vector2[] anchorPos = bends.Select(bend => bend.anchor.currentPosition).ToArray();
             Vector2 direction = (anchorPos[1] -  anchorPos[0]).normalized;
             Vector2 left = new Vector2(-direction.y, direction.x); //rotated left 90 degrees
+            float[] baseRadius = bends.Select(bend => bend.anchor.baseRadius).ToArray();
 
-            float tempRadius = 0.1f;
-            segment.position1 = anchorPos[0] + (isCW[0] ? 1f : -1f) * tempRadius * left;
-            segment.position2 = anchorPos[1] + (isCW[1] ? 1f : -1f) * tempRadius * left;
+            segment.position1 = anchorPos[0] + (isCW[0] ? 1f : -1f) * baseRadius[0] * left;
+            segment.position2 = anchorPos[1] + (isCW[1] ? 1f : -1f) * baseRadius[1] * left;
         }
     }
     
