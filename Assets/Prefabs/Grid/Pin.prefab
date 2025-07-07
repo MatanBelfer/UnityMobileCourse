@@ -86,7 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   previousPosition: {x: 0, y: 0}
   currentPosition: {x: 0, y: 0}
-  baseRadius: 0.1
+  _baseRadius: 0.1
 --- !u!1 &5572015857119148058
 GameObject:
   m_ObjectHideFlags: 0

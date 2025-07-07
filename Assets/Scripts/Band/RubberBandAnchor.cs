@@ -22,6 +22,6 @@ public class RubberBandAnchor : MonoBehaviour
     {
         return bendsOnMe.Count(
             bend => direction.IsBetween(
-                bend.prevSegment.leftRotated,bend.nextSegment.leftRotated, bend.isClockwise));
+                bend.prevSegment.leftRotated,bend.nextSegment.leftRotated, bend.isClockwise, stickage: 0.05f));
     }
 }

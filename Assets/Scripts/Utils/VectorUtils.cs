@@ -34,12 +34,12 @@ public static class VectorUtils
 		return a.x * b.y - a.y * b.x;
 	}
 
-	public static bool IsBetween(this Vector2 point, Vector2 a, Vector2 b, bool aToBClockwise)
+	public static bool IsBetween(this Vector2 point, Vector2 a, Vector2 b, bool aToBClockwise, float stickage = 0f)
 	{
 		bool pointLeftOfA, pointLeftOfB, bLeftOfA;
-		RelativeSideOfLine(a, point, out pointLeftOfA);
-		RelativeSideOfLine(b, point, out pointLeftOfB);
-		RelativeSideOfLine(a, b, out bLeftOfA);
+		RelativeSideOfLine(a, point, out pointLeftOfA, out _, stickage);
+		RelativeSideOfLine(b, point, out pointLeftOfB, out _, stickage);
+		RelativeSideOfLine(a, b, out bLeftOfA, out _, stickage);
 
 		bool result = pointLeftOfA && !pointLeftOfB;
 		if (!bLeftOfA) result = !result;

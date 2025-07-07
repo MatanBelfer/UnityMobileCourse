@@ -39,7 +39,6 @@ public class GeometricRubberBand : BaseManager
     /// anchors can move, and when an anchor crosses a segment, it becomes part of the band until it returns
     /// to where it came from 
     /// </summary>
-    private Bend rootBend; //the bend from which to start drawing the band
     [Header("Rework")]
     [SerializeField] private RubberBandAnchor[] allAnchors; //all the anchors in the scene
     [SerializeField] private RubberBandAnchor[] initialBand; //the initial set of bends that compose the band
@@ -54,7 +53,7 @@ public class GeometricRubberBand : BaseManager
         //initialize Pin dictionary
         foreach (Transform pinTrans in pins) pinTransformDict.Add(pinTrans, new BandVertex(pinTrans));
         
-        InitializeBendsAndSegments();
+        InitializeBends();
         UpdateSegmentConnections();
         //
         // //initialize active pins and segments
@@ -76,7 +75,7 @@ public class GeometricRubberBand : BaseManager
         // // LogActivePinNames();
     }
 
-    private void InitializeBendsAndSegments()
+    private void InitializeBends()
     {
         //using initialBand, construct the respective Bends
         if (initialBand.Length < 3)
@@ -89,7 +88,7 @@ public class GeometricRubberBand : BaseManager
         for (int i = 0; i < initialBand.Length; i++)
         {
             RubberBandAnchor anchor = initialBand[i];
-            Bend newBend = new Bend(anchor);
+            Bend newBend = new Bend(anchor, false, anchor.baseRadius);
             anchor.bendsOnMe.Add(newBend);
             bends.AddLast(newBend);
         }
@@ -118,7 +117,14 @@ public class GeometricRubberBand : BaseManager
             float offset = (numBendsInAnchor[bend.anchor] - 1) * 0.25f;
             string cw = bend.isClockwise ? "CW" : "CCW";
             Handles.Label(bend.anchor.transform.position + offset * Vector3.down,
-                $"{bend.anchor.name}\nIndex: {index++}\n{cw}");
+                $"{bend.anchor.name}\nIndex: {index++}\n{cw}");//\nNext Segment: {bend.nextSegment.name}\nPrev Segment: {bend.prevSegment.name}\n" +
+               // $"Radius: {bend.radius}");
+        }
+
+        index = 0;
+        foreach (BandSegment segment in segments)
+        {
+            Handles.Label(segment.transform.position, $"Segment {index++}");
         }
     }
     #endif
@@ -156,17 +162,16 @@ public class GeometricRubberBand : BaseManager
     private void CalculateIntersections()
     {
         //change the structure of the band by adding in new bends when anchors intersect segments
+        Dictionary<BandSegment, List<(Bend, float)>> bendsToAdd = new();
         foreach (BandSegment segment in segments)
         {
             //check for intersections with all anchors other than the ones the segment is connected to
-            Dictionary<RubberBandAnchor, (bool, float)> intersectingAnchors = 
-                new(); //running list of the intersecting anchors
-                       //along with their isCW and their dot product with the segment
+            //along with their isCW, their dot product with the segment, and their radius
             RubberBandAnchor start = segment.prevBend.anchor;
             RubberBandAnchor end = segment.nextBend.anchor;
             RubberBandAnchor[] relevantAnchors = allAnchors.Where(a =>
                 (a != start) && (a != end)).ToArray();
-            
+
             // print($"Segment connected to {start.name} and {end.name}\n" +
             //       $"will check intesections with anchors: " +
             //       $"{string.Join(", ", relevantAnchors.Select(a => a.name).ToArray())}");
@@ -175,22 +180,24 @@ public class GeometricRubberBand : BaseManager
             Vector2[] endPos = { segment.previousPos[1], segment.currentPos[1] };
             // Vector2[] startPos = { start.previousPosition, start.currentPosition };
             // Vector2[] endPos = { end.previousPosition, end.currentPosition };
-            Vector2[] start2End = {endPos[0] - startPos[0], endPos[1] - startPos[1] };
-            float[] sqrSegmentLength = {start2End[0].sqrMagnitude, start2End[1].sqrMagnitude};
+            Vector2[] start2End = { endPos[0] - startPos[0], endPos[1] - startPos[1] };
+            float[] sqrSegmentLength = { start2End[0].sqrMagnitude, start2End[1].sqrMagnitude };
             foreach (RubberBandAnchor anchor in relevantAnchors)
             {
                 Vector2[] anchorPos = { anchor.previousPosition, anchor.currentPosition };
                 //intersection happens when the anchor moves from one side of the segment to the other
                 //while being "in front of it" for at least one of the two frames
                 //it means the anchor can be projected onto the segment
-                
+
                 //first, check the projection
                 Vector2[] start2Anchor = { anchorPos[0] - startPos[0], anchorPos[1] - startPos[1] };
-                bool[] pointInFrontOfVec = {false, false};
+                bool[] pointInFrontOfVec = { false, false };
                 float[] dotProd =
                 {
-                    VectorUtils.ProjectedPos(start2End[0], start2Anchor[0], sqrSegmentLength[0], out pointInFrontOfVec[0]),
-                    VectorUtils.ProjectedPos(start2End[1], start2Anchor[1], sqrSegmentLength[1], out pointInFrontOfVec[1])
+                    VectorUtils.ProjectedPos(start2End[0], start2Anchor[0], sqrSegmentLength[0],
+                        out pointInFrontOfVec[0]),
+                    VectorUtils.ProjectedPos(start2End[1], start2Anchor[1], sqrSegmentLength[1],
+                        out pointInFrontOfVec[1])
                 };
                 // float[] dotProd = {Vector2.Dot(start2End[0],start2Anchor[0]), Vector2.Dot(start2End[1],start2Anchor[1])};
                 if (pointInFrontOfVec.Any(b => !b)) continue;
@@ -199,43 +206,54 @@ public class GeometricRubberBand : BaseManager
                 Vector2 anchorToSegment = dotProd[1] / sqrSegmentLength[1] * start2End[1] - start2Anchor[1];
                 float totalRadius = anchor.baseRadius + addBandR * anchor.GetNumWraps(anchorToSegment);
                 Vector2 currentInteractionPos = anchorPos[1] + anchorToSegment.normalized * totalRadius;
-                Vector2[] interactionPos = {currentInteractionPos + anchorPos[0] - anchorPos[1], currentInteractionPos };
+                Vector2[] interactionPos =
+                    { currentInteractionPos + anchorPos[0] - anchorPos[1], currentInteractionPos };
                 //estimated previous position of the interaction point using the motion of the anchor
                 Vector2[] startToIntPoint = { interactionPos[0] - startPos[0], interactionPos[1] - startPos[1] };
-                
+
                 // print($"{anchor.name} has dot prods: " +
                 //       $"{dotProd[0]}/{sqrSegmentLength[0]}, {dotProd[1]}/{sqrSegmentLength[1]}");
-                
+
                 //now check which side of the segment the anchor is in the two frames
                 //using cross product
                 bool[] leftSide = new bool[2];
                 bool[] rightSide = new bool[2];
-                VectorUtils.RelativeSideOfLine(start2End[0], startToIntPoint[0], out leftSide[0], out rightSide[0],stickage);
-                VectorUtils.RelativeSideOfLine(start2End[1], startToIntPoint[1], out leftSide[1], out rightSide[1],stickage);
-                if (leftSide[0] && leftSide[1] || rightSide[0] && rightSide[1]) continue; //the anchor stayed on the same side
+                VectorUtils.RelativeSideOfLine(start2End[0], startToIntPoint[0], out leftSide[0], out rightSide[0],
+                    stickage);
+                VectorUtils.RelativeSideOfLine(start2End[1], startToIntPoint[1], out leftSide[1], out rightSide[1],
+                    stickage);
+                if (leftSide[0] && leftSide[1] || rightSide[0] && rightSide[1])
+                    continue; //the anchor stayed on the same side
                 if (!leftSide[0] && !rightSide[0]) continue; //the anchor was on the segment
-                
+
                 //print($"{anchor.name} on left side: {leftSide[0]}, {leftSide[1]}");
-                
-                intersectingAnchors.Add(anchor, (rightSide[0], dotProd[1])); 
+
+                Bend newBend = new Bend(anchor, rightSide[0], totalRadius);
+                if (!bendsToAdd.ContainsKey(segment)) bendsToAdd.Add(segment, new List<(Bend, float)>());
+                bendsToAdd[segment].Add((newBend, dotProd[1]));
                 //isCW = rightSide[0] because an anchor that came from the right side would make a clockwise bend
             }
+        }
+
+        foreach (BandSegment segment in segments)
+        {
+            if (!bendsToAdd.TryGetValue(segment, out List<(Bend, float)> newBends)) continue;
             
             //if more than one anchor has intersected, handle them in order of dot product
-            if (intersectingAnchors.Count > 1)
+            if (newBends.Count > 1)
             {
-                intersectingAnchors = intersectingAnchors.OrderBy(x => x.Value.Item2)
-                    .ToDictionary(x => x.Key, x => x.Value);
+                newBends = newBends.OrderBy(x => x.Item2)
+                    .ToList();
             }
-            
+
             //now add the new bends
             LinkedListNode<Bend> prevBend = bends.Find(segment.prevBend);
-            foreach (KeyValuePair<RubberBandAnchor, (bool, float)> anchor in intersectingAnchors)
+            foreach (var bend in newBends)
             {
-                Bend newBend = new Bend(anchor.Key, anchor.Value.Item1);
+                Bend newBend = bend.Item1;
                 bends.AddAfter(prevBend, newBend);
                 prevBend = prevBend.Next;
-                anchor.Key.bendsOnMe.Add(newBend);
+                newBend.anchor.bendsOnMe.Add(newBend);
             }
         }
     }
@@ -324,9 +342,10 @@ public class GeometricRubberBand : BaseManager
         }
         
         //remove segments that are no longer needed
+        HashSet<BandSegment> usedSegments = bends.Select(bend => bend.nextSegment).ToHashSet();
         segments.RemoveWhere(seg =>
         {
-            bool remove = !bends.Select(bend => bend.nextSegment).Contains(seg);
+            bool remove = !usedSegments.Contains(seg);
             if (remove) ManagersLoader.Pool.InsertToPool(bandSegmentsPool, seg.gameObject);
             return remove;
         });
@@ -341,10 +360,10 @@ public class GeometricRubberBand : BaseManager
             Vector2[] anchorPos = bends.Select(bend => bend.anchor.currentPosition).ToArray();
             Vector2 direction = (anchorPos[1] -  anchorPos[0]).normalized;
             Vector2 left = new Vector2(-direction.y, direction.x); //rotated left 90 degrees
-            float[] baseRadius = bends.Select(bend => bend.anchor.baseRadius).ToArray();
+            float[] radius = bends.Select(bend => bend.radius).ToArray();
             
-            Vector2 startPos = anchorPos[0] + (isCW[0] ? 1f : -1f) * baseRadius[0] * left;
-            Vector2 endPos = anchorPos[1] + (isCW[1] ? 1f : -1f) * baseRadius[1] * left;
+            Vector2 startPos = anchorPos[0] + (isCW[0] ? 1f : -1f) * radius[0] * left;
+            Vector2 endPos = anchorPos[1] + (isCW[1] ? 1f : -1f) * radius[1] * left;
             segment.UpdatePosition(startPos, endPos);
         }
     }
@@ -616,11 +635,13 @@ public class GeometricRubberBand : BaseManager
         public bool isClockwise { get; private set; }
         public BandSegment nextSegment { get; set; }
         public BandSegment prevSegment { get; set; }
+        public float radius;
         
-        public Bend(RubberBandAnchor anchor, bool isClockwise = false)
+        public Bend(RubberBandAnchor anchor, bool isClockwise, float radius)
         {
             this.anchor = anchor;
             this.isClockwise = isClockwise;
+            this.radius = radius;
         }
     }
 }
