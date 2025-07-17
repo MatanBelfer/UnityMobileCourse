@@ -8,8 +8,8 @@ using UnityEngine;
 /// </summary>
 public class DailyReward : BaseManager
 {
-	private LastLoginAndStreak streak;
-	private string jsonPath = Application.persistentDataPath + "/dailyReward.json";
+	public int testStreak;
+	private string jsonPath;
 	
 	protected override void OnInitialize()
 	{
@@ -28,27 +28,42 @@ public class DailyReward : BaseManager
 
 	private void Start()
 	{
-		if (IsEligibleForReward(out LastLoginAndStreak lastLoginAndStreak))
+		//test
+		//GiveReward(testStreak);
+		jsonPath = Application.persistentDataPath + "/dailyReward.json";
+		
+		if (IsEligibleForReward(out LastLoginAndStreak lastLoginAndStreak, out bool lostStreak))
 		{
 			lastLoginAndStreak.streak++;
 			if (lastLoginAndStreak.streak > 7) lastLoginAndStreak.streak = 7;
-			lastLoginAndStreak.lastLogin = GetCurrentGlobalTime();
-			File.WriteAllText(jsonPath, JsonUtility.ToJson(lastLoginAndStreak));
 			GiveReward(lastLoginAndStreak.streak);
 		}
+		if (lostStreak)
+		{
+			lastLoginAndStreak.streak = 0;
+		}
+		
+		lastLoginAndStreak.lastLoginDays = (int)(GetCurrentGlobalTime() - DateTime.UnixEpoch).TotalDays;
+		string json = JsonUtility.ToJson(lastLoginAndStreak);
+		print($"saving\n{json}");
+		File.WriteAllText(jsonPath, json);
 	}
 	
-	private bool IsEligibleForReward(out LastLoginAndStreak lastLoginAndStreak)
+	private bool IsEligibleForReward(out LastLoginAndStreak lastLoginAndStreak, out bool lostStreak)
 	{
+		lostStreak = false;
+		
 		try
 		{
 			string file = File.ReadAllText(jsonPath);
+			print($"loaded\n{file}");
 			lastLoginAndStreak = JsonUtility.FromJson<LastLoginAndStreak>(file);
 		}
 		catch (FileNotFoundException)
 		{
 			lastLoginAndStreak = new LastLoginAndStreak();
 			File.WriteAllText(jsonPath, JsonUtility.ToJson(lastLoginAndStreak));
+			print("Didn't find last login time");
 			return false;
 		}
 		catch (Exception)
@@ -56,27 +71,32 @@ public class DailyReward : BaseManager
 			Debug.LogWarning("Unexpected exception when trying to read file");
 			throw;
 		}
-		DateTime lastLogin = lastLoginAndStreak.lastLogin;
+		
+		int lastLoginDays = lastLoginAndStreak.lastLoginDays;
 		DateTime currentTime = GetCurrentGlobalTime();
-		float timeSinceLastLogin = (float)(currentTime - lastLogin).TotalDays;
+		int daysSinceLastLogin = (int)(currentTime - DateTime.UnixEpoch).TotalDays - lastLoginDays;
 
-		if (timeSinceLastLogin is < 1 or >= 2)
+		if (daysSinceLastLogin < 1)
 		{
+			return false;
+		}
+
+		if (daysSinceLastLogin >= 2)
+		{
+			lostStreak = true;
 			return false;
 		}
 
 		return true;
 	}
-
+	
+	/// <summary>
+	/// lastLoginDays is the total number of days elapsed from epoch to last login
+	/// </summary>
 	private class LastLoginAndStreak
 	{
 		public int streak = 0;
-		public DateTime lastLogin;
-		
-		public LastLoginAndStreak()
-		{
-			lastLogin = DateTime.Now;
-		}
+		public int lastLoginDays;
 	}
 
 	//TODO: use NTP or another external time source instead of the computers' time
@@ -88,6 +108,13 @@ public class DailyReward : BaseManager
 	//TODO: should give the player money and show an interactive popup that has an animation but does nothing
 	private void GiveReward(int streak)
 	{
-		throw new NotImplementedException();
+		int rewardAmount = CalculateReward(streak);
+		ManagersLoader.GetSceneManager<ShopManager>().AddMoney(rewardAmount);
+		ManagersLoader.UI.ShowRewardPopup(streak, rewardAmount);
+	}
+
+	private int CalculateReward(int streak)
+	{
+		return (int)(100 * Mathf.Pow(1.5f, streak - 1)); //
 	}
 }
