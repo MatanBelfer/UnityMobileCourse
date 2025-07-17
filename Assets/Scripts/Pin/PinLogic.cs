@@ -46,13 +46,18 @@ public class PinLogic : MonoBehaviour
         Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
         Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
 
+        if (_gridLandingPoint == _currentGridPoint)
+        {
+            Debug.Log("Pin is already on the same point, skipping move");
+            return;
+        }
+        
         if (landingPoint != null)
         {
             if (_gridLandingPoint.isBlocked)
             {
                 Debug.Log("Initial point is blocked, searching for next closest available point");
 
-                // Use the new GridManager method to find an available point
                 GridManager gridManager = ManagersLoader.GetSceneManager<GridManager>();
                 Transform nextClosestPoint = gridManager.GetClosestAvailablePoint(worldPosition, out int newChosenRow);
 
@@ -131,13 +136,15 @@ public class PinLogic : MonoBehaviour
 
     public void StartFollowingPin()
     {
-        Debug.Log($" pin current grid point null: {_currentGridPoint == null}");
+        Debug.Log($" pin current grid point isnull: {_currentGridPoint == null}");
 
         // Only try to access _currentGridPoint if it's not null
         if (_currentGridPoint != null)
         {
             Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
             _currentGridPoint.isBlocked = false; // Free up the current position
+            Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
+
             _currentGridPoint = null; // Clear the reference
         }
         else
