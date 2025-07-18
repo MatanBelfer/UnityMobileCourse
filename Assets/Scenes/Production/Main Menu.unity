@@ -200,6 +200,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b257f2ac0b69024797204417ae5a5ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  notificationTitle: Rubber Climber
+  notificationDescription: Boing Boing...?
 --- !u!1 &62882631
 GameObject:
   m_ObjectHideFlags: 0
@@ -453,6 +455,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 259437714}
   m_CullTransparentMesh: 1
+--- !u!1 &291642561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 291642562}
+  - component: {fileID: 291642563}
+  m_Layer: 0
+  m_Name: Analytics Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &291642562
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 291642561}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2697564745998058472}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &291642563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 291642561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 577a31a113d41e94d9d0a14a701d5669, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &385850057
 GameObject:
   m_ObjectHideFlags: 0
@@ -3927,18 +3973,25 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9032350121663502465, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       propertyPath: coreManagers.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 9032350121663502465, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       propertyPath: 'coreManagers.Array.data[4]'
       value: 
       objectReference: {fileID: 25619796}
+    - target: {fileID: 9032350121663502465, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
+      propertyPath: 'coreManagers.Array.data[5]'
+      value: 
+      objectReference: {fileID: 291642563}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 25619795}
+    - targetCorrespondingSourceObject: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 291642562}
     - targetCorrespondingSourceObject: {fileID: 3434893929956868861, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1276350067}

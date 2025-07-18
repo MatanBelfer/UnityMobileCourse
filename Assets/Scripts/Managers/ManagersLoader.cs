@@ -47,10 +47,6 @@ public class ManagersLoader : MonoBehaviour
         RefreshSceneManagers();
 
         IsInitialized = true;
-        // Initialize Analytics
-        UnityServices.InitializeAsync();
-        AnalyticsService.Instance.StartDataCollection();
-        CustomEventSample.RecordCustomEventWithParameters();
         
         //Debug.Log("ManagersLoader initialized successfully!");
     }

@@ -19,7 +19,10 @@ public class UIManager : BaseManager
     
     public bool isPauseMenuOpen { get; private set; }
 
-    
+    public void AnalyticsPermissionPopup()
+    {
+        print("Opening analytics permission popup");
+    }
    
     public void Awake()
     {
