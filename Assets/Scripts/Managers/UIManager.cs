@@ -1,8 +1,11 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : BaseManager
 {
@@ -16,6 +19,8 @@ public class UIManager : BaseManager
     private TMP_Text scoreText;
     [InspectorLabel("Screenshot Camera")] [SerializeField]
     private Camera screenshotCamera;
+    [SerializeField] private RewardPopup rewardPopup;
+    [SerializeField] private GraphicRaycaster mainMenuRaycaster;
     
     public bool isPauseMenuOpen { get; private set; }
 
@@ -38,7 +43,12 @@ public class UIManager : BaseManager
         scoreText.text = "Score: 0";
         
         //react to start game
-        SceneManager.sceneLoaded += (scene, _) =>
+        SceneManager.sceneLoaded += ActivateHudOnStartGame();
+    }
+
+    private UnityAction<Scene, LoadSceneMode> ActivateHudOnStartGame()
+    {
+        return (scene, _) =>
         {
             if (scene.name == "Game") HUD?.SetActive(true);
         };
@@ -52,6 +62,7 @@ public class UIManager : BaseManager
             pauseMenu.SetActive(false);
         }
         isPauseMenuOpen = false;
+        SceneManager.sceneLoaded -= ActivateHudOnStartGame();
     }
 
     protected override void OnCleanup()
@@ -66,7 +77,7 @@ public class UIManager : BaseManager
 
     private void OnDestroy()
     {
-   
+        SceneManager.sceneLoaded -= ActivateHudOnStartGame();
     }
     
     public void PauseMenu(bool openState)
@@ -134,5 +145,19 @@ public class UIManager : BaseManager
         Debug.Log("Showing all UI");
         if (HUD != null) HUD.SetActive(true);
         if (pauseMenu != null) pauseMenu.SetActive(true);
+    }
+    
+    public void ShowRewardPopup(int streak, int rewardAmount)
+    {
+        rewardPopup.rewardAmount = rewardAmount;
+        rewardPopup.streak = streak;
+        rewardPopup.OpenPopup();
+        // mainMenuRaycaster.enabled = false;
+    }
+
+    public void CloseRewardPopup()
+    {
+        // mainMenuRaycaster.enabled = true;
+        rewardPopup.gameObject.SetActive(false);
     }
 }

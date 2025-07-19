@@ -41,7 +41,7 @@ public class ShopManager : BaseManager
     protected override void OnCleanup()
     {
         // Save any pending changes
-        SaveShopItems();
+        SavePlayerShopData();
     }
 
 
@@ -53,12 +53,15 @@ public class ShopManager : BaseManager
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            savedPurchasedSkinsAreEquipped = JsonUtility.FromJson<Dictionary<string, bool>>(json);
+            PlayerShopData playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
+            savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
+            money = playerShopData.money;
 //            print($"loaded shop items from {path}");
         }
         else
         {
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
+            money = 0;
         }
     }
 
@@ -101,13 +104,35 @@ public class ShopManager : BaseManager
         }
     }
 
-    public void SaveShopItems()
+    private void OnApplicationQuit()
+    {
+        SavePlayerShopData();
+    }
+
+    private void SavePlayerShopData()
     {
         if (savedPurchasedSkinsAreEquipped != null)
         {
-            string json = JsonUtility.ToJson(savedPurchasedSkinsAreEquipped);
+            string json = JsonUtility.ToJson(new PlayerShopData(money, savedPurchasedSkinsAreEquipped) );
             string path = Application.persistentDataPath + saveDataPath;
             File.WriteAllText(path, json);
         }
+    }
+
+    private class PlayerShopData
+    {
+        public int money;
+        public Dictionary<string, bool> purchasedSkinsAreEquipped;
+        
+        public PlayerShopData(int money, Dictionary<string, bool> purchasedSkinsAreEquipped)
+        {
+            this.money = money;
+            this.purchasedSkinsAreEquipped = purchasedSkinsAreEquipped;
+        }
+    }
+
+    public void AddMoney(int rewardAmount)
+    {
+        money += rewardAmount;
     }
 }
