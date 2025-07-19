@@ -8,7 +8,7 @@ public class SpikeInteraction : MonoBehaviour
 
     public void Start()
     {
-        OnTouchSpike += ManagersLoader.Game.RestartLevel;
+        OnTouchSpike += ManagersLoader.Game.HitBySpike;
     }
     
     public void OnCollisionEnter(Collision collision)

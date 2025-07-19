@@ -40,8 +40,25 @@ public class AnalyticsManager : BaseManager
         permissionPath = Application.persistentDataPath + "/permission.json";
         ReadPermission();
         print($"Permission set to {permissionSettings.hasPermission}");
+        
+        //Subscribe to events to log them
+        ManagersLoader.Game.OnHitBySpike += () => RecordEvent("playerLostToSpike");
+        ManagersLoader.Game.OnPinFellOffScreen += () => RecordEvent("playerLostToScroll");
 
         InitializeServicesAndStartCollection();
+    }
+
+    private void RecordEvent(string eventName)
+    {
+        if (permissionSettings.hasPermission)
+        {
+            AnalyticsService.Instance.RecordEvent(eventName);
+            print($"Recorded {eventName}");
+        }
+        else
+        {
+            print($"Couldn't record {eventName} because I don't have permission");
+        }
     }
 
     private async Task InitializeServicesAndStartCollection()
