@@ -27,9 +27,9 @@ public class ShopManager : BaseManager
 
     protected override void OnInitialize()
     {
+        // LoadShopItems();
+        // InstantiateShopItems();
         print("Shop Manager initialized");
-        LoadShopItems();
-        InstantiateShopItems();
     }
 
     protected override void OnReset()

@@ -129,4 +129,55 @@ public class GameManager : BaseManager
         OnExitToMainMenu?.Invoke();
         SceneManager.LoadScene("Main Menu");
     }
+    
+
+    #region Debug Support Methods
+
+
+    public void EnableGodMode()
+    {
+        
+    }
+    public void ModifyDifficulty(int change)
+    {
+        int currentDifficulty = PlayerPrefs.GetInt("difficulty", 0);
+        int newDifficulty = Mathf.Clamp(currentDifficulty + change, 0, 1); // 0 = Easy, 1 = Hard
+        PlayerPrefs.SetInt("difficulty", newDifficulty);
+        PlayerPrefs.Save();
+        Debug.Log($"Difficulty changed to: {(newDifficulty == 0 ? "Easy" : "Hard")}");
+    }
+
+    public void AddScore(int amount)
+    {
+        rawScore += amount;
+        OnScoreChanged?.Invoke(GetScore());
+        Debug.Log($"Score added: {amount}, new score: {GetScore()}");
+    }
+
+    public void ResetScore()
+    {
+        rawScore = scoreOffset;
+        OnScoreChanged?.Invoke(GetScore());
+        Debug.Log("Score reset to 0");
+    }
+
+    public void ModifyLives(int change)
+    {
+        
+        Debug.Log($"Lives modified by: {change}");
+    }
+
+    public void ModifyGameTime(float seconds)
+    {
+        
+        Debug.Log($"Game time modified by: {seconds}");
+    }
+
+    public void ResetGameSession()
+    {
+        ResetScore();
+        Debug.Log("Game session reset");
+    }
+
+    #endregion
 }
