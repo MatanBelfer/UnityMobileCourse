@@ -21,6 +21,13 @@ public class SettingsMenu : MonoBehaviour
         LoadSettings();
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
+        AnalyticsManager analyticsManager = ManagersLoader.Analytics;
+        print($"analytics manager is null: {analyticsManager == null}");
+        if (analyticsManager)
+        {
+            AfterSaveSettings = null;
+            AfterSaveSettings += analyticsManager.UpdatePermission;
+        }
 
         SceneManager.sceneLoaded += (_,_) => LoadSettings();
     }
@@ -57,6 +64,7 @@ public class SettingsMenu : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public event Action AfterSaveSettings;
     public void SaveSettings()
     {
         foreach (var item in settingsItems)
@@ -78,5 +86,7 @@ public class SettingsMenu : MonoBehaviour
                 PlayerPrefs.SetString(prefsName, value ? "True" : "False");
             }
         }
+        
+        AfterSaveSettings?.Invoke();
     }
 }

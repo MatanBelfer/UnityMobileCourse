@@ -13,6 +13,7 @@ public class AnalyticsManager : BaseManager
     private string playerPrefs_hasPermission = "analyticsPermission";
     private string playerPrefs_askPermission = "analyticsAskPermission";
     private string permissionPath;
+    [SerializeField] private SettingsMenu settingsMenu;
 
     /// <summary>
     /// Reads permission from playerprefs and starts/stops data collection accordingly. When permission is denied, requests data deletion. 
@@ -30,20 +31,44 @@ public class AnalyticsManager : BaseManager
             AnalyticsService.Instance.RequestDataDeletion();
         }
     }
+
+    public void PopupAllowAnalytics()
+    {
+        hasPermission = true;
+        canAskPermission = false;
+        SavePermission();
+        UpdatePermission();
+    }
+    
+    public void PopupDenyAnalytics()
+    {
+        hasPermission = false;
+        canAskPermission = false;
+        SavePermission();
+        UpdatePermission();
+    }
     
     protected override void OnInitialize()
     {
         permissionPath = Application.persistentDataPath + "/permission.json";
         ReadPermission();
-        print($"Permission set to {hasPermission}");
+        // print($"Permission set to {hasPermission}");
         
         //Subscribe to events to log them
         ManagersLoader.Game.OnHitBySpike += () => RecordEvent("playerLostToSpike");
         ManagersLoader.Game.OnPinFellOffScreen += () => RecordEvent("playerLostToScroll");
+        
+        //Subscribe to settings menu settings change
+        settingsMenu.AfterSaveSettings += UpdatePermission;
 
         InitializeServicesAndStartCollection();
     }
 
+    private void Start()
+    {
+        AskForPermission();
+    }
+    
     private void RecordEvent(string eventName)
     {
         if (hasPermission)
@@ -123,7 +148,5 @@ public class AnalyticsManager : BaseManager
     {
         if (!canAskPermission) return;
         ManagersLoader.UI.AnalyticsPermissionPopup();
-        canAskPermission = false;
-        SavePermission();
     }
 }

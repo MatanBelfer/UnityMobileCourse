@@ -26,7 +26,7 @@ public class UIManager : BaseManager
 
     public void AnalyticsPermissionPopup()
     {
-        print("Opening analytics permission popup");
+        dataPermissionPopup.SetActive(true);
     }
    
     public void Awake()
