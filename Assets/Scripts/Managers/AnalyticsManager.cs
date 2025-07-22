@@ -105,13 +105,13 @@ public class AnalyticsManager : BaseManager
     /// <summary>
     /// Test
     /// </summary>
-    public void Update()
-    {
-        if (Random.value < 0.05f)
-        {
-            ReadPermission();
-        }
-    }
+    // public void Update()
+    // {
+    //     if (Random.value < 0.05f)
+    //     {
+    //         ReadPermission();
+    //     }
+    // }
 
     private void SavePermission()
     {
