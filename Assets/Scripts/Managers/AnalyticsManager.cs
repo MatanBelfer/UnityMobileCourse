@@ -4,42 +4,38 @@ using System.Threading.Tasks;
 using Unity.Services.Analytics;
 using Unity.Services.Core;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class AnalyticsManager : BaseManager
 {
-    private PermissionSettings permissionSettings;
+    private bool hasPermission;
+    private bool canAskPermission;
+    private string playerPrefs_hasPermission = "analyticsPermission";
+    private string playerPrefs_askPermission = "analyticsAskPermission";
     private string permissionPath;
 
     /// <summary>
-    /// This should be called by the permission popup and settings menu 
+    /// Reads permission from playerprefs and starts/stops data collection accordingly. When permission is denied, requests data deletion. 
     /// </summary>
-    /// <param name="permission"></param>
-    public void SetPermission(bool permission)
+    public void UpdatePermission()
     {
-        if (permission)
+        ReadPermission();
+        if (hasPermission)
         {
             AnalyticsService.Instance.StartDataCollection();
         }
         else
         {
             AnalyticsService.Instance.StopDataCollection();
+            AnalyticsService.Instance.RequestDataDeletion();
         }
-    }
-
-    /// <summary>
-    /// This should be called by the permission popup and settings menu 
-    /// </summary>
-    public void RequestDataDeletion()
-    {
-        SetPermission(false);
-        AnalyticsService.Instance.RequestDataDeletion();
     }
     
     protected override void OnInitialize()
     {
         permissionPath = Application.persistentDataPath + "/permission.json";
         ReadPermission();
-        print($"Permission set to {permissionSettings.hasPermission}");
+        print($"Permission set to {hasPermission}");
         
         //Subscribe to events to log them
         ManagersLoader.Game.OnHitBySpike += () => RecordEvent("playerLostToSpike");
@@ -50,7 +46,7 @@ public class AnalyticsManager : BaseManager
 
     private void RecordEvent(string eventName)
     {
-        if (permissionSettings.hasPermission)
+        if (hasPermission)
         {
             AnalyticsService.Instance.RecordEvent(eventName);
             print($"Recorded {eventName}");
@@ -64,10 +60,7 @@ public class AnalyticsManager : BaseManager
     private async Task InitializeServicesAndStartCollection()
     {
         await UnityServices.InitializeAsync();
-        if (permissionSettings.hasPermission)
-        {
-            AnalyticsService.Instance.StartDataCollection();
-        }
+        UpdatePermission();
     }
 
     protected override void OnReset()
@@ -85,34 +78,54 @@ public class AnalyticsManager : BaseManager
     /// </summary>
     private void ReadPermission()
     {
-        string file;
-        try
+        bool haskey = PlayerPrefs.HasKey(playerPrefs_hasPermission);
+        print($"Has key: {haskey}");
+        if (haskey)
         {
-            file = File.ReadAllText(permissionPath);
-            permissionSettings = JsonUtility.FromJson<PermissionSettings>(file);
+            hasPermission = PlayerPrefs.GetInt(playerPrefs_hasPermission) == 1;
         }
-        catch (FileNotFoundException)
+        else
         {
-            permissionSettings = new PermissionSettings();
-            permissionSettings.hasPermission = false;
-            permissionSettings.askPermission = true;
+            hasPermission = false;
+            PlayerPrefs.SetInt(playerPrefs_hasPermission, 0);
         }
-        catch (Exception)
+
+        if (PlayerPrefs.HasKey(playerPrefs_askPermission))
         {
-            Debug.LogWarning("Unexpected exception when trying to read file");
-            throw;       
+            canAskPermission = PlayerPrefs.GetInt(playerPrefs_askPermission) == 1;
+        }
+        else
+        {
+            canAskPermission = true;
+            PlayerPrefs.SetInt(playerPrefs_askPermission, 1);
+        }
+
+        print($"Permission read as {hasPermission}");
+    }
+
+    /// <summary>
+    /// Test
+    /// </summary>
+    public void Update()
+    {
+        if (Random.value < 0.05f)
+        {
+            ReadPermission();
         }
     }
 
     private void SavePermission()
     {
-        string json = JsonUtility.ToJson(permissionSettings);
-        File.WriteAllText(permissionPath, json);
+        PlayerPrefs.SetInt(playerPrefs_hasPermission, hasPermission ? 1 : 0);
+        PlayerPrefs.SetInt(playerPrefs_askPermission, canAskPermission ? 1 : 0);
     }
 
     private void AskForPermission()
     {
+        if (!canAskPermission) return;
         ManagersLoader.UI.AnalyticsPermissionPopup();
+        canAskPermission = false;
+        SavePermission();
     }
 
     class PermissionSettings

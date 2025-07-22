@@ -5,17 +5,24 @@ using UnityEngine.UI;
 using Unity.Mathematics;
 
 
+public enum SettingType
+{
+    NA,
+    ControlScheme,
+    Difficulty,
+    DataCollectionPermission
+}
+
 public enum UIInputMethod
 {
     Slider,
     Toggle
 }
 
-public enum SettingType
+public enum DataCollectionPermission
 {
-    NA,
-    ControlScheme,
-    Difficulty
+    Allowed,
+    NotAllowed
 }
 
 public class SettingsItem : MonoBehaviour
@@ -30,11 +37,13 @@ public class SettingsItem : MonoBehaviour
     public bool saveAsInt => settingType != SettingType.NA;
     
     
-    [Header("Children")]
+    [Header("Heirarchy")]
     [SerializeField] private TMP_Text valueText;
     [SerializeField] private GameObject uiInputObject; //slider or toggle
     private MonoBehaviour inputComponent; // the actual component reference        
     public UIInputMethod uiInputMethod {private set; get;}
+
+    public SettingsMenu settingsMenu;
     
 
     public void Awake()
@@ -42,17 +51,19 @@ public class SettingsItem : MonoBehaviour
         //set uiInputMethod
         
         inputComponent = (MonoBehaviour)uiInputObject.GetComponent(typeof(Slider));
-        if (inputComponent)
+        if (inputComponent is Slider slider)
         {
             uiInputMethod = UIInputMethod.Slider;
-            (inputComponent as Slider).onValueChanged.AddListener(SetValueFloat);
+            slider.onValueChanged.AddListener(SetValueFloat);
+            slider.onValueChanged.AddListener(_ => settingsMenu.SaveSettings());
             return;
         }
         inputComponent = (MonoBehaviour)uiInputObject.GetComponent(typeof(Toggle));
-        if (inputComponent)
+        if (inputComponent is Toggle toggle)
         {
             uiInputMethod = UIInputMethod.Toggle;
-            (inputComponent as Toggle).onValueChanged.AddListener(SetValueBool);
+            toggle.onValueChanged.AddListener(SetValueBool);
+            toggle.onValueChanged.AddListener(_ => settingsMenu.SaveSettings());
         }
         else
         {
@@ -81,6 +92,13 @@ public class SettingsItem : MonoBehaviour
                     return difficulty.GetName();
                 }
                 throw new Exception($"Difficulty value is not a float: {value}");
+            case SettingType.DataCollectionPermission:
+                if (value is float f3)
+                {
+                    DataCollectionPermission permission = (DataCollectionPermission)(int)math.round(f3);
+                    return permission.GetName();
+                }
+                throw new Exception($"DataCollectionPermission value is not a float: {value}");
             default:
                 throw new ArgumentOutOfRangeException();
         }

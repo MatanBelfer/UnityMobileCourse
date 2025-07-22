@@ -27,4 +27,17 @@ public static class Extensions
 				return "Unknown";
 		}
 	}
+	
+	public static string GetName(this DataCollectionPermission permission)
+	{
+		switch (permission)
+		{
+			case DataCollectionPermission.Allowed:
+				return "Allowed";
+			case DataCollectionPermission.NotAllowed:
+				return "Not Allowed (data deleted)";
+			default:
+				return "Unknown";
+		}
+	}
 }
