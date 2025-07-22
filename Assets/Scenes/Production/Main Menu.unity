@@ -388,55 +388,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 26068184}
   m_CullTransparentMesh: 1
---- !u!1 &62882631
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 62882633}
-  - component: {fileID: 62882632}
-  m_Layer: 0
-  m_Name: Shop Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &62882632
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 62882631}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b88abfd9aebecf41a643f9462055484, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  money: 0
-  shopPanel: {fileID: 789069382}
-  shopItemPrefab: {fileID: 3503208305798190736, guid: a1df450daf2432941bee8ef8ae75acd9, type: 3}
-  testMode: 0
-  title: {fileID: 1460817703}
---- !u!4 &62882633
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 62882631}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 217.18968, y: 505.9708, z: -18.136026}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2697564745998058472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &125953838
 GameObject:
   m_ObjectHideFlags: 0
@@ -1573,6 +1524,7 @@ MonoBehaviour:
   settingType: 2
   valueText: {fileID: 1763454050}
   uiInputObject: {fileID: 981350380}
+  settingsMenu: {fileID: 0}
 --- !u!114 &928835042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2949,17 +2901,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3159387231938915882, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
   m_PrefabInstance: {fileID: 1445620591}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1460817703 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1102648597559469107, guid: 9f143fbb031f45a479bb8b8bc1a75015, type: 3}
-  m_PrefabInstance: {fileID: 1808654760}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1481571705
 GameObject:
   m_ObjectHideFlags: 0
@@ -4239,6 +4180,7 @@ MonoBehaviour:
   settingType: 3
   valueText: {fileID: 1916601034}
   uiInputObject: {fileID: 2069555499}
+  settingsMenu: {fileID: 0}
 --- !u!114 &2098646043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4805,9 +4747,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 25619795}
-    - targetCorrespondingSourceObject: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 62882633}
     - targetCorrespondingSourceObject: {fileID: 6444617434557696600, guid: 2111d82aeadb1c34fa5660bd04757c7f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 546912441}

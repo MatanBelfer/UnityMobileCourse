@@ -79,7 +79,6 @@ public class AnalyticsManager : BaseManager
     private void ReadPermission()
     {
         bool haskey = PlayerPrefs.HasKey(playerPrefs_hasPermission);
-        print($"Has key: {haskey}");
         if (haskey)
         {
             hasPermission = PlayerPrefs.GetInt(playerPrefs_hasPermission) == 1;
@@ -100,7 +99,7 @@ public class AnalyticsManager : BaseManager
             PlayerPrefs.SetInt(playerPrefs_askPermission, 1);
         }
 
-        print($"Permission read as {hasPermission}");
+        print($"permission read as {hasPermission}");
     }
 
     /// <summary>
@@ -126,11 +125,5 @@ public class AnalyticsManager : BaseManager
         ManagersLoader.UI.AnalyticsPermissionPopup();
         canAskPermission = false;
         SavePermission();
-    }
-
-    class PermissionSettings
-    {
-        public bool hasPermission;
-        public bool askPermission;
     }
 }

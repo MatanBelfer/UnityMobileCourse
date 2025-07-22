@@ -33,9 +33,9 @@ public static class Extensions
 		switch (permission)
 		{
 			case DataCollectionPermission.Allowed:
-				return "Allowed";
-			case DataCollectionPermission.NotAllowed:
 				return "Not Allowed (data deleted)";
+			case DataCollectionPermission.NotAllowed:
+				return "Allowed";
 			default:
 				return "Unknown";
 		}
