@@ -20,7 +20,7 @@ public class UIManager : BaseManager
     [InspectorLabel("Screenshot Camera")] [SerializeField]
     private Camera screenshotCamera;
     [SerializeField] private RewardPopup rewardPopup;
-    [SerializeField] private GraphicRaycaster mainMenuRaycaster;
+    [SerializeField] private GameObject dataPermissionPopup;
     
     public bool isPauseMenuOpen { get; private set; }
 
