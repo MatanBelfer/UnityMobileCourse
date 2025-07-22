@@ -99,7 +99,7 @@ public class AnalyticsManager : BaseManager
             PlayerPrefs.SetInt(playerPrefs_askPermission, 1);
         }
 
-        print($"permission read as {hasPermission}");
+        // print($"permission read as {hasPermission}");
     }
 
     /// <summary>
