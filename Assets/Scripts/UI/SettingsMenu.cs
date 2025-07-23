@@ -8,17 +8,26 @@ public class SettingsMenu : MonoBehaviour
     
     [Header("References")]
     [SerializeField] private MainMenuCallbacks mainMenu;
-    [SerializeField] private InputSystemManager inputManager;
 
     private void Start()
     {
         settingsItems = GetComponentsInChildren<SettingsItem>();
+
+        foreach (var item in settingsItems)
+        {
+            item.settingsMenu = this;
+        }
         
         LoadSettings();
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
-        
-        inputManager = ManagersLoader.Input;
+        AnalyticsManager analyticsManager = ManagersLoader.Analytics;
+        print($"analytics manager is null: {analyticsManager == null}");
+        if (analyticsManager)
+        {
+            AfterSaveSettings = null;
+            AfterSaveSettings += analyticsManager.UpdatePermission;
+        }
 
         SceneManager.sceneLoaded += (_,_) => LoadSettings();
     }
@@ -51,14 +60,12 @@ public class SettingsMenu : MonoBehaviour
     public void CloseMenu()
     {
         SaveSettings();
-        if (inputManager)
-        {
-            inputManager.LoadControlScheme();
-        }
+        ManagersLoader.Input.LoadControlScheme();
         gameObject.SetActive(false);
     }
 
-    private void SaveSettings()
+    public event Action AfterSaveSettings;
+    public void SaveSettings()
     {
         foreach (var item in settingsItems)
         {
@@ -79,5 +86,7 @@ public class SettingsMenu : MonoBehaviour
                 PlayerPrefs.SetString(prefsName, value ? "True" : "False");
             }
         }
+        
+        AfterSaveSettings?.Invoke();
     }
 }

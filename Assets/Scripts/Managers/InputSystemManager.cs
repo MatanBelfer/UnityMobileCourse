@@ -100,11 +100,11 @@ public class InputSystemManager : BaseManager
 
             _inputActions.PinMovement.Click.canceled += OnClickEnded;
             _isInputEnabled = true;
-            Debug.Log($"Input enabled for InputSystemManager controlScheme: {controlScheme}");
+            // Debug.Log($"Input enabled for InputSystemManager controlScheme: {controlScheme}");
         }
         else
         {
-            Debug.Log("Input already enabled for InputSystemManager");
+            // Debug.Log("Input already enabled for InputSystemManager");
             DisableInput(controlScheme == ControlScheme.DragAndDrop
                 ? ControlScheme.TapTap
                 : ControlScheme.DragAndDrop);
@@ -136,7 +136,7 @@ public class InputSystemManager : BaseManager
 
             _inputActions.PinMovement.Disable();
             _isInputEnabled = false;
-            Debug.Log("Input disabled for InputSystemManager");
+            // Debug.Log("Input disabled for InputSystemManager");
         }
     }
 

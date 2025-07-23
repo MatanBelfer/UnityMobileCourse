@@ -17,7 +17,7 @@ public class LoseOnTouchPin : MonoBehaviour
         
         if (parent.CompareTag("Pin"))
         {
-            ManagersLoader.Game.RestartLevel();
+            ManagersLoader.Game.PinFellOffScreen();
         }
     }
 }

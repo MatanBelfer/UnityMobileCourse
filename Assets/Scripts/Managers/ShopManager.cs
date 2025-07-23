@@ -27,7 +27,7 @@ public class ShopManager : BaseManager
 
     protected override void OnInitialize()
     {
-        print("Shop Manager initialized");
+        // print("Shop Manager initialized");
         LoadShopItems();
         InstantiateShopItems();
     }
@@ -50,15 +50,16 @@ public class ShopManager : BaseManager
         var skinAssetArray = Resources.LoadAll<SkinAsset>("Skins");
         skins = skinAssetArray.ToDictionary(skin => skin.name);
         string path = Application.persistentDataPath + saveDataPath;
+        PlayerShopData playerShopData = null;
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            PlayerShopData playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
+            playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
             savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
             money = playerShopData.money;
 //            print($"loaded shop items from {path}");
         }
-        else
+        if (playerShopData == null)
         {
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
             money = 0;
