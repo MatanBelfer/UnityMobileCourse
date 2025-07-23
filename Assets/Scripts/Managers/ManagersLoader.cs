@@ -16,8 +16,9 @@ public class ManagersLoader : MonoBehaviour
     public static GameManager Game { get; private set; }
     public static InputSystemManager Input { get; private set; }
     public static AnalyticsManager Analytics { get; private set; }
-    
     public static AudioManager Audio { get; private set; }
+    
+
     
     
     // Dictionary for dynamic scene manager access

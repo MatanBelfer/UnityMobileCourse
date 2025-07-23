@@ -143,10 +143,11 @@ public class DebugManager : BaseManager
             debugPanel.SetActive(isDebugMenuOpen);
         }
 
-        // Pause the game when debug menu is open
+        // Pause the game when debug menu is open without showing pause menu
         if (gameManager != null)
         {
-            gameManager.SetPause(isDebugMenuOpen);
+            // Set the game's time scale directly instead of using SetPause
+            Time.timeScale = isDebugMenuOpen ? 0f : 1f;
         }
 
         // Update UI values when opening
