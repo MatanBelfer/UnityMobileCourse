@@ -15,6 +15,7 @@ public class ManagersLoader : MonoBehaviour
     public static UIManager UI { get; private set; }
     public static GameManager Game { get; private set; }
     public static InputSystemManager Input { get; private set; }
+    public static AnalyticsManager Analytics { get; private set; }
     
     public static AudioManager Audio { get; private set; }
     
@@ -48,21 +49,11 @@ public class ManagersLoader : MonoBehaviour
         // Initialize scene managers for current scene
         RefreshSceneManagers();
 
-        // Initialize Analytic
-        InitializeAnalytics();
-
         IsInitialized = true;
-
+        
         //Debug.Log("ManagersLoader initialized successfully!");
     }
 
-
-    public async void  InitializeAnalytics()
-    {
-        await UnityServices.InitializeAsync();
-        AnalyticsService.Instance.StartDataCollection();
-        CustomEventSample.RecordCustomEventWithParameters();
-    }
     private void InitializeCoreManagers()
     {
         //Debug.Log("Initializing Core Managers...");
@@ -74,6 +65,7 @@ public class ManagersLoader : MonoBehaviour
             UI = coreManagers.OfType<UIManager>().FirstOrDefault();
             Game = coreManagers.OfType<GameManager>().FirstOrDefault();
             Input = coreManagers.OfType<InputSystemManager>().FirstOrDefault();
+            Analytics = coreManagers.OfType<AnalyticsManager>().FirstOrDefault();
             Audio = coreManagers.OfType<AudioManager>().FirstOrDefault();
         }
         

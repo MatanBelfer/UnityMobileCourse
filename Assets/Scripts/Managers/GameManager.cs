@@ -71,6 +71,20 @@ public class GameManager : BaseManager
         SetPause(false);
     }
 
+    public event Action OnHitBySpike;
+    public void HitBySpike()
+    {
+        OnHitBySpike?.Invoke();
+        RestartLevel();
+    }
+    
+    public event Action OnPinFellOffScreen;
+    public void PinFellOffScreen()
+    {
+        OnPinFellOffScreen?.Invoke();
+        RestartLevel();
+    }
+
     public void RestartLevel()
     {
         OnRestartLevel?.Invoke();
