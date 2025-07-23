@@ -16,6 +16,9 @@ public class ManagersLoader : MonoBehaviour
     public static GameManager Game { get; private set; }
     public static InputSystemManager Input { get; private set; }
     public static AnalyticsManager Analytics { get; private set; }
+    public static AudioManager Audio { get; private set; }
+    
+
     
     
     // Dictionary for dynamic scene manager access
@@ -64,6 +67,7 @@ public class ManagersLoader : MonoBehaviour
             Game = coreManagers.OfType<GameManager>().FirstOrDefault();
             Input = coreManagers.OfType<InputSystemManager>().FirstOrDefault();
             Analytics = coreManagers.OfType<AnalyticsManager>().FirstOrDefault();
+            Audio = coreManagers.OfType<AudioManager>().FirstOrDefault();
         }
         
         // Initialize ObjectPool first (other managers depend on it)

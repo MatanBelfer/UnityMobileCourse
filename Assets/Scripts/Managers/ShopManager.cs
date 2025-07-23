@@ -57,10 +57,11 @@ public class ShopManager : BaseManager
             playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
             savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
             money = playerShopData.money;
-//            print($"loaded shop items from {path}");
+            print($"loaded shop items from {path}");
         }
         if (playerShopData == null)
         {
+            Debug.LogWarning($"No saved shop data found at {path}");
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
             money = 0;
         }
