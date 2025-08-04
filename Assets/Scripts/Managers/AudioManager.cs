@@ -303,12 +303,7 @@ public class AudioManager : BaseManager
             dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
         }
         
-        audioMixer.GetFloat("MasterVolume", out float masterVolume);
-        print($"master volume was {masterVolume}dB");
-        print($"setting master volume to {dbValue}dB");
         audioMixer.SetFloat("MasterVolume", dbValue);
-        audioMixer.GetFloat("MasterVolume", out masterVolume);
-        print($"master volume is {masterVolume}");
     }
     
     private void SetMusicVolume(float volume)
