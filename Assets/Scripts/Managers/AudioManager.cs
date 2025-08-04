@@ -54,13 +54,19 @@ public class AudioManager : BaseManager
         //Connect music audio source to mixer
         musicSource.outputAudioMixerGroup = audioMixer.FindMatchingGroups("BGM")[0];
         
-        // Load saved audio settings
-        LoadAudioSettings();
+        // Load saved audio settings after one frame delay
+        StartCoroutine(LoadAudioSettingsDelayed());
         
         // Listen for scene changes to handle music transitions
         SceneManager.sceneLoaded += OnSceneLoaded;
         
 //        Debug.Log($"AudioManager initialized with {sounds.Count} sounds and {audioSettings.sfxPoolSize} SFX sources");
+    }
+
+    private IEnumerator LoadAudioSettingsDelayed()
+    {
+        yield return null;
+        LoadAudioSettings();
     }
 
     protected override void OnReset()
