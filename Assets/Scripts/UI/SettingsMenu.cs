@@ -52,8 +52,8 @@ public class SettingsMenu : MonoBehaviour
             }
             else if (item.uiInputMethod == UIInputMethod.Slider)
             {
-                float value = PlayerPrefs.GetFloat(prefsName);
-                print($"setting value {value} from {prefsName}");
+  //              float value = PlayerPrefs.GetFloat(prefsName);
+//                print($"setting value {value} from {prefsName}");
                 item.SetValueFloat(PlayerPrefs.GetFloat(prefsName));
             }
             else if (item.uiInputMethod == UIInputMethod.Toggle)

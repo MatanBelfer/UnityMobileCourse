@@ -42,9 +42,9 @@ public class PinLogic : MonoBehaviour
 
         GridPoint _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
 
-        Debug.Log($"Target world position: {worldPosition}");
-        Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
-        Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
+//        Debug.Log($"Target world position: {worldPosition}");
+//        Debug.Log($"Closest point found: {landingPoint.name} at position: {landingPoint.position}");
+//        Debug.Log($"Is closest point blocked: {_gridLandingPoint.isBlocked}");
 
         if (_gridLandingPoint == _currentGridPoint)
         {
@@ -164,7 +164,7 @@ public class PinLogic : MonoBehaviour
 
     public void StopFollowingPin()
     {
-        Debug.Log("inside stop following pin method pin: {" + name + "}");
+//        Debug.Log("inside stop following pin method pin: {" + name + "}");
 
 
         Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(transform.position);

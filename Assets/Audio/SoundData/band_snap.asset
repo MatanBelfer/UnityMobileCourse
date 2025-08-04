@@ -10,17 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 109ce6c5b5eaea047874306596d4c70f, type: 3}
-  m_Name: gameplay_music
+  m_Name: band_snap
   m_EditorClassIdentifier: 
-  audioClips: []
+  audioClips:
+  - {fileID: 8300000, guid: e44b0f60f30c2a447844ae0f108cf859, type: 3}
   volume: 1
   pitch: 1
   volumeVariance: 0.1
   pitchVariance: 0.1
   loop: 0
-  is3D: 0
-  spatialBlend: 0
-  minDistance: 1
-  maxDistance: 20
   preload: 1
   loadType: 0

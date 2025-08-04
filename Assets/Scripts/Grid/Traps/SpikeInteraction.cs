@@ -9,13 +9,14 @@ public class SpikeInteraction : MonoBehaviour
     public void Start()
     {
         OnTouchSpike += ManagersLoader.Game.HitBySpike;
+        OnTouchSpike += () => ManagersLoader.Audio.PlaySFX("band_snap");
     }
     
     public void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Spike"))
         {
-            print("Restarting scene");
+            // print("Restarting scene");
             
             // Use the new dynamic scene manager access
             var rubberBand = ManagersLoader.GetSceneManager<GeometricRubberBand>();
@@ -37,6 +38,7 @@ public class SpikeInteraction : MonoBehaviour
             }
 
             OnTouchSpike?.Invoke();
+            print("Invoked OnTouchSpike");
 
         }
     }

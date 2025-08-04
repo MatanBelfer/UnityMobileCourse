@@ -13,12 +13,6 @@ public class SoundData : ScriptableObject
     [Range(0f, 0.5f)] public float pitchVariance = 0.1f;
     public bool loop = false;
     
-    [Header("3D Audio")]
-    public bool is3D = false;
-    [Range(0f, 1f)] public float spatialBlend = 0f;
-    public float minDistance = 1f;
-    public float maxDistance = 20f;
-    
     [Header("Mobile Performance")]
     public bool preload = true;
     public AudioClipLoadType loadType = AudioClipLoadType.DecompressOnLoad;
