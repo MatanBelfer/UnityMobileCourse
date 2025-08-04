@@ -21,19 +21,23 @@ public class SettingsMenu : MonoBehaviour
         LoadSettings();
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
+        
+        AfterSaveSettings = null;
+        
         AnalyticsManager analyticsManager = ManagersLoader.Analytics;
         if (analyticsManager)
         {
-            AfterSaveSettings = null;
             AfterSaveSettings += analyticsManager.UpdatePermission;
         }
+        
+        AfterSaveSettings += ManagersLoader.Audio.LoadAudioSettings;
 
         SceneManager.sceneLoaded += (_,_) => LoadSettings();
     }
 
     private void LoadSettings()
     {
-        print("Loading settings");
+//        print("Loading settings");
         
         foreach (var item in settingsItems)
         {
@@ -81,7 +85,7 @@ public class SettingsMenu : MonoBehaviour
             {
                 float value = item.GetValue<float>();
                 PlayerPrefs.SetFloat(prefsName, value);
-                print($"Saved {prefsName} as {value}");
+//                print($"Saved {prefsName} as {value}");
             }
             else if (item.uiInputMethod == UIInputMethod.Toggle)
             {

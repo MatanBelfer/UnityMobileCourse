@@ -25,7 +25,7 @@ public class DebugManager : BaseManager
 
     protected override void OnInitialize()
     {
-        Debug.Log("DebugManager: Initializing...");
+//        Debug.Log("DebugManager: Initializing...");
         gameManager = ManagersLoader.Game;
         
         // Initialize input actions
@@ -42,7 +42,7 @@ public class DebugManager : BaseManager
         if (debugButton != null)
         {
             debugButton.onClick.AddListener(OnClickDebugBTN);
-            Debug.Log("DebugManager: Debug button listener added");
+//            Debug.Log("DebugManager: Debug button listener added");
         }
         else
         {

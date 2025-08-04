@@ -116,7 +116,7 @@ public class SettingsItem : MonoBehaviour
 
     public void SetValueFloat(float value)
     {
-        print($"Set value triggered for {playerPrefsName}");
+//        print($"Set value triggered for {playerPrefsName}");
         SetValue<float>(value);
     }
 

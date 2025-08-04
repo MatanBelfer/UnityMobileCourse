@@ -57,7 +57,7 @@ public class ShopManager : BaseManager
             playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
             savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
             money = playerShopData.money;
-            print($"loaded shop items from {path}");
+//            print($"loaded shop items from {path}");
         }
         if (playerShopData == null)
         {
@@ -77,7 +77,7 @@ public class ShopManager : BaseManager
 
         if (shopPanel == null)
         {
-            Debug.LogError("Shop panel is not assigned!");
+//            Debug.LogError("Shop panel is not assigned!");
             return;
         }
 

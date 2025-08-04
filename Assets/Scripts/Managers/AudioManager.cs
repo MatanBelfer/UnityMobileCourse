@@ -40,7 +40,7 @@ public class AudioManager : BaseManager
     
     protected override void OnInitialize()
     {
-        Debug.Log("AudioManager initialized");
+//        Debug.Log("AudioManager initialized");
         
         // Build sound dictionary
         foreach (var soundData in soundLibrary)
@@ -60,7 +60,7 @@ public class AudioManager : BaseManager
         // Listen for scene changes to handle music transitions
         SceneManager.sceneLoaded += OnSceneLoaded;
         
-        Debug.Log($"AudioManager initialized with {sounds.Count} sounds and {audioSettings.sfxPoolSize} SFX sources");
+//        Debug.Log($"AudioManager initialized with {sounds.Count} sounds and {audioSettings.sfxPoolSize} SFX sources");
     }
 
     protected override void OnReset()
@@ -95,7 +95,7 @@ public class AudioManager : BaseManager
     
     public void PlayMusic(string musicName, bool fadeIn = true)
     {
-        print("Playing music");
+//        print("Playing music");
         if (!sounds.ContainsKey(musicName))
         {
             Debug.LogWarning($"Music track '{musicName}' not found in sound library");
@@ -152,7 +152,7 @@ public class AudioManager : BaseManager
         musicSource.pitch = musicData.pitch;
         musicSource.loop = musicData.loop;
         musicSource.Play();
-        print($"playing {clip.name}");
+//        print($"playing {clip.name}");
     }
     
     private IEnumerator FadeInMusic(AudioClip clip, SoundData musicData)
@@ -285,7 +285,7 @@ public class AudioManager : BaseManager
     
     #region Volume Controls
     
-    public void SetMasterVolume(float volume)
+    private void SetMasterVolume(float volume)
     {
         float dbValue;
         if (volume == 0)
@@ -297,10 +297,15 @@ public class AudioManager : BaseManager
             dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
         }
         
+        audioMixer.GetFloat("MasterVolume", out float masterVolume);
+        print($"master volume was {masterVolume}dB");
+        print($"setting master volume to {dbValue}dB");
         audioMixer.SetFloat("MasterVolume", dbValue);
+        audioMixer.GetFloat("MasterVolume", out masterVolume);
+        print($"master volume is {masterVolume}");
     }
     
-    public void SetMusicVolume(float volume)
+    private void SetMusicVolume(float volume)
     {
         float dbValue;
         if (volume == 0)
@@ -315,7 +320,7 @@ public class AudioManager : BaseManager
         audioMixer.SetFloat("MusicVolume", dbValue);
     }
     
-    private void LoadAudioSettings()
+    public void LoadAudioSettings()
     {
         SetMasterVolume(PlayerPrefs.GetFloat("masterVol", audioSettings.defaultMasterVolume));
         SetMusicVolume(PlayerPrefs.GetFloat("musicVol", audioSettings.defaultMusicVolume));
