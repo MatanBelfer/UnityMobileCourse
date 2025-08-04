@@ -26,8 +26,11 @@ public class AudioManager : BaseManager
     private Coroutine musicFadeCoroutine;
     private string currentMusicTrack = "";
     
-    // Static access through ManagersLoader
-    public static AudioManager Instance => ManagersLoader.GetSceneManager<AudioManager>();
+    //Test
+    public void Start()
+    {
+        PlayMusic("menu_music", true);
+    }
     
     protected override void OnInitialize()
     {
@@ -42,6 +45,9 @@ public class AudioManager : BaseManager
         // Create SFX source pool for better performance
         CreateSFXPool();
         
+        //Connect music audio source to mixer
+        musicSource.outputAudioMixerGroup = audioMixer.FindMatchingGroups("BGM")[0];
+        
         // Load saved audio settings
         LoadAudioSettings();
         
@@ -50,7 +56,6 @@ public class AudioManager : BaseManager
         
         Debug.Log($"AudioManager initialized with {sounds.Count} sounds and {audioSettings.sfxPoolSize} SFX sources");
     }
-    
 
     protected override void OnReset()
     {
@@ -84,6 +89,7 @@ public class AudioManager : BaseManager
     
     public void PlayMusic(string musicName, bool fadeIn = true)
     {
+        print("Playing music");
         if (!sounds.ContainsKey(musicName))
         {
             Debug.LogWarning($"Music track '{musicName}' not found in sound library");
@@ -140,6 +146,7 @@ public class AudioManager : BaseManager
         musicSource.pitch = musicData.pitch;
         musicSource.loop = musicData.loop;
         musicSource.Play();
+        print($"playing {clip.name}");
     }
     
     private IEnumerator FadeInMusic(AudioClip clip, SoundData musicData)
@@ -208,28 +215,6 @@ public class AudioManager : BaseManager
         {
             PlaySoundOnSource(source, soundData, volumeMultiplier);
         }
-    }
-    
-    public void PlaySFX3D(string soundName, Vector3 position, float volumeMultiplier = 1f)
-    {
-        if (!sounds.ContainsKey(soundName)) return;
-        
-        SoundData soundData = sounds[soundName];
-        
-        // Create temporary 3D audio source
-        GameObject tempAudio = new GameObject($"3D_Audio_{soundName}");
-        tempAudio.transform.position = position;
-        
-        AudioSource source = tempAudio.AddComponent<AudioSource>();
-        source.spatialBlend = soundData.is3D ? soundData.spatialBlend : 1f;
-        source.minDistance = soundData.minDistance;
-        source.maxDistance = soundData.maxDistance;
-        source.outputAudioMixerGroup = audioMixer.FindMatchingGroups("SFX")[0];
-        
-        PlaySoundOnSource(source, soundData, volumeMultiplier);
-        
-        // Clean up after sound finishes
-        StartCoroutine(CleanupTempAudioSource(tempAudio, soundData.GetRandomClip().length));
     }
     
     private AudioSource GetSFXSource()
