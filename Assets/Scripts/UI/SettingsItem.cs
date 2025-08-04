@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine.UI;
 using Unity.Mathematics;
@@ -55,7 +56,7 @@ public class SettingsItem : MonoBehaviour
         {
             uiInputMethod = UIInputMethod.Slider;
             slider.onValueChanged.AddListener(SetValueFloat);
-            slider.onValueChanged.AddListener(_ => settingsMenu.SaveSettings());
+            slider.onValueChanged.AddListener(_ => StartCoroutine(SaveSettingsNextFrame()));
             return;
         }
         inputComponent = (MonoBehaviour)uiInputObject.GetComponent(typeof(Toggle));
@@ -63,12 +64,21 @@ public class SettingsItem : MonoBehaviour
         {
             uiInputMethod = UIInputMethod.Toggle;
             toggle.onValueChanged.AddListener(SetValueBool);
-            toggle.onValueChanged.AddListener(_ => settingsMenu.SaveSettings());
+            toggle.onValueChanged.AddListener(_ => StartCoroutine(SaveSettingsNextFrame()));
         }
         else
         {
             Debug.LogError("UIInputObject must be a slider or toggle");
         }
+    }
+
+    /// <summary>
+    /// Waits one frame then orders SettingsMenu to save settings
+    /// </summary>
+    private IEnumerator SaveSettingsNextFrame()
+    {
+        yield return null;
+        settingsMenu.SaveSettings();
     }
 
     public string GetValueName<T>(T value) where T : struct
@@ -103,53 +113,10 @@ public class SettingsItem : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
-    // private void InitializeGetValueName()
-    // {
-    //     //set the GetValueName function
-    //     switch (settingType)
-    //     {
-    //         case SettingType.NA:
-    //             GetValueName = v => v.ToString();
-    //             break;
-    //         case SettingType.ControlScheme:
-    //             GetValueName = v =>
-    //             {
-    //                 if (v is float f) return ((ControlScheme)(int)math.round(f)).ToString();
-    //                 throw new Exception($"ControlScheme value is not an int: {v}");
-    //             };
-    //             break;
-    //         case SettingType.Difficulty:
-    //             throw new NotImplementedException();
-    //         default:
-    //             throw new ArgumentOutOfRangeException();
-    //     }
-    //     
-    //     // if (settingType == SettingType.NA || settingType.Length == 0)
-    //     // {
-    //     //     GetValueName = v => v.ToString();
-    //     // }
-    //     // else
-    //     // {
-    //     //     try
-    //     //     {
-    //     //         Type enumType = Type.GetType(settingType, true,  true);
-    //     //         GetValueName = v => Convert.ChangeType((int)v, enumType).ToString();
-    //     //         settingTypeIsValidEnum = true;
-    //     //     }
-    //     //     catch (TypeLoadException e)
-    //     //     {
-    //     //         Debug.LogWarning($"Possible typo in settingType: {settingType} .");
-    //     //     }
-    //     //     catch (Exception e)
-    //     //     {
-    //     //         Debug.LogWarning(e);
-    //     //     }
-    //     // }
-    // }
 
     public void SetValueFloat(float value)
     {
+        print($"Set value triggered for {playerPrefsName}");
         SetValue<float>(value);
     }
 

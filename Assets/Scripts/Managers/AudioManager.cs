@@ -32,6 +32,12 @@ public class AudioManager : BaseManager
         PlayMusic("menu_music", false);
     }
     
+    //Test
+    public void Update()
+    {
+        //print($"Playerprefs music volume: {PlayerPrefs.GetFloat("musicVol")}");
+    }
+    
     protected override void OnInitialize()
     {
         Debug.Log("AudioManager initialized");

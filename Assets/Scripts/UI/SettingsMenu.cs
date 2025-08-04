@@ -22,7 +22,6 @@ public class SettingsMenu : MonoBehaviour
         
         if (mainMenu != null) mainMenu.OnStartGame += CloseMenu;
         AnalyticsManager analyticsManager = ManagersLoader.Analytics;
-        print($"analytics manager is null: {analyticsManager == null}");
         if (analyticsManager)
         {
             AfterSaveSettings = null;
@@ -34,6 +33,8 @@ public class SettingsMenu : MonoBehaviour
 
     private void LoadSettings()
     {
+        print("Loading settings");
+        
         foreach (var item in settingsItems)
         {
             string prefsName = item.playerPrefsName;
@@ -47,7 +48,8 @@ public class SettingsMenu : MonoBehaviour
             }
             else if (item.uiInputMethod == UIInputMethod.Slider)
             {
-                //print($"setting from {prefsName}");
+                float value = PlayerPrefs.GetFloat(prefsName);
+                print($"setting value {value} from {prefsName}");
                 item.SetValueFloat(PlayerPrefs.GetFloat(prefsName));
             }
             else if (item.uiInputMethod == UIInputMethod.Toggle)
@@ -79,6 +81,7 @@ public class SettingsMenu : MonoBehaviour
             {
                 float value = item.GetValue<float>();
                 PlayerPrefs.SetFloat(prefsName, value);
+                print($"Saved {prefsName} as {value}");
             }
             else if (item.uiInputMethod == UIInputMethod.Toggle)
             {
