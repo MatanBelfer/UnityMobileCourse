@@ -92,6 +92,7 @@ MonoBehaviour:
   image: {fileID: 3059807920409050912}
   nameText: {fileID: 2594534140030875357}
   buyEquipText: {fileID: 2465780698836600854}
+  buyEquipBtn: {fileID: 8163684463951930344}
 --- !u!1 &3938400176322766155
 GameObject:
   m_ObjectHideFlags: 0
@@ -453,5 +454,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8163684463951930344 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5131881092862273415, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
+  m_PrefabInstance: {fileID: 3923516458136732783}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

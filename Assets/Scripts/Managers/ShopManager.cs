@@ -8,15 +8,18 @@ using System.Linq;
 public class ShopManager : BaseManager
 {
     [Header("Data")]
-    private Dictionary<string, SkinAsset> skins;
+    private Dictionary<string, SkinAsset> skins; //all existing skins
     private Dictionary<string, bool> savedPurchasedSkinsAreEquipped; // <skin name, is equipped> from json
+    private SkinShopItem equippedSkinShopItem; //shop item of the currently equipped skin
+    public SkinAsset equippedSkinAsset { get; private set; } //the skin that is currently equipped
     [SerializeField] private int money;
     private const string saveDataPath = "PurchasedSkins.json";
     private SkinShopItem[] shopItems;
 
     [Header("UI")] 
-    [SerializeField] [Tooltip("The object meant to be the parent of the shop items")] private GameObject shopPanel;
+    [SerializeField] [Tooltip("The object meant to be the parent of the shop items")] public GameObject shopPanel;
     [SerializeField] private GameObject shopItemPrefab;
+    public TMP_Text moneyText;
     
     [Header("Testing")] [SerializeField] private bool testMode;
     [SerializeField] private TMP_Text title;
@@ -90,20 +93,26 @@ public class ShopManager : BaseManager
         }
 
         shopItems = new SkinShopItem[skins.Count];
-        print(1);
+//        print(1);
         int index = 0;
         foreach (var skin in skins)
         {
-            print(skin.Value.displayName);
+//            print(skin.Value.displayName);
             GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
             SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
-            print($"Instantiating shop item {skin.Key}");
+  //          print($"Instantiating shop item {skin.Key}");
             
             if (itemData != null)
             {
                 bool purchased = savedPurchasedSkinsAreEquipped.ContainsKey(skin.Key);
                 bool equipped = purchased ? savedPurchasedSkinsAreEquipped[skin.Key] : false;
-                itemData.SetItemData(skin.Value, purchased, equipped);
+                itemData.SetItemData(skin.Key, skin.Value, purchased, equipped);
+
+                if (equipped)
+                {
+                    equippedSkinShopItem = itemData;
+                    equippedSkinAsset = skin.Value;
+                }
         
                 shopItems[index] = itemData;
             }
@@ -141,5 +150,85 @@ public class ShopManager : BaseManager
     public void AddMoney(int rewardAmount)
     {
         money += rewardAmount;
+    }
+
+    private void UpdateMoneyText()
+    {
+        moneyText.text = $"Money: {money}";
+    }
+
+    /// <summary>
+    /// Attempts purchase of an item
+    /// </summary>
+    /// <param name="shopItem">name in "skins" dictionary</param>
+    public void TryPurchase(SkinShopItem shopItem)
+    {
+        string identifier = shopItem.identifier;
+        int price = skins[identifier].price;
+
+        if (money < price)
+        {
+            print("Not enough money");
+            return;
+        }
+        
+        DoPurchase(identifier);
+        Equip(shopItem);
+
+        CheckItemState(identifier, out bool isPurchased, out bool isEquipped);
+        shopItem.UpdateShopItemState(isPurchased, isEquipped);
+    }
+
+    /// <summary>
+    /// Either equips or unequips item;
+    /// </summary>
+    public void Equip(SkinShopItem shopItem)
+    {
+        //first unequip the equipped item
+        if (equippedSkinShopItem) Unequip(equippedSkinShopItem);
+        
+        //then equip this one
+        if (!savedPurchasedSkinsAreEquipped.ContainsKey(shopItem.identifier))
+        {
+            Debug.LogWarning($"Attempted equip of a non purchased skin {shopItem.identifier}");
+        }
+        else
+        {
+            savedPurchasedSkinsAreEquipped[shopItem.identifier] = true;
+        }
+
+        equippedSkinShopItem = shopItem;
+        equippedSkinAsset = skins[shopItem.identifier];
+        
+        CheckItemState(shopItem.identifier, out bool isPurchased, out bool isEquipped);
+        shopItem.UpdateShopItemState(isPurchased, isEquipped);
+    }
+
+    public void Unequip(SkinShopItem shopItem)
+    {
+        equippedSkinShopItem = null;
+        equippedSkinAsset = null;
+        savedPurchasedSkinsAreEquipped[shopItem.identifier] = false;
+        
+        CheckItemState(shopItem.identifier, out bool isPurchased, out bool isEquipped);
+        shopItem.UpdateShopItemState(isPurchased, isEquipped);
+    }
+
+    private void CheckItemState(string identifier, out bool isPurchased, out bool isEquipped)
+    {
+        isPurchased = savedPurchasedSkinsAreEquipped.ContainsKey(identifier);
+        if (!isPurchased)
+        {
+            isEquipped = false;
+            return;
+        }
+        isEquipped = savedPurchasedSkinsAreEquipped[identifier];
+    }
+    
+    private void DoPurchase(string skinIdentifier)
+    {
+        money -= skins[skinIdentifier].price;
+        UpdateMoneyText();
+        savedPurchasedSkinsAreEquipped[skinIdentifier] = false; //saves it as bought 
     }
 }
