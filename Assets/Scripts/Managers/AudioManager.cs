@@ -29,7 +29,7 @@ public class AudioManager : BaseManager
     //Test
     public void Start()
     {
-        PlayMusic("menu_music", true);
+        PlayMusic("menu_music", false);
     }
     
     protected override void OnInitialize()
@@ -281,30 +281,38 @@ public class AudioManager : BaseManager
     
     public void SetMasterVolume(float volume)
     {
-        float dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+        float dbValue;
+        if (volume == 0)
+        {
+            dbValue = -80f;
+        }
+        else
+        {
+            dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+        }
+        
         audioMixer.SetFloat("MasterVolume", dbValue);
-        PlayerPrefs.SetFloat("MasterVolume", volume);
     }
     
     public void SetMusicVolume(float volume)
     {
-        float dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+        float dbValue;
+        if (volume == 0)
+        {
+            dbValue = -80f;
+        }
+        else
+        {
+            dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+        }
+        
         audioMixer.SetFloat("MusicVolume", dbValue);
-        PlayerPrefs.SetFloat("MusicVolume", volume);
-    }
-    
-    public void SetSFXVolume(float volume)
-    {
-        float dbValue = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
-        audioMixer.SetFloat("SFXVolume", dbValue);
-        PlayerPrefs.SetFloat("SFXVolume", volume);
     }
     
     private void LoadAudioSettings()
     {
-        SetMasterVolume(PlayerPrefs.GetFloat("MasterVolume", audioSettings.defaultMasterVolume));
-        SetMusicVolume(PlayerPrefs.GetFloat("MusicVolume", audioSettings.defaultMusicVolume));
-        SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", audioSettings.defaultSFXVolume));
+        SetMasterVolume(PlayerPrefs.GetFloat("masterVol", audioSettings.defaultMasterVolume));
+        SetMusicVolume(PlayerPrefs.GetFloat("musicVol", audioSettings.defaultMusicVolume));
     }
     
     #endregion
