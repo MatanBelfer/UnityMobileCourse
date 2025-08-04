@@ -14,7 +14,8 @@ public class ShopManager : BaseManager
     private const string saveDataPath = "PurchasedSkins.json";
     private SkinShopItem[] shopItems;
 
-    [Header("UI")] [SerializeField] private GameObject shopPanel;
+    [Header("UI")] 
+    [SerializeField] [Tooltip("The object meant to be the parent of the shop items")] private GameObject shopPanel;
     [SerializeField] private GameObject shopItemPrefab;
     
     [Header("Testing")] [SerializeField] private bool testMode;
@@ -59,7 +60,7 @@ public class ShopManager : BaseManager
             money = playerShopData.money;
 //            print($"loaded shop items from {path}");
         }
-        if (playerShopData == null)
+        if (savedPurchasedSkinsAreEquipped == null)
         {
             Debug.LogWarning($"No saved shop data found at {path}");
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
@@ -69,6 +70,7 @@ public class ShopManager : BaseManager
 
     private void InstantiateShopItems()
     {
+        print("Instantiating shop itmes");
         if (skins == null || skins.Count == 0)
         {
             Debug.LogWarning("No skins available to instantiate shop items");
@@ -77,7 +79,7 @@ public class ShopManager : BaseManager
 
         if (shopPanel == null)
         {
-//            Debug.LogError("Shop panel is not assigned!");
+            Debug.LogError("Shop panel is not assigned!");
             return;
         }
 
@@ -88,22 +90,25 @@ public class ShopManager : BaseManager
         }
 
         shopItems = new SkinShopItem[skins.Count];
+        print(1);
         int index = 0;
-        // foreach (var skin in skins)
-        // {
-        //     GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
-        //     SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
-        //     
-        //     if (itemData != null)
-        //     {
-        //         bool purchased = savedPurchasedSkinsAreEquipped.ContainsKey(skin.Key);
-        //         bool equipped = purchased ? savedPurchasedSkinsAreEquipped[skin.Key] : false;
-        //         itemData.SetItemData(skin.Value, purchased, equipped);
-        //
-        //         shopItems[index] = itemData;
-        //     }
-        //     index++;
-        // }
+        foreach (var skin in skins)
+        {
+            print(skin.Value.displayName);
+            GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
+            SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
+            print($"Instantiating shop item {skin.Key}");
+            
+            if (itemData != null)
+            {
+                bool purchased = savedPurchasedSkinsAreEquipped.ContainsKey(skin.Key);
+                bool equipped = purchased ? savedPurchasedSkinsAreEquipped[skin.Key] : false;
+                itemData.SetItemData(skin.Value, purchased, equipped);
+        
+                shopItems[index] = itemData;
+            }
+            index++;
+        }
     }
 
     private void OnApplicationQuit()
