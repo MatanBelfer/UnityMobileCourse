@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: 47e1ccef123aef24e9b24abfe05af206
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - spikePrefab: {fileID: 2326982944997383979, guid: 3ad67093d56fcaf4fb19e4957ebf0f0e, type: 3}
+  - movingSpikePrefab: {fileID: 7954444986757788212, guid: 8ae14463fd0376d4fba147442663abe9, type: 3}
+  - collectablePrefab: {fileID: 2836417343364841073, guid: 5fb8b24ed96025743a7749c157b97c33, type: 3}
+  - pointPrefab: {fileID: 3795337455847509368, guid: a77b46e7ce8363146a8607757fa48501, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

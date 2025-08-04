@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Verpha.HierarchyDesigner
+namespace HierarchyDesigner
 {
     [CustomEditor(typeof(HierarchyDesignerFolder))]
     internal class HD_Window_Folder : Editor
     {
         #region Properties
         #region GUI
+        private Vector2 notesScroll;
         private const int defaultGUISpace = 2;
+        private const int sectionGUISpace = 10;
         private const int labelFieldWidth = 100;
         private const int minButtonWidth = 25;
         private const int maxButtonWidth = 100;
@@ -27,11 +29,12 @@ namespace Verpha.HierarchyDesigner
         private SerializedProperty flattenEventProp;
         private SerializedProperty onFlattenEventProp;
         private SerializedProperty onFolderDestroyProp;
+        private SerializedProperty notesProp;
         #endregion
 
         #region Cache
         private bool doOnce = false;
-        private bool showChildren = true;
+        private bool showChildren = false;
         private bool displayParentsOnly = false;
         private bool childrenCached = false;
         private HierarchyDesignerFolder folder;
@@ -50,6 +53,7 @@ namespace Verpha.HierarchyDesigner
             flattenEventProp = serializedObject.FindProperty("flattenEvent");
             onFlattenEventProp = serializedObject.FindProperty("OnFlattenEvent");
             onFolderDestroyProp = serializedObject.FindProperty("OnFolderDestroy");
+            notesProp = serializedObject.FindProperty("notes");
 
             CacheChildren();
             ProcessChildren();
@@ -132,7 +136,23 @@ namespace Verpha.HierarchyDesigner
                 EditorGUILayout.LabelField("Editor-Only", HD_Common_GUI.FieldsCategoryLabelStyle);
                 EditorGUILayout.Space(defaultGUISpace);
 
+                #region Notes
+                EditorGUILayout.LabelField("Notes", HD_Common_GUI.RegularLabelStyle);
                 EditorGUILayout.Space(defaultGUISpace);
+
+                EditorGUI.BeginChangeCheck();
+                notesScroll = EditorGUILayout.BeginScrollView(notesScroll, GUILayout.Height(80f));
+                string newNotes = EditorGUILayout.TextArea(notesProp.stringValue, GUILayout.ExpandHeight(true));
+                EditorGUILayout.EndScrollView();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    notesProp.stringValue = newNotes;
+                }
+                #endregion
+
+                EditorGUILayout.Space(sectionGUISpace);
+
+                #region GameObjects' List
                 EditorGUILayout.LabelField($"This folder contains: '{totalChildCount}' gameObject children.", HD_Common_GUI.RegularLabelStyle);
                 EditorGUILayout.Space(defaultGUISpace);
 
@@ -143,6 +163,7 @@ namespace Verpha.HierarchyDesigner
                     displayParentsOnly = newDisplayParentsOnly;
                     RefreshChildrenList();
                 }
+
                 EditorGUILayout.Space(defaultGUISpace);
 
                 if (GUILayout.Button("Refresh Children List", GUILayout.Height(20)))
@@ -162,8 +183,13 @@ namespace Verpha.HierarchyDesigner
                 {
                     DisplayCachedChildren();
                 }
+                #endregion
+
+                EditorGUILayout.Space(defaultGUISpace);
+
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
+                serializedObject.ApplyModifiedProperties();
             }
             #endregion
 

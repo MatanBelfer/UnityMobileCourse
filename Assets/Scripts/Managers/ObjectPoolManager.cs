@@ -122,7 +122,7 @@ public class ObjectPoolManager : BaseManager
         return obj;
     }
 
-    public void InsertToPool(string poolName, GameObject obj)
+    public void ReturnToPool(string poolName, GameObject obj)
     {
         if (obj == null)
         {
@@ -153,7 +153,7 @@ public class ObjectPoolManager : BaseManager
             {
                 if (obj != null)
                 {
-                    InsertToPool(poolName, obj);
+                    ReturnToPool(poolName, obj);
                 }
             }
             activeSet.Clear();

@@ -1,4 +1,4 @@
-namespace Verpha.HierarchyDesigner
+namespace HierarchyDesigner
 {
     using UnityEngine;
     using UnityEngine.Events;
@@ -16,6 +16,10 @@ namespace Verpha.HierarchyDesigner
 
         [Tooltip("Event(s) called just before the flatten event occurs.")] [SerializeField] private UnityEvent OnFlattenEvent;
         [Tooltip("Event(s) called just before the folder is destroyed.")] [SerializeField] private UnityEvent OnFolderDestroy;
+
+        #if UNITY_EDITOR
+        [HideInInspector] [SerializeField] private string notes;
+        #endif
 
         private Transform cachedTransform;
         #endregion

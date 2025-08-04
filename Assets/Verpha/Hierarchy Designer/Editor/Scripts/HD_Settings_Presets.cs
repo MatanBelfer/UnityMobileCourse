@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
-namespace Verpha.HierarchyDesigner
+namespace HierarchyDesigner
 {
     internal class HD_Settings_Presets
     {
@@ -1059,6 +1059,42 @@ namespace Verpha.HierarchyDesigner
             );
         }
 
+        private static HD_Preset SummerBreakPreset()
+        {
+            return new(
+                "Summer Break",
+                HD_Common_Color.HexToColor("#FFDCB3"),
+                12,
+                FontStyle.Bold,
+                HD_Common_Color.HexToColor("#FFB570"),
+                HD_Settings_Folders.FolderImageType.NeoI,
+                HD_Common_Color.HexToColor("#FFFFFF"),
+                true,
+                HD_Common_Color.HexToColor("#91CFF1"),
+                HD_Common_Color.CreateGradient(GradientMode.Blend, ("#FFE2BC", 255, 0f), ("#FFBB70", 230, 40f), ("#91CFF1", 200, 80f), ("#71B3E5", 255, 100f)),
+                FontStyle.Bold,
+                13,
+                TextAnchor.MiddleCenter,
+                HD_Settings_Separators.SeparatorImageType.ModernII,
+                HD_Common_Color.HexToColor("#FFDCB3"),
+                FontStyle.BoldAndItalic,
+                10,
+                TextAnchor.MiddleRight,
+                HD_Common_Color.HexToColor("#E1F3FF"),
+                FontStyle.Italic,
+                10,
+                TextAnchor.MiddleCenter,
+                HD_Common_Color.HexToColor("#FFF5E1"),
+                HD_Common_Color.HexToColor("#00000080"),
+                HD_Common_Color.HexToColor("#F78C49"),
+                HD_Common_Color.HexToColor("#6EBBDB"),
+                HD_Common_Color.HexToColor("#FFBB70"),
+                11,
+                FontStyle.Bold,
+                TextAnchor.MiddleCenter
+            );
+        }
+
         private static HD_Preset TheTwoRealmsPreset()
         {
             return new(
@@ -1207,6 +1243,7 @@ namespace Verpha.HierarchyDesigner
                 SnowPreset(),
                 StrawberrySalmonPreset(),
                 SunflowerPreset(),
+                SummerBreakPreset(),
                 TheTwoRealmsPreset(),
                 WildcatsPreset(),
                 YoungMonarchPreset(),

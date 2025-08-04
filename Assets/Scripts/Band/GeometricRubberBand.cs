@@ -251,7 +251,7 @@ public class GeometricRubberBand : BaseManager
 
         //remove the old connection
         Segment oldSegment = refPin.nextSegment;
-        // ObjectPoolManager.Instance.InsertToPool(bandSegmentsPool, oldSegment.transform.gameObject);
+        // ObjectPoolManager.Instance.ReturnToPool(bandSegmentsPool, oldSegment.transform.gameObject);
 
         //add the new pin
         connectedActivePins.Add(newPin);
@@ -278,7 +278,7 @@ public class GeometricRubberBand : BaseManager
         {
             var segmentToRemove = pinToRemove.nextSegment.transform;
             bandSegments.Remove(segmentToRemove); // Remove from tracking list
-            ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segmentToRemove.gameObject);
+            ManagersLoader.Pool.ReturnToPool(bandSegmentsPool, segmentToRemove.gameObject);
             pinToRemove.nextSegment = null;
         }
 
@@ -363,7 +363,7 @@ public class GeometricRubberBand : BaseManager
             {
                 Debug.Log(
                     $" segment is not null: {segment != null} obj name: {segment.name} , parent is: {segment.parent.gameObject.name}");
-                ManagersLoader.Pool.InsertToPool(bandSegmentsPool, segment.gameObject);
+                ManagersLoader.Pool.ReturnToPool(bandSegmentsPool, segment.gameObject);
             }
         }
 

@@ -4,7 +4,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Verpha.HierarchyDesigner
+namespace HierarchyDesigner
 {
     internal static class HD_Settings_General
     {
@@ -34,8 +34,8 @@ namespace Verpha.HierarchyDesigner
             public bool ExcludeFolderProperties = true;
             public List<string> ExcludedComponents = new (){ "Transform", "RectTransform", "CanvasRenderer" };
             public int MaximumComponentIconsAmount = 10;
-            public List<string> ExcludedTags = new();
-            public List<string> ExcludedLayers = new();
+            public List<string> ExcludedTags = new() { "Untagged" };
+            public List<string> ExcludedLayers = new() { "Default" };
             #endregion
         }
         public enum HierarchyLayoutMode { Consecutive, Docked, Split };
@@ -349,8 +349,8 @@ namespace Verpha.HierarchyDesigner
                 ExcludeFolderProperties = true,
                 ExcludedComponents = new() { "Transform", "RectTransform", "CanvasRenderer" },
                 MaximumComponentIconsAmount = 10,
-                ExcludedTags = new(),
-                ExcludedLayers = new()
+                ExcludedTags = new() { "Untagged" },
+                ExcludedLayers = new() { "Default" }
             };
         }
         #endregion

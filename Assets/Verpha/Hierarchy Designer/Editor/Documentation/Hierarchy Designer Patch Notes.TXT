@@ -1,3 +1,17 @@
+| Version 1.8.1f
+• Fixed a minor GUI bug related to notes.
+• Fixed a bug where the right arrow for child prefab folders would not appear.
+
+| Version 1.8.0
+• (New) Added a Notes feature to the Hierarchy Designer Folders (Editor-Only section).
+• (New) Added a new preset: Summer Break.
+• (Other) Minor changes.
+
+| Version 1.7.1f
+• (Other) Updated to Unity version 2022.3.62f1
+• (Other) Minor changes.
+• (Other) Hierarchy Designer is now a paid asset.
+
 | Version 1.7.0
 • (New) Added a new design settings feature: Hierarchy Button Color.
 • (Improvement) Improved the Hierarchy Buttons' GUI.

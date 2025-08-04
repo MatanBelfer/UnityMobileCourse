@@ -1,10 +1,10 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Verpha.HierarchyDesigner
+namespace HierarchyDesigner
 {
     internal static class HD_Manager_GameObject
     {
@@ -103,6 +103,7 @@ namespace Verpha.HierarchyDesigner
         private const int layoutBaseOffset = 15;
         private const int splitModeOffset = 12;
         private const float currentViewWidthOffset = 78;
+        private const float folderChildIndent = 14f;
         private const string lockedLabel = "(Locked)";
         private const string separatorMessage = "Separators are EditorOnly, meaning they will not be present in your game's build. If you want a GameObject parent to organize your GameObjects, use a folder instead.";
         private const string lockedGameObjectMessage = "This gameObject is locked, components are not available for editing.";
@@ -1279,8 +1280,13 @@ namespace Verpha.HierarchyDesigner
                 folderBackgroundTexture = EditorGUIUtility.whiteTexture;
                 folderBackgroundTextureCache[instanceID] = folderBackgroundTexture;
             }
+
+            int depth = 0;
+            for (Transform parent = gameObject.transform.parent; parent != null; parent = parent.parent) depth++;
+            float depthOffset = depth * folderChildIndent;
+
             GUI.color = SetBackgroundColorBasedOnState(selectionRect, instanceID);
-            GUI.DrawTexture(new(selectionRect.x, selectionRect.y, currentViewWidth - currentViewWidthOffset, selectionRect.height), folderBackgroundTexture);
+            GUI.DrawTexture(new(selectionRect.x, selectionRect.y, currentViewWidth - currentViewWidthOffset - depthOffset, selectionRect.height), folderBackgroundTexture);
             GUI.color = activeColor;
 
             Texture2D folderIcon = HD_Common_Resources.GetFolderImageType(folderInfo.folderImageType);

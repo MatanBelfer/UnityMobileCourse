@@ -10,5 +10,6 @@ public class MainMenuCallbacks : MonoBehaviour
     {
         OnStartGame?.Invoke();
         SceneManager.LoadScene("Game");
+
     }
 }

@@ -17,7 +17,7 @@ public class ObjectPoolInterface : MonoBehaviour
             }
         }
         
-        ManagersLoader.Pool.InsertToPool(poolName, this.gameObject);
+        ManagersLoader.Pool.ReturnToPool(poolName, this.gameObject);
     }
     
 

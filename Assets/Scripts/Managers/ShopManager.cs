@@ -89,21 +89,21 @@ public class ShopManager : BaseManager
 
         shopItems = new SkinShopItem[skins.Count];
         int index = 0;
-        foreach (var skin in skins)
-        {
-            GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
-            SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
-            
-            if (itemData != null)
-            {
-                bool purchased = savedPurchasedSkinsAreEquipped.ContainsKey(skin.Key);
-                bool equipped = purchased ? savedPurchasedSkinsAreEquipped[skin.Key] : false;
-                itemData.SetItemData(skin.Value, purchased, equipped);
-
-                shopItems[index] = itemData;
-            }
-            index++;
-        }
+        // foreach (var skin in skins)
+        // {
+        //     GameObject newItem = Instantiate(shopItemPrefab, shopPanel.transform);
+        //     SkinShopItem itemData = newItem.GetComponent<SkinShopItem>();
+        //     
+        //     if (itemData != null)
+        //     {
+        //         bool purchased = savedPurchasedSkinsAreEquipped.ContainsKey(skin.Key);
+        //         bool equipped = purchased ? savedPurchasedSkinsAreEquipped[skin.Key] : false;
+        //         itemData.SetItemData(skin.Value, purchased, equipped);
+        //
+        //         shopItems[index] = itemData;
+        //     }
+        //     index++;
+        // }
     }
 
     private void OnApplicationQuit()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 #if UNITY_EDITOR
@@ -12,7 +13,7 @@ public class GridManager : BaseManager
 {
     //grid settings
     [SerializeField] private GridParameters[] gridParametersList;
-    private GridParameters gridParameters;
+    public GridParameters gridParameters;
 
     [Tooltip("The distance in meters between adjacent grid points")]
     public float gridLength;
@@ -36,6 +37,8 @@ public class GridManager : BaseManager
 
     protected override void OnInitialize()
     {
+        Debug.Log("loaded scene path to scene:" + SceneManager.GetActiveScene().path);
+
         InitializeGridParameters();
 
         // Wait for ManagersLoader to be ready, then initialize synchronously
@@ -184,20 +187,20 @@ public class GridManager : BaseManager
         for (int i = 0; i < numPoints; i++)
         {
             positions[i].x = (-(numPoints - 1) * gridParameters.pointSpacing / 2) + i * gridParameters.pointSpacing;
-            _Point =  SpawnPoint(positions[i]).GetComponent<GridPoint>();
+            _Point = SpawnPoint(positions[i]).GetComponent<GridPoint>();
             // rowPoints[i] = SpawnPoint(positions[i]);
             rowPoints[i] = _Point.transform;
             // rowPoints[i].GetComponent<GridPoint>().column = i;
             _Point.column = i;
-            
-            
+
+
             // Only spawn spikes if we're at or past the trapStartRow
-            if (_rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
-            {
-                SpawnSpike(positions[i]);
-                _Point.isBlocked = true;
-                HidePoint(rowPoints[i]);
-            }
+            // if (_rowNum >= gridParameters.trapStartRow && Random.value < gridParameters.spikeSpawnChance)
+            // {
+            // SpawnSpike(positions[i]);
+            SpawnObjectsOnRow(positions, _rowNum);
+           
+            // }
         }
 
         _gridRows.Enqueue(rowPoints);
@@ -332,7 +335,7 @@ public class GridManager : BaseManager
 
     public Transform GetPointAt(int rowIndex, int columnIndex)
     {
-        if (!IsValidPosition(rowIndex, columnIndex) )
+        if (!IsValidPosition(rowIndex, columnIndex))
             return null;
 
         var rows = _gridRows.ToArray();
@@ -343,11 +346,12 @@ public class GridManager : BaseManager
     {
         return GetPointAt(rowIndex, columnIndex)?.GetComponent<GridPoint>().isBlocked ?? false;
     }
+
     public bool IsValidPosition(int rowIndex, int columnIndex)
     {
         if (rowIndex < 0 || rowIndex >= _gridRows.Count)
             return false;
-        
+
         var rows = _gridRows.ToArray();
         return columnIndex >= 0 && columnIndex < rows[rowIndex].Length;
     }
@@ -359,10 +363,10 @@ public class GridManager : BaseManager
         var poolInterface = obj.GetComponent<ObjectPoolInterface>();
         if (poolInterface != null && !string.IsNullOrEmpty(poolInterface.poolName))
         {
-            ManagersLoader.Pool.InsertToPool(poolInterface.poolName, obj);
+            ManagersLoader.Pool.ReturnToPool(poolInterface.poolName, obj);
         }
     }
-    
+
     /// <summary>
     /// Gets all available (non-blocked) points in the grid
     /// </summary>
@@ -370,7 +374,7 @@ public class GridManager : BaseManager
     public List<Transform> GetAllAvailablePoints()
     {
         List<Transform> availablePoints = new List<Transform>();
-        
+
         foreach (var row in _gridRows)
         {
             foreach (var point in row)
@@ -385,7 +389,7 @@ public class GridManager : BaseManager
                 }
             }
         }
-        
+
         return availablePoints;
     }
 
@@ -419,6 +423,7 @@ public class GridManager : BaseManager
                     chosenRow = _rowNum - _gridRows.Count + currentRowInQueue + 1;
                 }
             }
+
             currentRowInQueue++;
         }
 
@@ -444,9 +449,9 @@ public class GridManager : BaseManager
     {
         rowIndex = -1;
         columnIndex = -1;
-        
+
         if (point == null) return false;
-        
+
         var rows = _gridRows.ToArray();
         for (int i = 0; i < rows.Length; i++)
         {
@@ -460,7 +465,7 @@ public class GridManager : BaseManager
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -474,19 +479,19 @@ public class GridManager : BaseManager
     public List<Transform> GetPointsInRadius(Vector3 worldPosition, float radius, bool onlyAvailable = true)
     {
         List<Transform> pointsInRadius = new List<Transform>();
-        
+
         foreach (var row in _gridRows)
         {
             foreach (var point in row)
             {
                 if (point == null || !point.gameObject.activeInHierarchy) continue;
-            
+
                 if (onlyAvailable)
                 {
                     GridPoint gridPoint = point.GetComponent<GridPoint>();
                     if (gridPoint == null || gridPoint.isBlocked) continue;
                 }
-            
+
                 float distance = Vector3.Distance(point.position, worldPosition);
                 if (distance <= radius)
                 {
@@ -494,12 +499,12 @@ public class GridManager : BaseManager
                 }
             }
         }
-        
+
         // Sort by distance
-        pointsInRadius.Sort((a, b) => 
+        pointsInRadius.Sort((a, b) =>
             Vector3.Distance(worldPosition, a.position).CompareTo(
                 Vector3.Distance(worldPosition, b.position)));
-        
+
         return pointsInRadius;
     }
 
@@ -511,17 +516,18 @@ public class GridManager : BaseManager
     /// <param name="radius">How many grid positions away to search</param>
     /// <param name="onlyAvailable">If true, only returns non-blocked points</param>
     /// <returns>List of neighboring points</returns>
-    public List<Transform> GetNeighboringPoints(int rowIndex, int columnIndex, int radius = 1, bool onlyAvailable = true)
+    public List<Transform> GetNeighboringPoints(int rowIndex, int columnIndex, int radius = 1,
+        bool onlyAvailable = true)
     {
         List<Transform> neighbors = new List<Transform>();
-        
+
         for (int r = rowIndex - radius; r <= rowIndex + radius; r++)
         {
             for (int c = columnIndex - radius; c <= columnIndex + radius; c++)
             {
                 // Skip the center point itself
                 if (r == rowIndex && c == columnIndex) continue;
-            
+
                 if (IsValidPosition(r, c))
                 {
                     Transform point = GetPointAt(r, c);
@@ -543,7 +549,108 @@ public class GridManager : BaseManager
                 }
             }
         }
-        
+
         return neighbors;
+    }
+
+
+    private void SpawnCollectable(Vector3 position)
+    {
+        ObjectPoolManager poolManager = ManagersLoader.GetSceneManager<ObjectPoolManager>();
+        GameObject collectable = null;
+
+        if (poolManager != null)
+        {
+            collectable = poolManager.GetFromPool(gridParameters.collectablePoolName);
+        }
+        else
+        {
+            collectable = Instantiate(gridParameters.collectablePrefab);
+        }
+
+        if (collectable != null)
+        {
+            collectable.transform.position = position + Vector3.up * 0.5f; // Slightly above the grid point
+            collectable.transform.parent = transform; // Parent to GridManager
+
+            // Set score value from parameters
+            Collectable collectableComponent = collectable.GetComponent<Collectable>();
+            if (collectableComponent != null)
+            {
+                collectableComponent.SetScoreValue(gridParameters.collectableScoreValue);
+                collectableComponent.ResetCollectable();
+            }
+        }
+    }
+
+    private void SpawnMovingSpike(Vector3 position)
+    {
+        ObjectPoolManager poolManager = ManagersLoader.GetSceneManager<ObjectPoolManager>();
+        GameObject movingSpike = null;
+
+        if (poolManager != null)
+        {
+            movingSpike = poolManager.GetFromPool(gridParameters.movingSpikePoolName);
+        }
+        else
+        {
+            movingSpike = Instantiate(gridParameters.movingSpikePrefab);
+        }
+
+        if (movingSpike != null)
+        {
+            // Find the grid point at this position to parent the moving spike to it
+            Transform gridPoint = GetClosestPoint(position);
+            if (gridPoint != null)
+            {
+                movingSpike.transform.parent = gridPoint;
+                movingSpike.transform.localPosition = Vector3.zero;
+            }
+            else
+            {
+                movingSpike.transform.position = position;
+                movingSpike.transform.parent = transform;
+            }
+
+            // Set movement parameters
+            MovingSpikeTrap movingSpikeComponent = movingSpike.GetComponent<MovingSpikeTrap>();
+            if (movingSpikeComponent != null)
+            {
+                movingSpikeComponent.SetMovementParameters(gridParameters.movingSpikeSpeed,
+                    gridParameters.movingSpikeRange);
+                movingSpikeComponent.ResetSpike();
+                movingSpikeComponent.ResumeMovement();
+            }
+        }
+    }
+
+
+    private void SpawnObjectsOnRow(Vector3[] positions, int rowIndex)
+    {
+        // Only spawn objects after certain row thresholds
+        bool canSpawnTraps = rowIndex >= gridParameters.trapStartRow;
+        bool canSpawnCollectables = rowIndex >= gridParameters.collectableStartRow;
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            // Random chance to spawn different objects
+            float randomValue = Random.Range(0f, 1f);
+
+            if (canSpawnTraps && randomValue < gridParameters.spikeSpawnChance)
+            {
+                SpawnSpike(positions[i]);
+            }
+            else if (canSpawnTraps &&
+                     randomValue < (gridParameters.spikeSpawnChance + gridParameters.movingSpikeSpawnChance))
+            {
+                SpawnMovingSpike(positions[i]);
+            }
+            else if (canSpawnCollectables && randomValue < (gridParameters.spikeSpawnChance +
+                                                            gridParameters.movingSpikeSpawnChance +
+                                                            gridParameters.collectableSpawnChance))
+            {
+                SpawnCollectable(positions[i]);
+            }
+        }
     }
 }
