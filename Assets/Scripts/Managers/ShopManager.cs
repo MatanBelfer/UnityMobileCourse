@@ -84,8 +84,6 @@ public class ShopManager : BaseManager
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
             money = 0;
         }
-        money = 500;
-        print("gave 500 money");
     }
 
     private void InstantiateShopItems()
@@ -109,7 +107,6 @@ public class ShopManager : BaseManager
         }
 
         shopItems = new SkinShopItem[skins.Count];
-//        print(1);
         int index = 0;
         foreach (var skin in skins)
         {
