@@ -1,16 +1,11 @@
+using TMPro;
 using UnityEngine;
 
 public class GetHighScoreFromGameManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [SerializeField] private TMP_Text text;
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        text.text = $"High Score: {ManagersLoader.Game.highScore}";
     }
 }
