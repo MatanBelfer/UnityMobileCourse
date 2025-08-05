@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c24cf3dbb2bfa5d4da5011bdc36ac6d3, type: 3}
   m_Name: Skin 1
   m_EditorClassIdentifier: 
-  _displayName: Micky
+  _displayName: Vibrant
   _price: 200
-  _sprite: {fileID: 21300000, guid: 4a4949901cf847c40869730808d26dbd, type: 3}
+  _sprite: {fileID: 21300000, guid: 71dcc32d68a4c3c4a8986d33e88c1bc5, type: 3}
   _pinColor: {r: 0.9436283, g: 0, b: 1, a: 1}
   _bandColor: {r: 0.0056602955, g: 1, b: 0.045378845, a: 1}

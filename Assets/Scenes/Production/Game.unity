@@ -1792,7 +1792,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: Row
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1093626876090619070, guid: 2455628e4e1bc0a449c0269740a2dd56, type: 3}
       propertyPath: Column

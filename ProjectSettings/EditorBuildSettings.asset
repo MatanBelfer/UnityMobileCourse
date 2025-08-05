@@ -14,10 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Production/Game.unity
     guid: a9b0933dda050134787c62f9005d0204
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Matan/Main Menu.unity
     guid: 345db69bceab9ff4fa28b47392de3f7c
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Matan/Game.unity
     guid: ef444b7f8a1eb364681f5ac8cccdfd11
   m_configObjects:

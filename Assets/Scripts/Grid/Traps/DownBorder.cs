@@ -23,7 +23,7 @@ public class DownBorder : MonoBehaviour
         {
             ManagersLoader.GetSceneManager<GridManager>().ReturnObjectToPool(other.gameObject);
             pointsInCurrentRow++;
-
+    
             pointsNeededForRow = ManagersLoader.GetSceneManager<GridManager>().GetCurrentRowPointCount();
 
             if (pointsInCurrentRow >= pointsNeededForRow)

@@ -29,7 +29,6 @@ public class Collectable : ObjectPoolInterface
 
     public void CollectItem()
     {
-        Debug.Log("Collecting item");
         isCollected = true;
 
         // Stop floating animation

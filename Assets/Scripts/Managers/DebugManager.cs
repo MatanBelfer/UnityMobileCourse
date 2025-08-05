@@ -5,16 +5,14 @@ using UnityEngine.InputSystem;
 
 public class DebugManager : BaseManager
 {
-    [Header("Debug UI")]
-    [SerializeField] private GameObject debugPanel;
+    [Header("Debug UI")] [SerializeField] private GameObject debugPanel;
     [SerializeField] private Button debugButton;
     [SerializeField] private TMP_Dropdown difficultyDropdown;
     [SerializeField] private TMP_InputField scoreInput;
-    [SerializeField] private Slider timeScaleSlider;
+    [SerializeField] private TMP_Text scoreText;
     [SerializeField] private Button resetButton;
 
-    [Header("Debug Button Settings")]
-    private const int REQUIRED_CLICKS = 5;
+    [Header("Debug Button Settings")] private const int REQUIRED_CLICKS = 5;
     private const float CLICK_TIMEOUT = 3f;
     private int clickCount;
     private float lastClickTime;
@@ -27,11 +25,11 @@ public class DebugManager : BaseManager
     {
 //        Debug.Log("DebugManager: Initializing...");
         gameManager = ManagersLoader.Game;
-        
+
         // Initialize input actions
         inputActions = new PlayerInputActions();
         inputActions.Enable();
-        
+
         // Ensure debug panel is hidden initially
         if (debugPanel != null)
         {
@@ -51,13 +49,8 @@ public class DebugManager : BaseManager
 
         if (difficultyDropdown != null)
             difficultyDropdown.onValueChanged.AddListener(OnDifficultyChanged);
-        
-        if (scoreInput != null)
-            scoreInput.onEndEdit.AddListener(OnScoreChanged);
-        
-        if (timeScaleSlider != null)
-            timeScaleSlider.onValueChanged.AddListener(OnTimeScaleChanged);
-        
+
+
         if (resetButton != null)
             resetButton.onClick.AddListener(OnResetGame);
 
@@ -76,9 +69,9 @@ public class DebugManager : BaseManager
         // throw new System.NotImplementedException();
     }
 
-    private void OnScoreChanged(string arg0)
+    public void OnChangeScore()
     {
-        // throw new System.NotImplementedException();
+        ManagersLoader.Game.AddScore(int.Parse(scoreInput.text));
     }
 
     private void OnDifficultyChanged(int arg0)
@@ -97,9 +90,9 @@ public class DebugManager : BaseManager
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (RectTransformUtility.RectangleContainsScreenPoint(
-                debugButton.GetComponent<RectTransform>(),
-                Mouse.current.position.ReadValue(),
-                Camera.main))
+                    debugButton.GetComponent<RectTransform>(),
+                    Mouse.current.position.ReadValue(),
+                    Camera.main))
             {
                 OnClickDebugBTN();
             }
@@ -110,7 +103,7 @@ public class DebugManager : BaseManager
     {
         Debug.Log($"DebugManager: Debug button clicked. Current count: {clickCount}");
         ManagersLoader.Audio.PlaySFX("button_click");
-        
+
         // Check if we've timed out
         if (Time.time - lastClickTime > CLICK_TIMEOUT)
         {
@@ -137,7 +130,7 @@ public class DebugManager : BaseManager
     {
         isDebugMenuOpen = !isDebugMenuOpen;
         Debug.Log($"DebugManager: Toggling debug menu - IsOpen: {isDebugMenuOpen}");
-        
+
         if (debugPanel != null)
         {
             debugPanel.SetActive(isDebugMenuOpen);
@@ -159,7 +152,7 @@ public class DebugManager : BaseManager
 
     private void UpdateDebugUIValues()
     {
-        // throw new System.NotImplementedException();
+        scoreText.text = ManagersLoader.Game.GetScore().ToString();
     }
 
     protected override void OnCleanup()
@@ -172,16 +165,10 @@ public class DebugManager : BaseManager
 
         if (debugButton != null)
             debugButton.onClick.RemoveListener(OnClickDebugBTN);
-        
+
         if (difficultyDropdown != null)
             difficultyDropdown.onValueChanged.RemoveListener(OnDifficultyChanged);
-        
-        if (scoreInput != null)
-            scoreInput.onEndEdit.RemoveListener(OnScoreChanged);
-        
-        if (timeScaleSlider != null)
-            timeScaleSlider.onValueChanged.RemoveListener(OnTimeScaleChanged);
-        
+
         if (resetButton != null)
             resetButton.onClick.RemoveListener(OnResetGame);
     }
