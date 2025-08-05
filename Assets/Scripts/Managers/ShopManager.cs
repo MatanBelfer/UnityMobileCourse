@@ -13,7 +13,7 @@ public class ShopManager : BaseManager
     private SkinShopItem equippedSkinShopItem; //shop item of the currently equipped skin
     public SkinAsset equippedSkinAsset { get; private set; } //the skin that is currently equipped
     [SerializeField] private int money;
-    private const string saveDataPath = "PurchasedSkins.json";
+    private const string saveDataPath = @"/PurchasedSkins.json";
     private SkinShopItem[] shopItems;
 
     [Header("UI")] 
@@ -53,11 +53,6 @@ public class ShopManager : BaseManager
         UpdateMoneyText();
     }
 
-    // private void Update()
-    // {
-    //     print(equippedSkinAsset?.displayName ?? "no skin");
-    // }
-
     private void Start()
     {
         ManagersLoader.Game.OnRestartLevel += () => money += ManagersLoader.Game.currentScore;
@@ -74,7 +69,13 @@ public class ShopManager : BaseManager
         {
             string json = File.ReadAllText(path);
             playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
-            savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
+            List<string> purchasedSkins = playerShopData.purchasedSkins;
+            List<bool> areSkinsEquipped = playerShopData.areSkinsEquipped;
+            savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
+            for (int i = 0; i < purchasedSkins.Count; i++)
+            {
+                savedPurchasedSkinsAreEquipped[purchasedSkins[i]] = areSkinsEquipped[i];
+            }
             money = playerShopData.money;
         }
         if (savedPurchasedSkinsAreEquipped == null)
@@ -89,7 +90,6 @@ public class ShopManager : BaseManager
 
     private void InstantiateShopItems()
     {
-        print("Instantiating shop itmes");
         if (skins == null || skins.Count == 0)
         {
             Debug.LogWarning("No skins available to instantiate shop items");
@@ -143,23 +143,32 @@ public class ShopManager : BaseManager
 
     private void SavePlayerShopData()
     {
+        print("Trying to save data");
         if (savedPurchasedSkinsAreEquipped != null)
         {
             string json = JsonUtility.ToJson(new PlayerShopData(money, savedPurchasedSkinsAreEquipped) );
             string path = Application.persistentDataPath + saveDataPath;
+            print($"Path: {path}");
+            print($"Json: {json}");
             File.WriteAllText(path, json);
+        }
+        else
+        {
+            print("there was nothing to save");
         }
     }
 
     private class PlayerShopData
     {
         public int money;
-        public Dictionary<string, bool> purchasedSkinsAreEquipped;
+        public List<string> purchasedSkins;
+        public List<bool> areSkinsEquipped;
         
         public PlayerShopData(int money, Dictionary<string, bool> purchasedSkinsAreEquipped)
         {
             this.money = money;
-            this.purchasedSkinsAreEquipped = purchasedSkinsAreEquipped;
+            purchasedSkins = purchasedSkinsAreEquipped.Keys.ToList();
+            areSkinsEquipped = purchasedSkinsAreEquipped.Values.ToList();
         }
     }
 

@@ -408,7 +408,7 @@ public class Segment
         transform.SetParent(ManagersLoader.GetSceneManager<GeometricRubberBand>().transform);
         //give it the correct color
         transform.GetComponent<MeshRenderer>().material.color = GeometricRubberBand.bandColor;
-        Debug.Log($"Constructed new segment with color {GeometricRubberBand.bandColor}");
+//        Debug.Log($"Constructed new segment with color {GeometricRubberBand.bandColor}");
 
         followScript = transform.GetComponent<FollowTwoTransforms>();
         followScript.target1 = prevPin.transform;
