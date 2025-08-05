@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Small Button
       objectReference: {fileID: 0}
+    - target: {fileID: 3260576381276889843, guid: 1772a666e2333894690769755115d3e1, type: 3}
+      propertyPath: m_fontSize
+      value: 85
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260576381276889843, guid: 1772a666e2333894690769755115d3e1, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 85
+      objectReference: {fileID: 0}
     - target: {fileID: 5989649625753865936, guid: 1772a666e2333894690769755115d3e1, type: 3}
       propertyPath: m_fontSize
       value: 85

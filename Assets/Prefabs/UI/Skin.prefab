@@ -91,7 +91,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 3059807920409050912}
   nameText: {fileID: 2594534140030875357}
-  buyEquipText: {fileID: 2465780698836600854}
+  buyEquipText: {fileID: 6636142093754328117}
   buyEquipBtn: {fileID: 8163684463951930344}
 --- !u!1 &3938400176322766155
 GameObject:
@@ -435,8 +435,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Equip/Buy
       objectReference: {fileID: 0}
+    - target: {fileID: 7668347573364449370, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
+      propertyPath: m_text
+      value: Equip
+      objectReference: {fileID: 0}
+    - target: {fileID: 7668347573364449370, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
+      propertyPath: m_fontSize
+      value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 7668347573364449370, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 70
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 771475129537676249, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
@@ -445,9 +458,9 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3000567649787201645, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
   m_PrefabInstance: {fileID: 3923516458136732783}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2465780698836600854 stripped
+--- !u!114 &6636142093754328117 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1462287884811242617, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7668347573364449370, guid: 69793d331ec58314f80a31d37eecddad, type: 3}
   m_PrefabInstance: {fileID: 3923516458136732783}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
