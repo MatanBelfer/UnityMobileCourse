@@ -71,7 +71,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d35e8e0bc4ab81445921d11eaecee463, type: 2}
+  - {fileID: 2100000, guid: 738bf61392fd08b499adccc5f4f77d60, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -106,7 +106,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   poolName: 
-  objectPoolManager: {fileID: 0}
 --- !u!114 &690592808578990970
 MonoBehaviour:
   m_ObjectHideFlags: 0

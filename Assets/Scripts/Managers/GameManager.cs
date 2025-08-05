@@ -91,11 +91,6 @@ public class GameManager : BaseManager
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    private void Update()
-    {
-        print($"Raw Score: {rawScore}, Score: {GetScore()}, highscore: {highScore}, scoreOffset: {scoreOffset}");
-    }
-
     public void OnApplicationQuit() => SaveHighScoreToFile();
 
     private void SaveHighScoreToFile()

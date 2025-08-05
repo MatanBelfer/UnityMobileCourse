@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: Skin 1
   m_EditorClassIdentifier: 
   _displayName: Micky
-  _sprite: {fileID: 21300000, guid: 4a4949901cf847c40869730808d26dbd, type: 3}
   _price: 200
+  _sprite: {fileID: 21300000, guid: 4a4949901cf847c40869730808d26dbd, type: 3}
+  _pinColor: {r: 0.9436283, g: 0, b: 1, a: 1}
+  _bandColor: {r: 0.0056602955, g: 1, b: 0.045378845, a: 1}

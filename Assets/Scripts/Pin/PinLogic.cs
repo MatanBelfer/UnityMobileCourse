@@ -136,12 +136,12 @@ public class PinLogic : MonoBehaviour
 
     public void StartFollowingPin()
     {
-        Debug.Log($" pin current grid point isnull: {_currentGridPoint == null}");
+//        Debug.Log($" pin current grid point isnull: {_currentGridPoint == null}");
 
         // Only try to access _currentGridPoint if it's not null
         if (_currentGridPoint != null)
         {
-            Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
+//            Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
             _currentGridPoint.isBlocked = false; // Free up the current position
             Debug.Log($"is point blocked? {_currentGridPoint.isBlocked}");
 
@@ -149,7 +149,7 @@ public class PinLogic : MonoBehaviour
         }
         else
         {
-            Debug.Log("Current grid point is null - pin may not be placed on grid yet");
+//            Debug.Log("Current grid point is null - pin may not be placed on grid yet");
         }
 
         isFollowing = true;

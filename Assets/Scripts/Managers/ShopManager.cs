@@ -53,6 +53,11 @@ public class ShopManager : BaseManager
         UpdateMoneyText();
     }
 
+    // private void Update()
+    // {
+    //     print(equippedSkinAsset?.displayName ?? "no skin");
+    // }
+
     private void Start()
     {
         ManagersLoader.Game.OnRestartLevel += () => money += ManagersLoader.Game.currentScore;
@@ -78,6 +83,8 @@ public class ShopManager : BaseManager
             savedPurchasedSkinsAreEquipped = new Dictionary<string, bool>();
             money = 0;
         }
+        money = 500;
+        print("gave 500 money");
     }
 
     private void InstantiateShopItems()
