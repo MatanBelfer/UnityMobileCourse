@@ -14,7 +14,9 @@ public class FollowTwoTransforms : MonoBehaviour
         if (target1 == null || target2 == null) return;
         if (!follow) return;
 
-        transform.position = (target1.position + target2.position) / 2;
+        Vector3 midpoint = (target1.position + target2.position) / 2;
+        midpoint.z = -0.1f; //quickfix
+        transform.position = midpoint;
         transform.rotation = Quaternion.LookRotation(target1.position - target2.position, Vector3.back);
         Vector3 scale = transform.localScale;
         scale.z = Vector3.Distance(target1.position, target2.position);
