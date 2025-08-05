@@ -48,6 +48,11 @@ public class ShopManager : BaseManager
         SavePlayerShopData();
     }
 
+    public void ReinstantiateShopItems()
+    {
+        InstantiateShopItems();
+    }
+
 
     private void LoadShopItems()
     {

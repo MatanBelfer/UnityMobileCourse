@@ -8,10 +8,14 @@ public class SkinShopReferences : MonoBehaviour
     void Start()
     {
         ShopManager shopManager = ManagersLoader.GetSceneManager<ShopManager>();
-        if (!shopManager) Debug.LogError("ShopManager not found");
-        return;
+        if (!shopManager)
+        {
+            Debug.LogError("ShopManager not found");
+            return;
+        }
 
         shopManager.moneyText = moneyText;
         shopManager.shopPanel = shopPanel;
+        shopManager.ReinstantiateShopItems();
     }
 }
