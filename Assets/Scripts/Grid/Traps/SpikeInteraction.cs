@@ -16,7 +16,6 @@ public class SpikeInteraction : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Spike"))
         {
-            // print("Restarting scene");
             
             // Use the new dynamic scene manager access
             var rubberBand = ManagersLoader.GetSceneManager<GeometricRubberBand>();
@@ -40,6 +39,11 @@ public class SpikeInteraction : MonoBehaviour
             OnTouchSpike?.Invoke();
             print("Invoked OnTouchSpike");
 
+        }
+
+        if (collision.gameObject.CompareTag("Star"))
+        {
+           collision.gameObject.GetComponent<Collectable>().CollectItem();
         }
     }
 }

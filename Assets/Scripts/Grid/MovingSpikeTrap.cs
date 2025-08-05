@@ -23,7 +23,7 @@ public class MovingSpikeTrap : ObjectPoolInterface
         // Store reference to parent grid point for moving down with grid
         parentGridPoint = transform.parent;
         
-        startPosition = transform.localPosition; // Use local position relative to grid point
+        // startPosition = transform.localPosition; // Use local position relative to grid point
         leftBound = startPosition + Vector3.left * (moveRange / 2f);
         rightBound = startPosition + Vector3.right * (moveRange / 2f);
         isMoving = true;
@@ -93,7 +93,6 @@ public class MovingSpikeTrap : ObjectPoolInterface
     {
         direction = 1;
         isMoving = false;
-        transform.localScale = Vector3.one;
         transform.localPosition = Vector3.zero;
     }
     

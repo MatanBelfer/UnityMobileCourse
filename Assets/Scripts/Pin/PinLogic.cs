@@ -18,10 +18,10 @@ public class PinLogic : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
 
-        Transform point = ManagersLoader.GetSceneManager<GridManager>().GetPointAt(Row, Column);
+        GridPoint point = ManagersLoader.GetSceneManager<GridManager>().GetPointAt(Row, Column);
         if (point != null)
         {
-            transform.parent = point;
+            transform.parent = point.transform;
             transform.localPosition = Vector3.zero;
 
             // Set the current grid point reference
@@ -37,7 +37,7 @@ public class PinLogic : MonoBehaviour
 
     public void MovePinToPosition(Vector3 worldPosition, bool animate = true)
     {
-        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>()
+        GridPoint landingPoint = ManagersLoader.GetSceneManager<GridManager>()
             .GetClosestPoint(worldPosition, out int chosenRow);
 
         GridPoint _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
@@ -59,7 +59,7 @@ public class PinLogic : MonoBehaviour
                 Debug.Log("Initial point is blocked, searching for next closest available point");
 
                 GridManager gridManager = ManagersLoader.GetSceneManager<GridManager>();
-                Transform nextClosestPoint = gridManager.GetClosestAvailablePoint(worldPosition, out int newChosenRow);
+                GridPoint nextClosestPoint = gridManager.GetClosestAvailablePoint(worldPosition, out int newChosenRow);
 
                 if (nextClosestPoint != null)
                 {
@@ -67,7 +67,7 @@ public class PinLogic : MonoBehaviour
                     _gridLandingPoint = landingPoint.GetComponent<GridPoint>();
                     chosenRow = newChosenRow;
                     Debug.Log(
-                        $"Found alternative point: {landingPoint.name} at position: {landingPoint.position} at row {chosenRow}");
+                        $"Found alternative point: {landingPoint.name} at position: {landingPoint.transform.position} at row {chosenRow}");
                 }
                 else
                 {
@@ -77,13 +77,13 @@ public class PinLogic : MonoBehaviour
             }
             else
             {
-                Debug.Log($"Using original point: {landingPoint.name} at position: {landingPoint.position}");
+                Debug.Log($"Using original point: {landingPoint.name} at position: {landingPoint.transform.position}");
             }
 
             if (animate)
             {
-                print($"{gameObject.name} is moving to {landingPoint.position}");
-                Vector3 targetWorldPosition = landingPoint.position;
+                print($"{gameObject.name} is moving to {landingPoint.transform.position}");
+                Vector3 targetWorldPosition = landingPoint.transform.position;
 
                 // Notify rubber band that pin is starting to move
                 if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
@@ -96,7 +96,7 @@ public class PinLogic : MonoBehaviour
                     .Position(transform, targetWorldPosition, moveDuration, moveEase)
                     .OnComplete(() =>
                     {
-                        transform.parent = landingPoint;
+                        transform.parent = landingPoint.transform;
                         transform.localPosition = Vector3.zero;
                         _currentGridPoint = _gridLandingPoint;
                         _currentGridPoint.isBlocked = true;
@@ -114,7 +114,7 @@ public class PinLogic : MonoBehaviour
             else
             {
                 // Instant movement (for drag mode)
-                transform.parent = landingPoint;
+                transform.parent = landingPoint.transform;
                 transform.localPosition = Vector3.zero;
                 _currentGridPoint = _gridLandingPoint;
                 // _currentGridPoint.isBlocked = true;
@@ -167,17 +167,17 @@ public class PinLogic : MonoBehaviour
 //        Debug.Log("inside stop following pin method pin: {" + name + "}");
 
 
-        Transform landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(transform.position);
+        GridPoint landingPoint = ManagersLoader.GetSceneManager<GridManager>().GetClosestPoint(transform.position);
         if (landingPoint != null )
         {
-            transform.parent = landingPoint;
+            transform.parent = landingPoint.transform;
             transform.localPosition = Vector3.zero;
             _currentGridPoint.isBlocked = true;
         }
         else
         {
             landingPoint = FindNextClosestAvailablePoint(transform.position);
-            transform.parent = landingPoint;
+            transform.parent = landingPoint.transform;
             transform.localPosition = Vector3.zero;
             landingPoint.GetComponent<GridPoint>().isBlocked = true;
         }
@@ -192,7 +192,7 @@ public class PinLogic : MonoBehaviour
         }
     }
 
-    private Transform FindNextClosestAvailablePoint(Vector3 worldPosition)
+    private GridPoint FindNextClosestAvailablePoint(Vector3 worldPosition)
     {
         GridManager gridManager = ManagersLoader.GetSceneManager<GridManager>();
 

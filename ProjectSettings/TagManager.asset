@@ -8,6 +8,7 @@ TagManager:
   - GridPoint
   - Spike
   - Pin
+  - Star
   layers:
   - Default
   - TransparentFX
