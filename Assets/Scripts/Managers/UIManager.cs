@@ -44,6 +44,8 @@ public class UIManager : BaseManager
         GameManager gameManager = ManagersLoader.Game;
         gameManager.OnScoreChanged += score => scoreText.text = $"Score: {score}";
         scoreText.text = "Score: 0";
+        gameManager.OnExitToMainMenu += () => scoreText.text = "Score: 0";
+        gameManager.OnRestartLevel += () => scoreText.text = "Score: 0";
         
         //react to start game
         SceneManager.sceneLoaded += ActivateHudOnStartGame();

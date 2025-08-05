@@ -18,6 +18,7 @@ public class GameManager : BaseManager
     private int rawScore = 0; // the score (height) reported by the pins
     private int scoreOffset; // the starting initial score given by the highest pin on start.
     public int highScore { get; private set; }
+    public int currentScore => GetScore();
     private string scorePath = "/score.json";
 
     [Header("Pause")] 
@@ -26,7 +27,6 @@ public class GameManager : BaseManager
     //Scene Change events (to be called before scene change)
     public event Action OnRestartLevel;
     public event Action OnExitToMainMenu;
-    
     public event Action<int> OnScoreChanged;
 
     //Initialize the singleton
@@ -39,7 +39,6 @@ public class GameManager : BaseManager
     {
         //OnRestartLevel initialization
         OnRestartLevel += SaveHighScoreToFile;
-        OnRestartLevel += () => rawScore = 0;
 
         //OnExitToMainMenu initialization
         OnExitToMainMenu += () => SetPause(false);
@@ -88,7 +87,13 @@ public class GameManager : BaseManager
     public void RestartLevel()
     {
         OnRestartLevel?.Invoke();
+        rawScore = scoreOffset;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void Update()
+    {
+        print($"Raw Score: {rawScore}, Score: {GetScore()}, highscore: {highScore}, scoreOffset: {scoreOffset}");
     }
 
     public void OnApplicationQuit() => SaveHighScoreToFile();
@@ -119,7 +124,7 @@ public class GameManager : BaseManager
     {
         //calculates the new score given the row the pin landed on
         if (landingRow > rawScore) rawScore = landingRow;
-        OnScoreChanged?.Invoke(GetScore());
+        OnScoreChanged?.Invoke(currentScore);
     }
 
     public int GetScore()
@@ -141,6 +146,7 @@ public class GameManager : BaseManager
     public void ExitToMainMenu()
     {
         OnExitToMainMenu?.Invoke();
+        rawScore = scoreOffset;
         SceneManager.LoadScene("Main Menu");
     }
     
@@ -152,6 +158,7 @@ public class GameManager : BaseManager
     {
         
     }
+    
     public void ModifyDifficulty(int change)
     {
         int currentDifficulty = PlayerPrefs.GetInt("difficulty", 0);

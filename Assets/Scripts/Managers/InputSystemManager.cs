@@ -193,7 +193,7 @@ public class InputSystemManager : BaseManager
 
         if (_currentPin != null)
         {
-            Debug.Log($"Pin found  {_currentPin.name} at click position {clickPosition}");
+//            Debug.Log($"Pin found  {_currentPin.name} at click position {clickPosition}");
             if (controlScheme == ControlScheme.DragAndDrop)
             {
                 StartDragging(_currentPin);

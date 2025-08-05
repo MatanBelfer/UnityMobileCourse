@@ -50,8 +50,14 @@ public class ShopManager : BaseManager
     public void ReinstantiateShopItems()
     {
         InstantiateShopItems();
+        UpdateMoneyText();
     }
 
+    private void Start()
+    {
+        ManagersLoader.Game.OnRestartLevel += () => money += ManagersLoader.Game.currentScore;
+        ManagersLoader.Game.OnExitToMainMenu += () => money += ManagersLoader.Game.currentScore;
+    }
 
     private void LoadShopItems()
     {
@@ -65,7 +71,6 @@ public class ShopManager : BaseManager
             playerShopData = JsonUtility.FromJson<PlayerShopData>(json);
             savedPurchasedSkinsAreEquipped = playerShopData.purchasedSkinsAreEquipped;
             money = playerShopData.money;
-//            print($"loaded shop items from {path}");
         }
         if (savedPurchasedSkinsAreEquipped == null)
         {

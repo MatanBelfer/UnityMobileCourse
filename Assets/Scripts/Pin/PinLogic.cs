@@ -120,7 +120,7 @@ public class PinLogic : MonoBehaviour
                 // _currentGridPoint.isBlocked = true;
                 isFollowing = false;
 
-                Debug.Log($"Pin instantly moved to: {transform.position} (parent: {landingPoint.name})");
+//                Debug.Log($"Pin instantly moved to: {transform.position} (parent: {landingPoint.name})");
 
                 if (ManagersLoader.GetSceneManager<GeometricRubberBand>() != null)
                 {

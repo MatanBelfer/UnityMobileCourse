@@ -66,7 +66,7 @@ public class SkinShopItem : MonoBehaviour
     /// </summary>
     private void buyEquipBtnClicked()
     {
-        ShopManager shopManager = ManagersLoader.GetSceneManager<ShopManager>();
+        ShopManager shopManager = ManagersLoader.Shop;
         
         if (!isPurchased)
         {
