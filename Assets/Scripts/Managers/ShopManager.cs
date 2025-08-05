@@ -33,7 +33,6 @@ public class ShopManager : BaseManager
     {
         // print("Shop Manager initialized");
         LoadShopItems();
-        InstantiateShopItems();
     }
 
     protected override void OnReset()
