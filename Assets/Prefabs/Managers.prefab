@@ -1221,6 +1221,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8b9e5233766474f40a99594853c82243, type: 2}
   - {fileID: 11400000, guid: 445fdc98781e59947b4afbfd2e2f2499, type: 2}
   - {fileID: 11400000, guid: 839bf372bbca69b4898983efdbe18bf1, type: 2}
+  - {fileID: 11400000, guid: 49efd8ee1ff45d74b81dac022e32322a, type: 2}
 --- !u!82 &5201304394932385082
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2439,7 +2440,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.size
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[0].prefab
@@ -2453,6 +2454,14 @@ PrefabInstance:
       propertyPath: poolSettings.Array.data[2].prefab
       value: 
       objectReference: {fileID: 38522347057972045, guid: 6d85aa6e755bd3147a9d0db24879fef4, type: 3}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[3].prefab
+      value: 
+      objectReference: {fileID: 7954444986757788212, guid: 8ae14463fd0376d4fba147442663abe9, type: 3}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[4].prefab
+      value: 
+      objectReference: {fileID: 2836417343364841073, guid: 5fb8b24ed96025743a7749c157b97c33, type: 3}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[0].poolName
       value: Holes
@@ -2475,6 +2484,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
       propertyPath: poolSettings.Array.data[2].poolSize
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[3].poolName
+      value: MovingSpikePool
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[3].poolSize
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[4].poolName
+      value: CollectablePool
+      objectReference: {fileID: 0}
+    - target: {fileID: 8070150573327529780, guid: 998e008933bf6e940bb2f5d3ae495c06, type: 3}
+      propertyPath: poolSettings.Array.data[4].poolSize
       value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []

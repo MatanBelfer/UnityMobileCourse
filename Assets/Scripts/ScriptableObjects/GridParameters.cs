@@ -11,7 +11,7 @@ public class GridParameters : ScriptableObject
     [Header("Trap Settings")]
     public GameObject spikePrefab;
     [Range(0f, 1f)] public float spikeSpawnChance = 0.2f;
-    [Range(0, 50)] public int trapStartRow = 5;
+    [Range(0, 50)] public int trapStartRow = 15;
     public string spikePoolName = "SpikePool";
     [Range(5, 30)] public int initialSpikePoolSize = 10;
     

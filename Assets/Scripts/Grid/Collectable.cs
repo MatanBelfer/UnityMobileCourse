@@ -12,9 +12,8 @@ public class Collectable : ObjectPoolInterface
 
     private void Start()
     {
-        // Add a gentle floating animation to make it more appealing
-        floatingTween = Tween.PositionY(transform, transform.position.y + 0.2f, 1f, Ease.InOutSine, -1, CycleMode.Yoyo);
     }
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -28,8 +27,9 @@ public class Collectable : ObjectPoolInterface
         }
     }
 
-    private void CollectItem()
+    public void CollectItem()
     {
+        Debug.Log("Collecting item");
         isCollected = true;
 
         // Stop floating animation
@@ -44,21 +44,12 @@ public class Collectable : ObjectPoolInterface
             ManagersLoader.Game.AddScore(scoreValue);
         }
 
-        // Play collect effect if available
-        if (collectEffect != null)
-        {
-            Instantiate(collectEffect, transform.position, Quaternion.identity);
-        }
-
-        // Animate collection and return to pool
-        Tween.Scale(transform, Vector3.zero, collectAnimation, Ease.InBack)
-            .OnComplete(() => { ReturnToPool(); });
+        ManagersLoader.Pool.ReturnToPool(poolName, gameObject);
     }
 
     private void ReturnToPool()
     {
         isCollected = false;
-        transform.localScale = Vector3.one;
 
         // Return to object pool
         ObjectPoolManager poolManager = ManagersLoader.GetSceneManager<ObjectPoolManager>();
@@ -82,14 +73,13 @@ public class Collectable : ObjectPoolInterface
     public void ResetCollectable()
     {
         isCollected = false;
-        transform.localScale = Vector3.one;
 
         // Restart floating animation
-        if (gameObject.activeInHierarchy)
-        {
-            floatingTween = Tween.PositionY(transform, transform.position.y + 0.2f, 1f, Ease.InOutSine, -1,
-                CycleMode.Yoyo);
-        }
+        // if (gameObject.activeInHierarchy)
+        // {
+        //     floatingTween = Tween.PositionY(transform, transform.position.y + 0.2f, 1f, Ease.InOutSine, -1,
+        //         CycleMode.Yoyo);
+        // }
     }
 
     private void OnDisable()
