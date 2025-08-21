@@ -11,26 +11,23 @@ public class DebugManager : BaseManager
     [SerializeField] private TMP_InputField scoreInput;
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private Button resetButton;
+    [SerializeField] private Slider godModeToggle;
+    [SerializeField] private TMP_Text GodModeText;
 
     [Header("Debug Button Settings")] private const int REQUIRED_CLICKS = 5;
     private const float CLICK_TIMEOUT = 3f;
     private int clickCount;
     private float lastClickTime;
 
-    private GameManager gameManager;
     private bool isDebugMenuOpen;
+    private bool isGodModeEnabled;
     private PlayerInputActions inputActions;
 
     protected override void OnInitialize()
     {
-//        Debug.Log("DebugManager: Initializing...");
-        gameManager = ManagersLoader.Game;
-
-        // Initialize input actions
         inputActions = new PlayerInputActions();
         inputActions.Enable();
 
-        // Ensure debug panel is hidden initially
         if (debugPanel != null)
         {
             debugPanel.SetActive(false);
@@ -40,7 +37,6 @@ public class DebugManager : BaseManager
         if (debugButton != null)
         {
             debugButton.onClick.AddListener(OnClickDebugBTN);
-//            Debug.Log("DebugManager: Debug button listener added");
         }
         else
         {
@@ -54,19 +50,38 @@ public class DebugManager : BaseManager
         if (resetButton != null)
             resetButton.onClick.AddListener(OnResetGame);
 
-        // Initialize click tracking
+        if (godModeToggle != null)
+            godModeToggle.onValueChanged.AddListener(OnGodModeToggled);
+
         clickCount = 0;
         lastClickTime = 0f;
+        isGodModeEnabled = false;
     }
 
     private void OnResetGame()
     {
-        // throw new System.NotImplementedException();
     }
 
     private void OnTimeScaleChanged(float arg0)
     {
-        // throw new System.NotImplementedException();
+    }
+
+    private void OnGodModeToggled(float arg0)
+    {
+        isGodModeEnabled = arg0 > 0.5f;
+
+        if (ManagersLoader.Game != null)
+        {
+            if (isGodModeEnabled)
+            {
+                ManagersLoader.Game.EnableGodMode();
+                Debug.Log("God Mode Enabled");
+            }
+            else
+            {
+                Debug.Log("God Mode Disabled - Implementation needed in GameManager");
+            }
+        }
     }
 
     public void OnChangeScore()
@@ -76,17 +91,15 @@ public class DebugManager : BaseManager
 
     private void OnDifficultyChanged(int arg0)
     {
-        // throw new System.NotImplementedException();
     }
 
     protected override void OnReset()
     {
-        // throw new System.NotImplementedException();
+        // Add your reset logic here
     }
 
     private void Update()
     {
-        // Alternative input check using the new Input System
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (RectTransformUtility.RectangleContainsScreenPoint(
@@ -97,53 +110,43 @@ public class DebugManager : BaseManager
                 OnClickDebugBTN();
             }
         }
+        GodModeText.text = isGodModeEnabled? "Enabled" : "Disabled";
     }
 
     public void OnClickDebugBTN()
     {
-        Debug.Log($"DebugManager: Debug button clicked. Current count: {clickCount}");
         ManagersLoader.Audio.PlaySFX("button_click");
 
-        // Check if we've timed out
         if (Time.time - lastClickTime > CLICK_TIMEOUT)
         {
-            Debug.Log("DebugManager: Click timeout - resetting count");
             clickCount = 0;
         }
 
-        // Update click count and time
         clickCount++;
         lastClickTime = Time.time;
 
-        Debug.Log($"DebugManager: Updated click count to {clickCount}");
 
-        // Check if we've reached the required number of clicks
         if (clickCount >= REQUIRED_CLICKS)
         {
-            Debug.Log("DebugManager: Required clicks reached - toggling debug menu");
             ToggleDebugMenu();
-            clickCount = 0; // Reset click count after activating
+            clickCount = 0;
         }
     }
 
     private void ToggleDebugMenu()
     {
         isDebugMenuOpen = !isDebugMenuOpen;
-        Debug.Log($"DebugManager: Toggling debug menu - IsOpen: {isDebugMenuOpen}");
 
         if (debugPanel != null)
         {
             debugPanel.SetActive(isDebugMenuOpen);
         }
 
-        // Pause the game when debug menu is open without showing pause menu
-        if (gameManager != null)
+        if (ManagersLoader.Game != null)
         {
-            // Set the game's time scale directly instead of using SetPause
             Time.timeScale = isDebugMenuOpen ? 0f : 1f;
         }
 
-        // Update UI values when opening
         if (isDebugMenuOpen)
         {
             UpdateDebugUIValues();
@@ -153,6 +156,12 @@ public class DebugManager : BaseManager
     private void UpdateDebugUIValues()
     {
         scoreText.text = ManagersLoader.Game.GetScore().ToString();
+
+        if (godModeToggle != null)
+        {
+            godModeToggle.SetValueWithoutNotify(isGodModeEnabled ? 1f : 0f);
+        }
+
     }
 
     protected override void OnCleanup()
@@ -171,6 +180,9 @@ public class DebugManager : BaseManager
 
         if (resetButton != null)
             resetButton.onClick.RemoveListener(OnResetGame);
+
+        if (godModeToggle != null)
+            godModeToggle.onValueChanged.RemoveListener(OnGodModeToggled);
     }
 
     private void OnDestroy()

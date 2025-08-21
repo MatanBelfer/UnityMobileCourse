@@ -14,15 +14,13 @@ public enum Difficulty
 public class GameManager : BaseManager
 {
     //Score = rawScore - scoreOffset
-    [Header("Score")] 
-    private int rawScore = 0; // the score (height) reported by the pins
+    [Header("Score")] private int rawScore = 0; // the score (height) reported by the pins
     private int scoreOffset; // the starting initial score given by the highest pin on start.
     public int highScore { get; private set; }
     public int currentScore => GetScore();
     private string scorePath = "/score.json";
 
-    [Header("Pause")] 
-    public bool isPaused { get; private set; }
+    [Header("Pause")] public bool isPaused { get; private set; }
 
     //Scene Change events (to be called before scene change)
     public event Action OnRestartLevel;
@@ -51,7 +49,7 @@ public class GameManager : BaseManager
             ScoreData data = JsonUtility.FromJson<ScoreData>(json);
             highScore = data.score;
         }
-        
+
 //        OnScoreChanged += s => print(s);
     }
 
@@ -65,19 +63,24 @@ public class GameManager : BaseManager
         // Clear event subscribers to prevent memory leaks
         OnRestartLevel = null;
         OnExitToMainMenu = null;
-        
+
         // Reset pause state
         SetPause(false);
     }
 
     public event Action OnHitBySpike;
+
     public void HitBySpike()
     {
-        OnHitBySpike?.Invoke();
-        RestartLevel();
+        if (!IsGodModeActive)
+        {
+            OnHitBySpike?.Invoke();
+            RestartLevel();
+        }
     }
-    
+
     public event Action OnPinFellOffScreen;
+
     public void PinFellOffScreen()
     {
         OnPinFellOffScreen?.Invoke();
@@ -144,16 +147,24 @@ public class GameManager : BaseManager
         rawScore = scoreOffset;
         SceneManager.LoadScene("Main Menu");
     }
-    
+
 
     #region Debug Support Methods
 
+    private bool isGodModeActive = false;
+
+    public bool IsGodModeActive => isGodModeActive;
 
     public void EnableGodMode()
     {
-        
+        isGodModeActive = true;
     }
-    
+
+    public void DisableGodMode()
+    {
+        isGodModeActive = false;
+    }
+
     public void ModifyDifficulty(int change)
     {
         int currentDifficulty = PlayerPrefs.GetInt("difficulty", 0);
@@ -177,15 +188,8 @@ public class GameManager : BaseManager
         Debug.Log("Score reset to 0");
     }
 
-    public void ModifyLives(int change)
-    {
-        
-        Debug.Log($"Lives modified by: {change}");
-    }
-
     public void ModifyGameTime(float seconds)
     {
-        
         Debug.Log($"Game time modified by: {seconds}");
     }
 

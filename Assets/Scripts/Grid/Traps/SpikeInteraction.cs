@@ -14,7 +14,7 @@ public class SpikeInteraction : MonoBehaviour
     
     public void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Spike"))
+        if (collision.gameObject.CompareTag("Spike") && !ManagersLoader.Game.IsGodModeActive)
         {
             
             // Use the new dynamic scene manager access
